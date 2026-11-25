@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>三國志大戰 網頁版 v1.6 — 真實街機移速・逐一判定・兵種動畫強化版</title>
+<title>三國志大戰 網頁版 v1.71 — 同陣營防重疊・卡盤碰撞最佳化版</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root {
@@ -640,16 +640,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.8); cursor: grab; touch-action: none; z-index: 4;
   }
   .vpad-token:active, .vpad-token.dragging { cursor: grabbing; border-color: #fff; box-shadow: 0 0 16px rgba(255,229,153,0.9); z-index: 12; }
-  .vpad-token.charging { box-shadow: 0 0 18px #fff, 0 0 6px #8cf0ff; border-color: #fff; }
-  .vpad-token.charging::before {
-    content: '突擊!'; position: absolute; top: 5px; left: 2px; padding: 0 3px; border-radius: 3px;
-    background: rgba(255,255,255,0.92); color: #111; font-size: 8px; font-weight: 900; z-index: 3;
-  }
-  .vpad-token.walkshoot { box-shadow: 0 0 16px #44d4ff; border-color: #70e8ff; }
-  .vpad-token.walkshoot::before {
-    content: '走射!'; position: absolute; top: 5px; left: 2px; padding: 0 3px; border-radius: 3px;
-    background: rgba(30,180,255,0.92); color: #fff; font-size: 8px; font-weight: 900; z-index: 3;
-  }
+  .vpad-token.charging { box-shadow: 0 0 16px #fff, 0 0 4px #fff; border-color: #fff; }
   .vpad-token img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
   .vpad-token .vt-lbl {
     position: absolute; bottom: 0; left: 0; right: 0; font-size: 9px; font-weight: 900;
@@ -665,7 +656,68 @@
     font-size: 8px; font-weight: 900; text-align: center;
     background: rgba(20,120,62,0.88); color: #eafff2; padding: 1px 0;
   }
-  .vpad-token.dead { opacity: 0.3; filter: grayscale(1); pointer-events: none; }
+  .vpad-token.dead {
+    opacity: 0.72; filter: grayscale(0.75) brightness(0.78);
+    border-color: #ff6666; border-style: dashed;
+  }
+  .vpad-token .vt-revive {
+    display: none; position: absolute; inset: 0; z-index: 5;
+    background: rgba(18, 4, 8, 0.68); color: #ffe588;
+    font-size: 18px; font-weight: 900; align-items: center; justify-content: center;
+    flex-direction: column; text-shadow: 0 2px 6px #000; pointer-events: none;
+  }
+  .vpad-token.dead .vt-revive { display: flex; }
+  .vpad-token .vt-revive small { font-size: 8px; color: #ffadad; letter-spacing: 1px; }
+  #vpad-cmd-canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none;
+  }
+  .hp-row-avatar { position: relative; width: 28px; height: 36px; flex-shrink: 0; }
+  .hp-row-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #59472e; }
+  .hp-row-revive {
+    display: none; position: absolute; inset: 0; border-radius: 4px;
+    background: rgba(120,10,16,0.82); color: #ffe588; font-size: 11px; font-weight: 900;
+    align-items: center; justify-content: center;
+  }
+  .hp-row-card.dead .hp-row-revive { display: flex; }
+
+  /* Damage Stratagem Hit Judgement Center Cards (Authentic Arcade Zoom-in + Hit Cards!) */
+  #dmg-judge-overlay {
+    position: absolute; inset: 0; z-index: 59; pointer-events: none;
+    display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    background: radial-gradient(circle at 50% 50%, rgba(25,8,8,0.22) 0%, rgba(5,2,6,0.58) 100%);
+  }
+  #dmg-judge-overlay.show { display: flex; }
+  .dmg-judge-banner {
+    font-size: 20px; font-weight: 900; color: #ffe588; letter-spacing: 4px;
+    padding: 4px 18px; border-radius: 6px; background: rgba(20,8,10,0.88);
+    border: 2px solid #ff6a33; text-shadow: 0 2px 10px #000;
+  }
+  .dmg-judge-cards { display: flex; gap: 14px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .dmg-jcard {
+    position: relative; width: 126px; height: 178px; border-radius: 8px; overflow: hidden;
+    border: 2px solid #ff5533; box-shadow: 0 0 28px rgba(255,80,30,0.75);
+    animation: hitShake 0.45s ease-out;
+  }
+  @keyframes hitShake {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    20% { transform: translate(-8px, 4px) scale(1.06); }
+    40% { transform: translate(8px, -4px) scale(1.04); }
+    60% { transform: translate(-5px, -2px) scale(1.02); }
+    80% { transform: translate(5px, 2px) scale(1); }
+  }
+  .dmg-jcard img { width: 100%; height: 100%; object-fit: cover; }
+  .dmg-jcard-num {
+    position: absolute; top: 34%; left: 0; right: 0; text-align: center;
+    font-size: 28px; font-weight: 900; color: #ff4233;
+    text-shadow: 0 0 12px #000, -2px -2px 0 #ffe699, 2px -2px 0 #ffe699, -2px 2px 0 #ffe699, 2px 2px 0 #ffe699;
+  }
+  .dmg-jcard-foot {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 6px 6px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.95) 45%, transparent);
+  }
+  .dmg-jcard-name { font-size: 12px; font-weight: 900; color: #fff; text-align: center; margin-bottom: 4px; }
+  .dmg-jcard-hp { height: 7px; background: #2a1014; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.25); }
+  .dmg-jcard-hp > div { height: 100%; background: linear-gradient(90deg, #ff3333, #ffaa44); transition: width 0.55s ease-out; }
   .vpad-castle-zone {
     position: absolute; left: 0; right: 0; bottom: 0; height: 13%;
     background: linear-gradient(180deg, rgba(42,168,90,0.12) 0%, rgba(42,168,90,0.42) 100%);
@@ -719,7 +771,7 @@
     <div class="brand-title">
       <div class="brand-seal">戰</div>
       <h1>三國志大戰 網頁版</h1>
-      <span class="brand-badge">v1.6 · 真實街機移速・知力逐一判定・突擊/槍擊/走射動畫</span>
+      <span class="brand-badge">v1.71 · 同陣營防重疊・復活預置・兵種特效強化</span>
     </div>
     <div class="preset-bar">
       <span style="font-size:11px;color:var(--text-muted)">推薦 8 Cost 牌組：</span>
@@ -889,6 +941,12 @@
       <!-- Full-Screen 60fps Animated Skill Cutscene Canvas -->
       <canvas id="cutscene-canvas"></canvas>
 
+      <!-- Damage Skill Hit Judgement Center Card Overlay -->
+      <div id="dmg-judge-overlay">
+        <div class="dmg-judge-banner" id="dmg-judge-banner">傷害計略命中！</div>
+        <div class="dmg-judge-cards" id="dmg-judge-cards"></div>
+      </div>
+
       <!-- Authentic Arcade Center Freeze + Sword Slash + Split Card 「擊破 / 撤退」 -->
       <div id="defeat-overlay">
         <div class="defeat-stage">
@@ -991,11 +1049,11 @@ const FACTIONS = {
   qun: { name: '群雄', color: '#8a7f72', hex: 0x998e80 }
 };
 
-// Authentic Sangokushi Taisen arcade pacing (12.5s full-field cav, 18.4s arc, 22.4s spr)
+// Authentic arcade pacing: ~58% of v1.0 speed so players have crisp tactical reaction time!
 const UNIT_TYPES = {
-  cav: { name: '騎兵', icon: '騎', speed: 1.65, siege: 1.0,  color: '#d9721e' },
-  spr: { name: '槍兵', icon: '槍', speed: 0.92, siege: 1.25, color: '#269956' },
-  arc: { name: '弓兵', icon: '弓', speed: 1.12, siege: 0.9,  color: '#2579c4' }
+  cav: { name: '騎兵', icon: '騎', speed: 2.55, siege: 1.0,  color: '#d9721e' },
+  spr: { name: '槍兵', icon: '槍', speed: 1.48, siege: 1.25, color: '#269956' },
+  arc: { name: '弓兵', icon: '弓', speed: 1.78, siege: 0.9,  color: '#2579c4' }
 };
 
 const ARTS_OF_WAR = {
@@ -1179,15 +1237,6 @@ class SoundFX {
     setTimeout(() => this.playNoise(0.45, 1800, 0.24), 160);
     setTimeout(() => this.playTone(120, 42, 0.45, 'sawtooth', 0.22), 180);
   }
-  judgeHit(kind) {
-    if (kind === 'lightning') { this.playNoise(0.18, 2600, 0.22); this.playTone(160, 48, 0.22, 'sawtooth', 0.18); }
-    else if (kind === 'water') { this.playNoise(0.22, 1000, 0.2); this.playTone(220, 95, 0.24, 'sine', 0.16); }
-    else { this.playNoise(0.24, 650, 0.22); this.playTone(140, 52, 0.26, 'sawtooth', 0.2); }
-  }
-  buffPop()   { this.playTone(440, 880, 0.25, 'triangle', 0.14); }
-  debuffPop() { this.playTone(360, 140, 0.28, 'sawtooth', 0.14); }
-  chargeReady() { this.playTone(520, 780, 0.14, 'triangle', 0.08); }
-  spearJab()  { this.playTone(760, 320, 0.14, 'square', 0.1); }
   startDrum() {
     this.playTone(108, 46, 0.45, 'sine', 0.28);
     setTimeout(() => this.playTone(146, 58, 0.5, 'sine', 0.28), 240);
@@ -1267,11 +1316,12 @@ class BattleSimulation {
         facing: side === 'player' ? -Math.PI / 2 : Math.PI / 2,
         hp: maxHp, maxHp,
         alive: true, respawnTimer: 0,
+        rallyX: x, rallyZ: baseZ, rallyInCastle: false,
         inCastle: false,
         inMelee: false,
         chargeTimer: 0, isCharging: false, chargeCd: 0,
-        spearJabCd: 0, spearThrustAnim: 0,
-        standTimer: 0, walkShootReady: false, walkShootTimer: 0, arrowCd: 0,
+        spearJabCd: 0,
+        standTimer: 0, walkShootTimer: 0, arrowCd: 0,
         siegeProgress: 0,
         stealth: g.traits.includes('伏兵'),
         dancing: null,
@@ -1300,18 +1350,74 @@ class BattleSimulation {
       if (b.siegeMul) siegeMul *= b.siegeMul;
     }
     if (u.stealth) spd *= 0.5;
+    if (u.general.type === 'cav' && u.isCharging) spd *= 1.38; // Authentic arcade Cavalry Charge speed boost!
     return { pow: Math.max(1, Math.round(pow)), spd, omniSpear, arcBoost, dmgReduce, siegeMul };
+  }
+
+  resolveSameSideTarget(unit, x, z, isCastle) {
+    let rx = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, x));
+    const minZ = unit.side === 'enemy' ? -(CASTLE_Z + 1.3) : -CASTLE_Z;
+    const maxZ = unit.side === 'player' ? (CASTLE_Z + 1.3) : CASTLE_Z;
+    let rz = Math.max(minZ, Math.min(maxZ, z));
+    const peers = this.units.filter(p => p.side === unit.side && p.uid !== unit.uid);
+    const minDist = isCastle ? 2.5 : 1.95;
+    for (let iter = 0; iter < 5; iter++) {
+      let moved = false;
+      for (const p of peers) {
+        const pInCastle = p.alive ? p.inCastle : p.rallyInCastle;
+        if (isCastle !== pInCastle) continue;
+        const px = p.alive ? (p.inCastle ? p.x : p.tx) : p.rallyX;
+        const pz = p.alive ? (p.inCastle ? p.z : p.tz) : p.rallyZ;
+        if (isCastle) {
+          const dx = rx - px;
+          const adx = Math.abs(dx);
+          if (adx < minDist) {
+            const dir = adx > 0.01 ? Math.sign(dx) : (unit.uid > p.uid ? 1 : -1);
+            rx += dir * (minDist - adx + 0.05);
+            moved = true;
+          }
+        } else {
+          const dx = rx - px, dz = rz - pz;
+          const d = Math.hypot(dx, dz);
+          if (d < minDist) {
+            const nx = d > 0.01 ? dx / d : (unit.uid > p.uid ? 1 : -1);
+            const nz = d > 0.01 ? dz / d : 0;
+            const push = (minDist - d) * 0.72 + 0.04;
+            rx += nx * push;
+            rz += nz * push;
+            moved = true;
+          }
+        }
+      }
+      rx = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, rx));
+      if (!isCastle) rz = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, rz));
+      if (!moved) break;
+    }
+    return { x: rx, z: rz };
   }
 
   dispatch(cmd) {
     if (this.finished) return;
     if (cmd.type === 'MOVE') {
-      const u = this.units.find(x => x.uid === cmd.unitId && x.alive);
-      if (!u || u.dancing || u.tauntTargetId) return;
-      u.tx = Math.max(-FIELD_W / 2 + 0.8, Math.min(FIELD_W / 2 - 0.8, cmd.x));
+      const u = this.units.find(x => x.uid === cmd.unitId);
+      if (!u) return;
+      const cx = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, cmd.x));
       const minZ = u.side === 'enemy' ? -(CASTLE_Z + 1.3) : -CASTLE_Z;
       const maxZ = u.side === 'player' ? (CASTLE_Z + 1.3) : CASTLE_Z;
-      u.tz = Math.max(minZ, Math.min(maxZ, cmd.z));
+      const cz = Math.max(minZ, Math.min(maxZ, cmd.z));
+      const wantsCastle = (u.side === 'player') ? (cz >= CASTLE_Z - 0.15) : (cz <= -CASTLE_Z + 0.15);
+      // Allow moving dead unit's card to pre-assign revival destination or park inside castle!
+      if (!u.alive) {
+        const res = this.resolveSameSideTarget(u, cx, cz, wantsCastle);
+        u.rallyX = res.x;
+        u.rallyZ = wantsCastle ? cz : res.z;
+        u.rallyInCastle = wantsCastle;
+        return;
+      }
+      if (u.dancing || u.tauntTargetId) return;
+      const res = this.resolveSameSideTarget(u, cx, cz, wantsCastle);
+      u.tx = res.x;
+      u.tz = wantsCastle ? cz : res.z;
       // Sortie out of castle if commanded onto battlefield!
       if (u.inCastle) {
         const wantsOut = u.side === 'player' ? (u.tz < CASTLE_Z - 0.5) : (u.tz > -CASTLE_Z + 0.5);
@@ -1327,17 +1433,25 @@ class BattleSimulation {
       if (!u) return;
       u.tx = u.x; u.tz = u.z;
     } else if (cmd.type === 'ALL_ADVANCE') {
-      this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing).forEach(u => {
+      const list = this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing)
+        .sort((a, b) => a.x - b.x || a.uid - b.uid);
+      const n = list.length;
+      const span = Math.min(11.6, Math.max(0, (n - 1) * 2.9));
+      list.forEach((u, idx) => {
         if (u.inCastle) {
           u.inCastle = false;
           u.z = cmd.side === 'player' ? CASTLE_Z - 0.65 : -CASTLE_Z + 0.65;
         }
-        u.tx = u.x * 0.65;
+        u.tx = n === 1 ? 0 : -span / 2 + (idx / (n - 1)) * span;
         u.tz = cmd.side === 'player' ? -CASTLE_Z + 0.3 : CASTLE_Z - 0.3;
       });
     } else if (cmd.type === 'ALL_RETREAT') {
-      this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing).forEach(u => {
-        u.tx = u.x * 0.7;
+      const list = this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing)
+        .sort((a, b) => a.x - b.x || a.uid - b.uid);
+      const n = list.length;
+      const span = Math.min(11.6, Math.max(0, (n - 1) * 2.9));
+      list.forEach((u, idx) => {
+        u.tx = n === 1 ? 0 : -span / 2 + (idx / (n - 1)) * span;
         u.tz = cmd.side === 'player' ? (CASTLE_Z + 1.2) : -(CASTLE_Z + 1.2);
       });
     } else if (cmd.type === 'ALL_STOP') {
@@ -1355,52 +1469,24 @@ class BattleSimulation {
     slot.used = true;
     const def = ARTS_OF_WAR[slot.id];
     const allies = this.units.filter(u => u.side === side);
-    const enemies = this.units.filter(u => u.side !== side && u.alive && !u.inCastle);
-    const resolveSteps = [];
+    const enemies = this.units.filter(u => u.side !== side && u.alive);
 
     if (slot.id === 'saiki') {
-      resolveSteps.push({
-        kind: 'buff_group', delay: 0.85,
-        apply: () => {
-          const vfx = [];
-          allies.forEach(u => {
-            if (!u.alive) {
-              u.alive = true; u.respawnTimer = 0; u.inCastle = false; u.hp = u.maxHp * 0.9;
-              u.x = (Math.random() - 0.5) * 6; u.z = side === 'player' ? CASTLE_Z - 1.0 : -CASTLE_Z + 1.0;
-              u.tx = u.x; u.tz = u.z;
-              vfx.push({ uid: u.uid, x: u.x, z: u.z, text: '再起復活！', color: '#ffe599', vfxColor: 0xffe08a });
-            } else {
-              u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.25);
-              vfx.push({ uid: u.uid, x: u.x, z: u.z, text: '兵力回復！', color: '#69ff9c', vfxColor: 0x55ff99 });
-            }
-          });
-          return vfx;
+      allies.forEach(u => {
+        if (!u.alive) {
+          u.alive = true; u.respawnTimer = 0; u.hp = u.maxHp * 0.9;
+          u.x = (Math.random() - 0.5) * 6; u.z = side === 'player' ? CASTLE_Z - 0.8 : -CASTLE_Z + 0.8;
+          u.tx = u.x; u.tz = u.z;
+        } else {
+          u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.25);
         }
       });
     } else if (slot.id === 'zouen') {
-      resolveSteps.push({
-        kind: 'buff_group', delay: 0.85,
-        apply: () => allies.filter(u => u.alive).map(u => {
-          u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.45);
-          return { uid: u.uid, x: u.x, z: u.z, text: '增援 +45%！', color: '#69ff9c', vfxColor: 0x55ff99 };
-        })
-      });
+      allies.filter(u => u.alive).forEach(u => { u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.45); });
     } else if (slot.id === 'renkan') {
-      resolveSteps.push({
-        kind: 'debuff_group', delay: 0.9,
-        apply: () => enemies.map(u => {
-          u.buffs.push({ spdMul: 0.42, dur: 12, rem: 12 });
-          return { uid: u.uid, x: u.x, z: u.z, text: '連環減速！', color: '#df8aff', vfxColor: 0xb366ff };
-        })
-      });
+      enemies.forEach(u => u.buffs.push({ spdMul: 0.45, dur: 12, rem: 12 }));
     } else if (slot.id === 'shinsoku') {
-      resolveSteps.push({
-        kind: 'buff_group', delay: 0.9,
-        apply: () => allies.filter(u => u.alive && !u.inCastle).map(u => {
-          u.buffs.push({ powDelta: 2, spdMul: 1.4, dur: 12, rem: 12 });
-          return { uid: u.uid, x: u.x, z: u.z, text: '神速 武+2！', color: '#ffe599', vfxColor: 0xffe08a };
-        })
-      });
+      allies.filter(u => u.alive).forEach(u => u.buffs.push({ powDelta: 2, spdMul: 1.4, dur: 12, rem: 12 }));
     }
 
     const focusZ = side === 'player' ? 4 : -4;
@@ -1410,8 +1496,7 @@ class BattleSimulation {
       factionColor: side === 'player' ? '#b88329' : '#b82929',
       quote: def.quote, desc: def.desc, img: allies[0].general.img, ultCg: allies[0].general.ultCg || null,
       focusX: 0, focusZ,
-      postVfx: [{ type: 'VFX_PILLAR_RING', x: 0, z: focusZ, radius: 9.5, color: side === 'player' ? 0xffe08a : 0xff5555 }],
-      resolveSteps
+      postVfx: [{ type: 'VFX_PILLAR_RING', x: 0, z: focusZ, radius: 9.5, color: side === 'player' ? 0xffe08a : 0xff5555 }]
     });
   }
 
@@ -1428,139 +1513,96 @@ class BattleSimulation {
     const allies = this.units.filter(x => x.side === u.side && x.alive && !x.inCastle);
     const enemies = this.units.filter(x => x.side !== u.side && x.alive && !x.inCastle);
     const postVfx = [];
-    const resolveSteps = [];
-    const fHex = FACTIONS[u.general.faction].hex;
 
     if (s.kind === 'self') {
-      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 3.4, color: fHex });
-      resolveSteps.push({
-        kind: 'buff_group', delay: 0.85,
-        apply: () => {
-          u.buffs.push({
-            powDelta: s.powDelta || 0, spdMul: s.spdMul || 1, omniSpear: !!s.omniSpear,
-            arcBoost: s.arcBoost || 1, dmgReduce: s.dmgReduce || 1, siegeMul: s.siegeMul || 1,
-            selfSacrifice: !!s.selfSacrifice, rem: s.dur
-          });
-          if (s.healPct) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * s.healPct);
-          const lbl = `武力+${s.powDelta || 0}` + (s.spdMul > 1.2 ? '・神速' : s.omniSpear ? '・車輪' : s.arcBoost > 1 ? '・剛弓' : '');
-          return [{ uid: u.uid, x: u.x, z: u.z, text: lbl + '！', color: '#ffe599', vfxColor: fHex }];
-        }
+      u.buffs.push({
+        powDelta: s.powDelta || 0, spdMul: s.spdMul || 1, omniSpear: !!s.omniSpear,
+        arcBoost: s.arcBoost || 1, dmgReduce: s.dmgReduce || 1, siegeMul: s.siegeMul || 1,
+        selfSacrifice: !!s.selfSacrifice, rem: s.dur
       });
+      if (s.healPct) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * s.healPct);
+      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 3.4, color: FACTIONS[u.general.faction].hex });
     } else if (s.kind === 'rally') {
-      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: fHex });
-      resolveSteps.push({
-        kind: 'buff_group', delay: 0.95,
-        apply: () => {
-          if (s.selfCastleDmg) this.castleHp[u.side] = Math.max(1, this.castleHp[u.side] - s.selfCastleDmg);
-          const hitList = [];
-          allies.forEach(a => {
-            if (s.factionOnly && a.general.faction !== s.factionOnly) return;
-            if (Math.hypot(a.x - u.x, a.z - u.z) <= s.radius) {
-              a.buffs.push({ powDelta: s.powDelta || 0, spdMul: s.spdMul || 1, rem: s.dur });
-              if (s.healPct) a.hp = Math.min(a.maxHp, a.hp + a.maxHp * s.healPct);
-              hitList.push({ uid: a.uid, x: a.x, z: a.z, text: `武力+${s.powDelta}！`, color: '#69ff9c', vfxColor: fHex });
-            }
-          });
-          return hitList;
+      if (s.selfCastleDmg) this.castleHp[u.side] = Math.max(1, this.castleHp[u.side] - s.selfCastleDmg);
+      allies.forEach(a => {
+        if (s.factionOnly && a.general.faction !== s.factionOnly) return;
+        if (Math.hypot(a.x - u.x, a.z - u.z) <= s.radius) {
+          a.buffs.push({ powDelta: s.powDelta || 0, spdMul: s.spdMul || 1, rem: s.dur });
+          if (s.healPct) a.hp = Math.min(a.maxHp, a.hp + a.maxHp * s.healPct);
         }
       });
+      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: FACTIONS[u.general.faction].hex });
     } else if (s.kind === 'heal_aoe') {
-      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0x55ff99 });
-      resolveSteps.push({
-        kind: 'buff_group', delay: 0.9,
-        apply: () => allies.filter(a => Math.hypot(a.x - u.x, a.z - u.z) <= s.radius).map(a => {
-          a.hp = Math.min(a.maxHp, a.hp + a.maxHp * s.healPct);
-          return { uid: a.uid, x: a.x, z: a.z, text: `兵力 +${Math.round(s.healPct * 100)}%！`, color: '#69ff9c', vfxColor: 0x55ff99 };
-        })
+      allies.forEach(a => {
+        if (Math.hypot(a.x - u.x, a.z - u.z) <= s.radius) a.hp = Math.min(a.maxHp, a.hp + a.maxHp * s.healPct);
       });
+      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0x55ff99 });
     } else if (s.kind === 'debuff') {
       const cz = u.z + dirZ * 3.2;
-      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: cz, radius: s.radius, color: 0xb366ff });
-      resolveSteps.push({
-        kind: 'debuff_group', delay: 0.95,
-        apply: () => enemies.filter(e => Math.hypot(e.x - u.x, e.z - cz) <= s.radius).map(e => {
-          e.buffs.push({ powDelta: s.powDelta, spdMul: s.spdMul || 1, rem: s.dur });
-          return { uid: e.uid, x: e.x, z: e.z, text: `武力${s.powDelta}・減速！`, color: '#df8aff', vfxColor: 0xb366ff };
-        })
+      enemies.forEach(e => {
+        if (Math.hypot(e.x - u.x, e.z - cz) <= s.radius) e.buffs.push({ powDelta: s.powDelta, spdMul: s.spdMul || 1, rem: s.dur });
       });
+      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: cz, radius: s.radius, color: 0xb366ff });
     } else if (s.kind === 'taunt') {
-      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0xff9933 });
-      resolveSteps.push({
-        kind: 'debuff_group', delay: 0.85,
-        apply: () => enemies.filter(e => Math.hypot(e.x - u.x, e.z - u.z) <= s.radius).map(e => {
+      enemies.forEach(e => {
+        if (Math.hypot(e.x - u.x, e.z - u.z) <= s.radius) {
           e.tauntTargetId = u.uid;
           e.buffs.push({ powDelta: s.powDelta, taunt: true, rem: s.dur });
-          return { uid: e.uid, x: e.x, z: e.z, text: `挑釁 武${s.powDelta}！`, color: '#ffad5c', vfxColor: 0xff8833 };
-        })
+        }
       });
+      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0xff9933 });
     } else if (s.kind === 'fire' || s.kind === 'water') {
       const cz = u.z + dirZ * 3.6;
-      postVfx.push({ type: s.kind === 'fire' ? 'VFX_FIRE' : 'VFX_WATER', x: u.x, z: cz, radius: s.radius });
-      const targets = enemies.filter(e => {
+      const hits = [];
+      enemies.forEach(e => {
         const dx = Math.abs(e.x - u.x), dz = Math.abs(e.z - cz);
-        return s.kind === 'fire' ? (dx <= 3.2 && dz <= 4.4) : (dx <= 4.8 && dz <= 3.0);
+        const hit = s.kind === 'fire' ? (dx <= 3.2 && dz <= 4.4) : (dx <= 4.8 && dz <= 3.0);
+        if (hit) {
+          const beforePct = Math.round((e.hp / e.maxHp) * 100);
+          const dmg = Math.max(16, s.baseDmg + (u.general.intl - e.general.intl) * 8.5);
+          this.applyDamage(e, dmg, u);
+          hits.push({ name: e.general.name, img: e.general.img, dmgPct: Math.max(1, beforePct - Math.round((e.hp / e.maxHp) * 100)), beforePct, afterPct: Math.round((e.hp / e.maxHp) * 100), x: e.x, z: e.z });
+        }
       });
-      targets.forEach(e => {
-        resolveSteps.push({
-          kind: 'damage_one', spellKind: s.kind, delay: 0.52, target: e,
-          apply: () => {
-            if (!e.alive) return null;
-            const intDiff = u.general.intl - e.general.intl;
-            const basePct = s.kind === 'fire' ? 0.46 : 0.40;
-            const slope = s.kind === 'fire' ? 0.115 : 0.105;
-            const dmgPct = Math.max(0.24, Math.min(1.35, basePct + intDiff * slope));
-            this.applyDamage(e, e.maxHp * dmgPct, u);
-            const pctShow = Math.min(100, Math.round(dmgPct * 100));
-            return {
-              uid: e.uid, x: e.x, z: e.z,
-              text: `${s.kind === 'fire' ? '烈焰' : '怒濤'} -${pctShow}% (知差${intDiff >= 0 ? '+' + intDiff : intDiff})`,
-              color: s.kind === 'fire' ? '#ff7a33' : '#5cd6ff',
-              vfxType: s.kind === 'fire' ? 'VFX_FIRE_HIT' : 'VFX_WATER_HIT'
-            };
-          }
-        });
-      });
+      postVfx.push({ type: s.kind === 'fire' ? 'VFX_FIRE' : 'VFX_WATER', x: u.x, z: cz, radius: s.radius });
+      if (hits.length) postVfx.push({ type: 'DMG_JUDGE', title: s.name, hits, focusX: hits[0].x, focusZ: hits[0].z });
     } else if (s.kind === 'lightning') {
       const cz = u.z + dirZ * 3.4;
       const inZone = enemies.filter(e => Math.hypot(e.x - u.x, e.z - cz) <= s.radius);
       const targets = inZone.length ? inZone : enemies.slice(0, 1);
+      const hitMap = new Map();
       for (let i = 0; i < (s.strikes || 3); i++) {
         if (!targets.length) break;
-        const e = targets[i % targets.length];
-        resolveSteps.push({
-          kind: 'damage_one', spellKind: 'lightning', delay: 0.48, target: e,
-          apply: () => {
-            if (!e.alive) return null;
-            const intDiff = u.general.intl - e.general.intl;
-            const dmgPct = Math.max(0.20, Math.min(0.92, 0.34 + intDiff * 0.085));
-            this.applyDamage(e, e.maxHp * dmgPct, u);
-            const pctShow = Math.min(100, Math.round(dmgPct * 100));
-            return {
-              uid: e.uid, x: e.x, z: e.z,
-              text: `落雷 -${pctShow}%！`,
-              color: '#f7ff7a',
-              vfxType: 'VFX_LIGHTNING'
-            };
-          }
-        });
-      }
-    } else if (s.kind === 'dance_heal' || s.kind === 'dance_curse') {
-      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 4.8, color: s.kind === 'dance_heal' ? 0x66e0ff : 0xd066ff });
-      resolveSteps.push({
-        kind: 'buff_group', delay: 0.8,
-        apply: () => {
-          u.dancing = s.kind; u.tx = u.x; u.tz = u.z;
-          return [{ uid: u.uid, x: u.x, z: u.z, text: s.kind === 'dance_heal' ? '回復之舞！' : '悲哀之舞！', color: '#80eeff', vfxColor: 0x66e0ff }];
+        const t = targets[i % targets.length];
+        if (t.alive) {
+          if (!hitMap.has(t.uid)) hitMap.set(t.uid, { u: t, beforePct: Math.round((t.hp / t.maxHp) * 100) });
+          const dmg = Math.max(18, s.baseDmg + (u.general.intl - t.general.intl) * 6.5);
+          this.applyDamage(t, dmg, u);
+          postVfx.push({ type: 'VFX_LIGHTNING', x: t.x, z: t.z });
         }
-      });
+      }
+      const hits = [...hitMap.values()].map(({ u: e, beforePct }) => ({
+        name: e.general.name, img: e.general.img,
+        dmgPct: Math.max(1, beforePct - Math.round((e.hp / e.maxHp) * 100)),
+        beforePct, afterPct: Math.round((e.hp / e.maxHp) * 100), x: e.x, z: e.z
+      }));
+      if (hits.length) postVfx.push({ type: 'DMG_JUDGE', title: s.name, hits, focusX: hits[0].x, focusZ: hits[0].z });
+    } else if (s.kind === 'dance_heal' || s.kind === 'dance_curse') {
+      u.dancing = s.kind; u.tx = u.x; u.tz = u.z;
+      postVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 4.8, color: s.kind === 'dance_heal' ? 0x66e0ff : 0xd066ff });
     }
 
     const f = FACTIONS[u.general.faction];
+    if (!['fire', 'water', 'lightning'].includes(s.kind)) {
+      const zX = (s.kind === 'debuff' && enemies.length) ? enemies[0].x : u.x;
+      const zZ = (s.kind === 'debuff' && enemies.length) ? enemies[0].z : u.z;
+      postVfx.push({ type: 'POST_ZOOM', x: zX, z: zZ, dur: 0.95 });
+    }
     this.events.push({
       type: 'CUTIN', side: u.side, isMajor: (s.cost >= 5), title: s.name, spellKind: s.kind,
       factionTag: `${f.name}・${u.general.name}`, factionColor: f.color,
       quote: u.general.quote, desc: s.desc, img: u.general.img, ultCg: u.general.ultCg || null,
-      focusX: u.x, focusZ: u.z, postVfx, resolveSteps
+      focusX: u.x, focusZ: u.z, postVfx
     });
   }
 
@@ -1572,6 +1614,7 @@ class BattleSimulation {
       target.hp = 0; target.alive = false; target.dancing = null; target.buffs = [];
       target.isCharging = false; target.chargeTimer = 0; target.siegeProgress = 0;
       target.respawnTimer = target.general.traits.includes('復活') ? 12.0 : 20.0;
+      target.rallyX = target.x; target.rallyZ = target.z; target.rallyInCastle = false;
       if (attacker && attacker.side === 'player') this.stats.kills++;
       this.events.push({ type: 'CALLOUT', x: target.x, z: target.z, text: '撤退！', color: '#ff6666' });
       this.events.push({
@@ -1598,10 +1641,20 @@ class BattleSimulation {
       if (!u.alive) {
         u.respawnTimer -= dt;
         if (u.respawnTimer <= 0) {
-          u.alive = true; u.hp = u.maxHp;
-          u.x = (Math.random() - 0.5) * 6.5;
-          u.z = u.side === 'player' ? CASTLE_Z - 0.8 : -CASTLE_Z + 0.8;
-          u.tx = u.x; u.tz = u.z; u.stealth = false;
+          u.alive = true; u.hp = u.maxHp; u.stealth = false;
+          if (u.side === 'player' && u.rallyInCastle) {
+            u.inCastle = true;
+            u.x = u.rallyX; u.z = CASTLE_Z + 0.9;
+            u.tx = u.x; u.tz = u.z;
+            this.events.push({ type: 'CALLOUT', x: u.x, z: CASTLE_Z, text: '城內復活！', color: '#69ff9c' });
+          } else {
+            u.inCastle = false;
+            u.x = u.side === 'player' ? Math.max(-5, Math.min(5, u.rallyX * 0.6)) : (Math.random() - 0.5) * 6.5;
+            u.z = u.side === 'player' ? CASTLE_Z - 0.7 : -CASTLE_Z + 0.7;
+            u.tx = u.side === 'player' ? u.rallyX : u.x;
+            u.tz = u.side === 'player' ? Math.min(CASTLE_Z - 0.5, u.rallyZ) : u.z;
+            this.events.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '復活出陣！', color: '#ffe588' });
+          }
         }
         continue;
       }
@@ -1651,7 +1704,6 @@ class BattleSimulation {
       u.inMelee = false;
       u.chargeCd = Math.max(0, u.chargeCd - dt);
       u.spearJabCd = Math.max(0, u.spearJabCd - dt);
-      u.spearThrustAnim = Math.max(0, u.spearThrustAnim - dt);
       u.arrowCd = Math.max(0, u.arrowCd - dt);
     }
 
@@ -1661,7 +1713,7 @@ class BattleSimulation {
       const st = this.getEffectiveStats(u);
       const dx = u.tx - u.x, dz = u.tz - u.z;
       const dist = Math.hypot(dx, dz);
-      const wasStanding = u.standTimer > 0.70;
+      const wasStanding = u.standTimer > 0.75;
 
       if (dist > 0.14) {
         const moveStep = Math.min(dist, st.spd * dt);
@@ -1688,18 +1740,12 @@ class BattleSimulation {
           u.facing = Math.atan2(dz, dx);
         } else { u.vx = 0; u.vz = 0; }
 
-        if (u.general.type === 'arc' && wasStanding) {
-          u.walkShootTimer = 2.2;
-          u.walkShootReady = false;
-          this.events.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '走射！', color: '#60e6ff' });
-        }
+        if (u.general.type === 'arc' && wasStanding) u.walkShootTimer = 1.8;
         u.standTimer = 0;
-        u.walkShootReady = false;
       } else {
         u.vx = 0; u.vz = 0;
         u.standTimer += dt;
-        if (u.general.type === 'arc' && u.standTimer > 0.70 && !u.inMelee && !u.stealth) u.walkShootReady = true;
-        u.chargeTimer = Math.max(0, u.chargeTimer - dt * 1.8);
+        u.chargeTimer = Math.max(0, u.chargeTimer - dt * 2.0);
         u.isCharging = false;
       }
       u.walkShootTimer = Math.max(0, u.walkShootTimer - dt);
@@ -1737,14 +1783,16 @@ class BattleSimulation {
             this.applyDamage(b, Math.max(12, 16 + (stA.pow - stB.pow) * 2.0 + stA.pow * 1.3), a);
             a.isCharging = false; a.chargeTimer = 0; a.chargeCd = 2.0;
             if (a.side === 'player') this.stats.charges++;
-            this.events.push({ type: 'CALLOUT', x: b.x, z: b.z, text: '突擊！', color: '#ffffff' });
+            this.events.push({ type: 'CALLOUT', x: b.x, z: b.z, text: '突擊！！', color: '#ffffff' });
+            this.events.push({ type: 'VFX_CHARGE_HIT', x: b.x, z: b.z });
             sfx.charge();
           }
           if (b.isCharging && b.chargeCd <= 0 && !a.stealth) {
             const stB = this.getEffectiveStats(b), stA = this.getEffectiveStats(a);
             this.applyDamage(a, Math.max(12, 16 + (stB.pow - stA.pow) * 2.0 + stB.pow * 1.3), b);
             b.isCharging = false; b.chargeTimer = 0; b.chargeCd = 2.0;
-            this.events.push({ type: 'CALLOUT', x: a.x, z: a.z, text: '突擊！', color: '#ffbbbb' });
+            this.events.push({ type: 'CALLOUT', x: a.x, z: a.z, text: '突擊！！', color: '#ffbbbb' });
+            this.events.push({ type: 'VFX_CHARGE_HIT', x: a.x, z: a.z });
             sfx.charge();
           }
         }
@@ -1755,12 +1803,51 @@ class BattleSimulation {
           b.isCharging = false; b.chargeTimer = 0;
           const stA = this.getEffectiveStats(a), stB = this.getEffectiveStats(b);
           // Slower melee clash rate (~60% of v1.0) so players can pull back wounded squads!
-          this.applyDamage(b, Math.max(2.4, 5.0 + (stA.pow - stB.pow) * 0.95) * dt, a);
-          this.applyDamage(a, Math.max(2.4, 5.0 + (stB.pow - stA.pow) * 0.95) * dt, b);
+          this.applyDamage(b, Math.max(3, 6.2 + (stA.pow - stB.pow) * 1.15) * dt, a);
+          this.applyDamage(a, Math.max(3, 6.2 + (stB.pow - stA.pow) * 1.15) * dt, b);
           const push = (1.25 - dist) * 0.22;
           const nx = dist > 0.01 ? dx / dist : 1, nz = dist > 0.01 ? dz / dist : 0;
           a.x -= nx * push; a.z -= nz * push;
           b.x += nx * push; b.z += nz * push;
+        }
+      }
+    }
+
+    // Same-side unit separation (prevents same-side squads & cards from overlapping!)
+    for (let iter = 0; iter < 3; iter++) {
+      for (let i = 0; i < this.units.length; i++) {
+        const a = this.units[i]; if (!a.alive || a.inCastle) continue;
+        for (let j = i + 1; j < this.units.length; j++) {
+          const b = this.units[j]; if (!b.alive || b.inCastle || a.side !== b.side) continue;
+          const dx = b.x - a.x, dz = b.z - a.z;
+          const dist = Math.hypot(dx, dz);
+          const minSep = 1.85;
+          if (dist < minSep) {
+            const nx = dist > 0.01 ? dx / dist : (b.uid > a.uid ? 1 : -1);
+            const nz = dist > 0.01 ? dz / dist : 0;
+            const push = (minSep - dist) * 0.45;
+            a.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, a.x - nx * push));
+            a.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, a.z - nz * push));
+            b.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, b.x + nx * push));
+            b.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, b.z + nz * push));
+          }
+        }
+      }
+    }
+    // Keep same-side in-castle units neatly spaced along X so castle cards never stack
+    for (const side of ['player', 'enemy']) {
+      const sheltered = this.units.filter(u => u.side === side && u.alive && u.inCastle)
+        .sort((a, b) => a.x - b.x || a.uid - b.uid);
+      const minX = 2.6;
+      for (let iter = 0; iter < 4; iter++) {
+        for (let i = 0; i < sheltered.length - 1; i++) {
+          const a = sheltered[i], b = sheltered[i + 1];
+          const gap = b.x - a.x;
+          if (gap < minX) {
+            const shift = (minX - gap) * 0.5;
+            a.x = Math.max(-FIELD_W / 2 + 0.9, a.x - shift);
+            b.x = Math.min(FIELD_W / 2 - 0.9, b.x + shift);
+          }
         }
       }
     }
@@ -1770,20 +1857,14 @@ class BattleSimulation {
       if (!u.alive || u.inCastle) continue;
       const st = this.getEffectiveStats(u);
 
-      if (u.general.type === 'cav' && !u.inMelee && Math.hypot(u.vx, u.vz) > 0.65) {
-        const prevChg = u.isCharging;
+      if (u.general.type === 'cav' && !u.inMelee && Math.hypot(u.vx, u.vz) > 1.1) {
         u.chargeTimer += dt;
-        if (u.chargeTimer >= 1.85 && u.chargeCd <= 0) {
-          u.isCharging = true;
-          if (!prevChg) {
-            if (u.side === 'player') sfx.chargeReady();
-            this.events.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '突擊準備！', color: '#e6f7ff' });
-          }
-        }
+        if (u.chargeTimer >= 1.6 && u.chargeCd <= 0) u.isCharging = true;
       }
 
       if (u.general.type === 'arc' && !u.inMelee && !u.dancing && !u.stealth) {
-        const canShoot = (u.standTimer > 0.28) || (u.walkShootTimer > 0);
+        const isWalkShoot = (u.walkShootTimer > 0 && u.standTimer <= 0.05);
+        const canShoot = (u.standTimer > 0.28) || isWalkShoot;
         if (canShoot && u.arrowCd <= 0) {
           const range = 7.0 * (st.arcBoost > 1 ? 1.25 : 1.0);
           let best = null, bestD = range;
@@ -1798,11 +1879,18 @@ class BattleSimulation {
             const stE = this.getEffectiveStats(best);
             let dmg = Math.max(3, (5.2 + (st.pow - stE.pow) * 0.72) * st.arcBoost);
             if (best.isCharging) dmg *= 0.45;
-            this.projectiles.push({
-              sx: u.x, sz: u.z, x: u.x, z: u.z, tx: best.x, tz: best.z,
-              targetUid: best.uid, attackerUid: u.uid, dmg, t: 0, dur: 0.45,
-              side: u.side, isWalkShoot: (u.walkShootTimer > 0)
-            });
+            // Volley of 3 glowing arrows (bright cyan trails on Walk-Shoot!)
+            for (let k = -1; k <= 1; k++) {
+              this.projectiles.push({
+                sx: u.x + k * 0.22, sz: u.z + k * 0.15, x: u.x, z: u.z,
+                tx: best.x + k * 0.28, tz: best.z + k * 0.2,
+                targetUid: best.uid, attackerUid: u.uid, dmg: k === 0 ? dmg : 0,
+                t: -Math.abs(k) * 0.07, dur: 0.44, side: u.side, walkShoot: isWalkShoot
+              });
+            }
+            if (isWalkShoot && u.side === 'player') {
+              this.events.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '走射！', color: '#5ce1ff' });
+            }
             sfx.arrow();
           }
         }
@@ -1811,7 +1899,7 @@ class BattleSimulation {
       const targetCastleZ = u.side === 'player' ? -CASTLE_Z : CASTLE_Z;
       if (Math.abs(u.z - targetCastleZ) < 1.25 && !u.inMelee && !u.dancing) {
         u.stealth = false;
-        u.siegeProgress += dt / 5.2; // Authentic deliberate arcade siege buildup
+        u.siegeProgress += dt / 4.6; // Authentic deliberate siege buildup
         if (u.siegeProgress >= 1.0) {
           u.siegeProgress = 0;
           const opp = u.side === 'player' ? 'enemy' : 'player';
@@ -1869,21 +1957,26 @@ class BattleSimulation {
     if (diff > Math.PI) diff = Math.PI * 2 - diff;
     if (!st.omniSpear && diff >= 0.75) return;
 
+    // Spearhead OR active Spear Jab intercepts charging cavalry with massive burst + knockback!
     if (target.isCharging) {
       const stT = this.getEffectiveStats(target);
-      this.applyDamage(target, Math.max(24, 34 + (st.pow - stT.pow) * 2.5 + st.pow * 1.4), spearUnit);
-      target.isCharging = false; target.chargeTimer = 0; target.chargeCd = 2.6;
+      this.applyDamage(target, Math.max(26, 36 + (st.pow - stT.pow) * 2.6 + st.pow * 1.5), spearUnit);
+      target.isCharging = false; target.chargeTimer = 0; target.chargeCd = 2.8;
+      spearUnit.spearJabFlash = 0.4;
+      // Knock cavalry backward away from spearhead
+      const dx = target.x - spearUnit.x, dz = target.z - spearUnit.z, d = Math.hypot(dx, dz) || 1;
+      target.x += (dx / d) * 1.1; target.z += (dz / d) * 1.1;
       if (spearUnit.side === 'player') this.stats.intercepts++;
       this.events.push({ type: 'CALLOUT', x: target.x, z: target.z, text: '迎擊！！', color: '#4dffb8' });
+      this.events.push({ type: 'VFX_INTERCEPT', x: target.x, z: target.z });
       sfx.intercept();
-    } else if (spearUnit.spearJabCd <= 0 && Math.hypot(spearUnit.vx, spearUnit.vz) > 0.22) {
+    } else if (spearUnit.spearJabCd <= 0 && Math.hypot(spearUnit.vx, spearUnit.vz) > 0.35) {
       const stT = this.getEffectiveStats(target);
-      this.applyDamage(target, Math.max(5.5, 8.5 + (st.pow - stT.pow) * 0.9), spearUnit);
-      spearUnit.spearJabCd = 2.2;
-      spearUnit.spearThrustAnim = 0.36;
-      sfx.spearJab();
-      this.events.push({ type: 'CALLOUT', x: target.x, z: target.z, text: '槍擊！', color: '#80ffda' });
-      this.events.push({ type: 'VFX_SPEAR_SPARK', x: target.x, z: target.z });
+      this.applyDamage(target, Math.max(6, 9 + (st.pow - stT.pow) * 0.95), spearUnit);
+      spearUnit.spearJabCd = 1.9;
+      spearUnit.spearJabFlash = 0.38;
+      this.events.push({ type: 'CALLOUT', x: target.x, z: target.z, text: '槍擊！', color: '#7dffec' });
+      this.events.push({ type: 'VFX_SPEAR_JAB', x: target.x, z: target.z });
     }
   }
 }
@@ -1929,22 +2022,28 @@ class BattleAI {
       }
     }
 
-    for (const u of myUnits) {
-      if (u.dancing) continue;
+    const sortedMine = [...myUnits].sort((a, b) => a.x - b.x || a.uid - b.uid);
+    const laneCount = sortedMine.length;
+    const laneSpan = Math.min(10.8, Math.max(0, (laneCount - 1) * 2.8));
+
+    sortedMine.forEach((u, idx) => {
+      if (u.dancing) return;
+      const laneX = laneCount === 1 ? 0 : -laneSpan / 2 + (idx / (laneCount - 1)) * laneSpan;
+      const flankOff = (idx - (laneCount - 1) / 2) * 1.4;
       if (u.inCastle) {
         if (u.hp / u.maxHp >= 0.9) {
-          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: u.x, z: -4.5 });
+          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: laneX, z: -4.5 });
         }
-        continue;
+        return;
       }
       if (u.hp / u.maxHp < 0.28 && this.difficulty !== 'easy') {
-        this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: u.x * 0.5, z: -(CASTLE_Z + 1.2) });
-        continue;
+        this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: laneX, z: -(CASTLE_Z + 1.2) });
+        return;
       }
       const threat = pUnits.find(p => p.z < -5.2);
       if (threat && (u.general.type === 'spr' || u.general.type === 'cav')) {
-        this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: threat.x, z: threat.z - 0.7 });
-        continue;
+        this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: threat.x + flankOff * 0.65, z: threat.z - 0.7 });
+        return;
       }
       if (u.general.type === 'arc') {
         const nearest = this.findNearest(u, pUnits);
@@ -1952,23 +2051,23 @@ class BattleAI {
           const d = Math.hypot(nearest.x - u.x, nearest.z - u.z);
           if (d < 3.6) this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: u.x, z: Math.max(-CASTLE_Z + 1.5, u.z - 3.0) });
           else if (d <= 6.5) this.sim.dispatch({ type: 'STOP', unitId: u.uid });
-          else this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: nearest.x * 0.7, z: nearest.z - 4.8 });
+          else this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: nearest.x * 0.55 + laneX * 0.45, z: nearest.z - 4.8 });
         } else {
-          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: u.x, z: CASTLE_Z - 0.5 });
+          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: laneX, z: CASTLE_Z - 0.5 });
         }
       } else if (u.general.type === 'cav') {
         const target = pUnits.find(p => p.general.type === 'arc') || this.findNearest(u, pUnits);
         if (target && Math.hypot(target.x - u.x, target.z - u.z) < 7.5 && target.general.type !== 'spr') {
-          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: target.x, z: target.z + 0.5 });
+          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: target.x + flankOff * 0.6, z: target.z + 0.5 });
         } else {
-          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: u.x * 0.75, z: CASTLE_Z - 0.4 });
+          this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: laneX, z: CASTLE_Z - 0.4 });
         }
       } else {
         const cavThreat = pUnits.find(p => p.general.type === 'cav' && Math.hypot(p.x - u.x, p.z - u.z) < 6.8);
-        if (cavThreat) this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: cavThreat.x, z: cavThreat.z - 1.2 });
-        else this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: u.x * 0.65, z: CASTLE_Z - 0.3 });
+        if (cavThreat) this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: cavThreat.x + flankOff * 0.5, z: cavThreat.z - 1.2 });
+        else this.sim.dispatch({ type: 'MOVE', unitId: u.uid, x: laneX, z: CASTLE_Z - 0.3 });
       }
-    }
+    });
   }
 
   findNearest(u, list) {
@@ -2305,57 +2404,58 @@ class BattleRenderer3D {
     const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.36), new THREE.MeshBasicMaterial({ color: fHex, side: THREE.DoubleSide }));
     flag.position.set(0.08, 1.48, -0.12); grp.add(flag);
 
-    // Cavalry Charge Buildup Progress Ring
-    const chargeGauge = new THREE.Mesh(
-      new THREE.RingGeometry(0.92, 1.12, 24),
-      new THREE.MeshBasicMaterial({ color: 0xb8ecff, side: THREE.DoubleSide, transparent: true, opacity: 0.65 })
-    );
-    chargeGauge.rotation.x = -Math.PI / 2; chargeGauge.position.y = 0.08; chargeGauge.visible = false;
-    grp.add(chargeGauge);
-
-    // Cavalry Full White Charge Aura + Speed Cone Streak
+    // Upgraded Cavalry Charge 3D Wind Cone + 3 Jet Speed Streaks + Shock Ring!
     const chargeAura = new THREE.Group();
     const cRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.95, 1.58, 24),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
+      new THREE.RingGeometry(0.9, 1.55, 28),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
     );
     cRing.rotation.x = -Math.PI / 2; cRing.position.y = 0.12; chargeAura.add(cRing);
     const cCone = new THREE.Mesh(
-      new THREE.ConeGeometry(0.95, 2.5, 8, 1, true),
-      new THREE.MeshBasicMaterial({ color: 0xe8f9ff, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+      new THREE.ConeGeometry(1.05, 2.9, 12, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xdaf4ff, transparent: true, opacity: 0.48, side: THREE.DoubleSide })
     );
-    cCone.rotation.x = Math.PI / 2; cCone.position.set(0, 0.5, 0.95); chargeAura.add(cCone);
+    cCone.rotation.x = Math.PI / 2; cCone.position.set(0, 0.55, 1.0); chargeAura.add(cCone);
+    [-0.55, 0, 0.55].forEach(ox => {
+      const streak = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.08, 2.4),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.82 })
+      );
+      streak.position.set(ox, 0.48, -1.1); chargeAura.add(streak);
+    });
     chargeAura.visible = false;
     grp.add(chargeAura);
 
-    // Spearman Front Spearhead Fan + 3 Glowing Spear Tips
+    // Upgraded Spearman 3D Glowing Triple Spearhead Blades + Fan Zone!
     const spearFan = new THREE.Group();
-    const fanMesh = new THREE.Mesh(
-      new THREE.CircleGeometry(2.2, 18, -0.68, 1.36),
-      new THREE.MeshBasicMaterial({ color: u.side === 'player' ? 0x55ffd8 : 0xff8866, side: THREE.DoubleSide, transparent: true, opacity: 0.34 })
+    const sfCol = u.side === 'player' ? 0x4dffcc : 0xff7755;
+    const sfArc = new THREE.Mesh(
+      new THREE.CircleGeometry(2.25, 20, -0.68, 1.36),
+      new THREE.MeshBasicMaterial({ color: sfCol, side: THREE.DoubleSide, transparent: true, opacity: 0.25 })
     );
-    fanMesh.rotation.x = -Math.PI / 2; fanMesh.rotation.z = -Math.PI / 2; fanMesh.position.y = 0.08;
-    spearFan.add(fanMesh);
-    const tipMat = new THREE.MeshBasicMaterial({ color: u.side === 'player' ? 0xaaffea : 0xffaa88, transparent: true, opacity: 0.88 });
-    [-0.55, 0, 0.55].forEach(ang => {
-      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.14, 1.35, 4), tipMat);
-      tip.rotation.x = Math.PI / 2;
-      tip.rotation.z = -ang;
-      tip.position.set(Math.sin(ang) * 1.45, 0.38, Math.cos(ang) * 1.45);
-      spearFan.add(tip);
+    sfArc.rotation.x = -Math.PI / 2; sfArc.rotation.z = -Math.PI / 2; sfArc.position.y = 0.07;
+    spearFan.add(sfArc);
+    [-0.48, 0, 0.48].forEach(ox => {
+      const blade = new THREE.Mesh(
+        new THREE.ConeGeometry(0.14, 1.65, 4),
+        new THREE.MeshBasicMaterial({ color: 0xe6fff8, transparent: true, opacity: 0.88 })
+      );
+      blade.rotation.x = Math.PI / 2;
+      blade.position.set(ox, 0.45, 1.45);
+      spearFan.add(blade);
     });
     spearFan.visible = (u.general.type === 'spr');
     grp.add(spearFan);
 
-    // Archer Walk-Shoot Ready / Active Cyan Aura
-    const walkShootRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.92, 1.32, 24),
-      new THREE.MeshBasicMaterial({ color: 0x4de0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+    // Upgraded Archer Walk-Shoot (走射) Cyan Wind Aura Ring!
+    const walkShootAura = new THREE.Mesh(
+      new THREE.RingGeometry(0.85, 1.32, 24),
+      new THREE.MeshBasicMaterial({ color: 0x4ee8ff, side: THREE.DoubleSide, transparent: true, opacity: 0.78 })
     );
-    walkShootRing.rotation.x = -Math.PI / 2; walkShootRing.position.y = 0.1; walkShootRing.visible = false;
-    grp.add(walkShootRing);
+    walkShootAura.rotation.x = -Math.PI / 2; walkShootAura.position.y = 0.1; walkShootAura.visible = false;
+    grp.add(walkShootAura);
 
-    grp.userData = { soldiersGrp, chargeGauge, chargeAura, spearFan, walkShootRing, flag };
+    grp.userData = { soldiersGrp, chargeAura, spearFan, walkShootAura, flag };
     return grp;
   }
 
@@ -2426,57 +2526,31 @@ class BattleRenderer3D {
       this.scene.add(grp);
       this.vfxList.push({ mesh: grp, age: 0, dur: 0.85, kind: 'bolt' });
       this.shakeTime = 0.35;
-    } else if (ev.type === 'VFX_FIRE_HIT') {
-      const grp = new THREE.Group();
-      for (let i = 0; i < 6; i++) {
-        const cone = new THREE.Mesh(
-          new THREE.ConeGeometry(0.45, 2.8 + Math.random() * 1.4, 6),
-          new THREE.MeshBasicMaterial({ color: i % 2 ? 0xff4400 : 0xffd044, transparent: true, opacity: 0.95 })
-        );
-        cone.position.set((Math.random() - 0.5) * 1.1, 1.4, (Math.random() - 0.5) * 1.1);
-        grp.add(cone);
-      }
-      grp.position.set(ev.x, 0, ev.z);
-      this.scene.add(grp);
-      this.vfxList.push({ mesh: grp, age: 0, dur: 0.75, kind: 'fire' });
-      this.shakeTime = 0.22;
-    } else if (ev.type === 'VFX_WATER_HIT') {
-      const grp = new THREE.Group();
-      const cyl = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.1, 1.5, 2.8, 12, 1, true),
-        new THREE.MeshBasicMaterial({ color: 0x33bbff, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+    } else if (ev.type === 'VFX_CHARGE_HIT') {
+      this.shakeTime = 0.16;
+      const m = new THREE.Mesh(
+        new THREE.RingGeometry(0.2, 2.2, 24),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.95 })
       );
-      cyl.position.y = 1.4; grp.add(cyl);
-      grp.position.set(ev.x, 0, ev.z);
-      this.scene.add(grp);
-      this.vfxList.push({ mesh: grp, age: 0, dur: 0.7, kind: 'water' });
-      this.shakeTime = 0.2;
-    } else if (ev.type === 'VFX_SPEAR_SPARK') {
+      m.rotation.x = -Math.PI / 2; m.position.set(ev.x, 0.35, ev.z);
+      this.scene.add(m);
+      this.vfxList.push({ mesh: m, age: 0, dur: 0.42, kind: 'flash_ring' });
+    } else if (ev.type === 'VFX_INTERCEPT') {
+      this.shakeTime = 0.25;
       const grp = new THREE.Group();
-      const sp = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.65, 0),
-        new THREE.MeshBasicMaterial({ color: 0x99ffe6, transparent: true, opacity: 0.95 })
+      const cross1 = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 3.2), new THREE.MeshBasicMaterial({ color: 0x55ffd8, transparent: true, opacity: 0.95 }));
+      const cross2 = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.24, 0.24), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 }));
+      cross1.position.y = 0.8; cross2.position.y = 0.8; grp.add(cross1, cross2);
+      grp.position.set(ev.x, 0, ev.z); this.scene.add(grp);
+      this.vfxList.push({ mesh: grp, age: 0, dur: 0.52, kind: 'fire' });
+    } else if (ev.type === 'VFX_SPEAR_JAB') {
+      const m = new THREE.Mesh(
+        new THREE.RingGeometry(0.15, 1.5, 16),
+        new THREE.MeshBasicMaterial({ color: 0x80ffea, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
       );
-      sp.position.y = 0.75; grp.add(sp);
-      grp.position.set(ev.x, 0, ev.z);
-      this.scene.add(grp);
-      this.vfxList.push({ mesh: grp, age: 0, dur: 0.35, kind: 'bolt' });
-    } else if (ev.type === 'VFX_UNIT_BUFF' || ev.type === 'VFX_UNIT_DEBUFF') {
-      const col = ev.color || (ev.type === 'VFX_UNIT_BUFF' ? 0x69ff9c : 0xc066ff);
-      const grp = new THREE.Group();
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.7, 1.45, 24),
-        new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
-      );
-      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.15; grp.add(ring);
-      const beam = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.65, 0.9, 5.2, 14, 1, true),
-        new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
-      );
-      beam.position.y = 2.6; grp.add(beam);
-      grp.position.set(ev.x, 0, ev.z);
-      this.scene.add(grp);
-      this.vfxList.push({ mesh: grp, age: 0, dur: 0.9, kind: 'pillar' });
+      m.rotation.x = -Math.PI / 2; m.position.set(ev.x, 0.35, ev.z);
+      this.scene.add(m);
+      this.vfxList.push({ mesh: m, age: 0, dur: 0.35, kind: 'flash_ring' });
     } else if (ev.type === 'SIEGE_HIT') {
       this.shakeTime = 0.32;
       this.spawnVFX({ type: 'VFX_PILLAR_RING', x: ev.x || 0, z: ev.z || 0, radius: 2.5, color: 0xffaa22 });
@@ -2540,34 +2614,20 @@ class BattleRenderer3D {
       const moving = Math.hypot(u.vx, u.vz) > 0.2;
       m.userData.soldiersGrp.position.y = moving ? Math.abs(Math.sin(this.sim.elapsed * (u.general.type === 'cav' ? 11 : 7) + u.uid)) * 0.14 : 0;
       m.userData.flag.rotation.y = Math.sin(t * 5 + u.uid) * 0.28;
-      const chgFrac = Math.min(1, u.chargeTimer / 1.85);
-      m.userData.chargeGauge.visible = (u.general.type === 'cav' && !u.isCharging && chgFrac > 0.15 && !u.inMelee);
-      if (m.userData.chargeGauge.visible) {
-        m.userData.chargeGauge.scale.setScalar(0.55 + chgFrac * 0.55);
-        m.userData.chargeGauge.material.opacity = 0.35 + chgFrac * 0.55;
-      }
       m.userData.chargeAura.visible = u.isCharging;
-      if (u.isCharging) {
-        m.userData.chargeAura.children[0].rotation.z = t * 8;
-        m.userData.chargeAura.children[1].scale.y = 0.9 + Math.sin(t * 22) * 0.2;
-      }
+      if (u.isCharging) m.userData.chargeAura.children[0].rotation.z = t * 6;
 
       const st = this.sim.getEffectiveStats(u);
-      m.userData.spearFan.visible = (u.general.type === 'spr' || st.omniSpear) && !u.inMelee && !u.stealth;
-      if (m.userData.spearFan.visible) {
-        const thrustScale = u.spearThrustAnim > 0 ? 1.48 : (st.omniSpear ? 1.25 : 1.0);
-        m.userData.spearFan.scale.set(st.omniSpear ? 1.25 : 1.0, 1.0, thrustScale);
-        const jabReady = (u.spearJabCd <= 0);
-        m.userData.spearFan.children[0].material.opacity = jabReady ? (0.36 + Math.sin(t * 9) * 0.12) : 0.16;
+      const showSpear = (u.general.type === 'spr' || st.omniSpear) && !u.inMelee && !u.stealth;
+      m.userData.spearFan.visible = showSpear;
+      if (showSpear) {
+        if (u.spearJabFlash > 0) u.spearJabFlash = Math.max(0, u.spearJabFlash - realDt);
+        const thrustZ = u.spearJabFlash > 0 ? 1.42 : (moving ? 1.05 + Math.sin(t * 12) * 0.08 : 1.0);
+        m.userData.spearFan.scale.set(st.omniSpear ? 1.25 : 1.0, 1.0, (st.omniSpear ? 1.25 : 1.0) * thrustZ);
       }
-
-      const wsActive = (u.general.type === 'arc' && u.walkShootTimer > 0);
-      const wsReady = (u.general.type === 'arc' && u.walkShootReady);
-      m.userData.walkShootRing.visible = wsActive || wsReady;
-      if (m.userData.walkShootRing.visible) {
-        m.userData.walkShootRing.material.color.setHex(wsActive ? 0x33f0ff : 0x80d8ff);
-        m.userData.walkShootRing.material.opacity = wsActive ? 0.92 : (0.38 + Math.sin(t * 8) * 0.22);
-        m.userData.walkShootRing.scale.setScalar(wsActive ? (1.05 + Math.sin(t * 16) * 0.1) : 0.92);
+      if (m.userData.walkShootAura) {
+        m.userData.walkShootAura.visible = (u.general.type === 'arc' && u.walkShootTimer > 0 && !u.inMelee);
+        if (m.userData.walkShootAura.visible) m.userData.walkShootAura.rotation.z = -t * 7;
       }
     }
 
@@ -2607,7 +2667,7 @@ class BattleRenderer3D {
 
     while (this.arrowMeshes.length < this.sim.projectiles.length) {
       const a = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.032, 0.032, 0.78, 5),
+        new THREE.CylinderGeometry(0.045, 0.02, 1.25, 5),
         new THREE.MeshBasicMaterial({ color: 0xffe484 })
       );
       a.rotation.x = Math.PI / 2;
@@ -2617,10 +2677,12 @@ class BattleRenderer3D {
     this.arrowMeshes.forEach((m, idx) => {
       const p = this.sim.projectiles[idx];
       if (!p) { m.visible = false; return; }
+      if (p.t < 0) { m.visible = false; return; }
       m.visible = true;
-      const arcY = 0.7 + Math.sin(Math.min(1, p.t) * Math.PI) * 1.5;
+      const arcY = 0.75 + Math.sin(Math.min(1, p.t) * Math.PI) * 1.65;
       m.position.set(p.x, arcY, p.z);
-      m.material.color.setHex(p.isWalkShoot ? 0x33f0ff : (p.side === 'player' ? 0xffe484 : 0xff7777));
+      m.rotation.y = Math.atan2(p.tx - p.sx, p.tz - p.sz);
+      m.material.color.setHex(p.walkShoot ? 0x52f2ff : (p.side === 'player' ? 0xffe885 : 0xff6b6b));
     });
 
     // Animate 3D Spell VFX (even using realDt so post-Cut-in spell showcase looks super smooth)
@@ -2628,7 +2690,10 @@ class BattleRenderer3D {
       const v = this.vfxList[i];
       v.age += realDt;
       const p = Math.min(1, v.age / v.dur);
-      if (v.kind === 'pillar') {
+      if (v.kind === 'flash_ring') {
+        v.mesh.scale.setScalar(0.6 + p * 0.9);
+        v.mesh.material.opacity = (1 - p);
+      } else if (v.kind === 'pillar') {
         v.mesh.children[0].scale.setScalar(0.55 + p * 0.65);
         v.mesh.children[0].material.opacity = (1 - p) * 0.8;
         v.mesh.children[1].scale.set(1 + p * 0.35, 1 + p * 0.4, 1 + p * 0.35);
@@ -2909,8 +2974,8 @@ const App = {
   ultTheaterTimer: 0,
   ultStage: 0,
   ultEvent: null,
-  resolveQueue: [],
-  resolveTimer: 0,
+  postZoomTimer: 0,
+  dmgJudgeTimer: 0,
   defeatPauseTimer: 0,
   defeatPhase: 0,
   pendingPostVfx: [],
@@ -2923,6 +2988,7 @@ const App = {
   vpadDrags: new Map(), // pointerId -> uid (True Multi-Touch!)
   unitTagEls: new Map(),
   enemyPadDots: new Map(),
+  vpadResolvedPos: new Map(),
 
   init() {
     try {
@@ -3124,10 +3190,11 @@ const App = {
     this.cutscenePlayer = new SpellCutscenePlayer(document.getElementById('cutscene-canvas'));
     this.defeatPauseTimer = 0;
     this.ultTheaterTimer = 0;
-    this.resolveQueue = [];
-    this.resolveTimer = 0;
+    this.postZoomTimer = 0;
+    this.dmgJudgeTimer = 0;
     document.getElementById('defeat-overlay').className = '';
     document.getElementById('ult-theater').className = '';
+    document.getElementById('dmg-judge-overlay').classList.remove('show');
     this.bindThreePointer();
     this.buildLeftSkillsAndRightPad();
     this.buildUnitHudTags();
@@ -3292,7 +3359,10 @@ const App = {
       const g = u.general, f = FACTIONS[g.faction], ut = UNIT_TYPES[g.type];
       return `
         <div class="hp-row-card" id="bcard-${u.uid}" data-uid="${u.uid}" style="border-left:3px solid ${f.color}">
-          <img src="${g.img}" alt="${g.name}">
+          <div class="hp-row-avatar">
+            <img src="${g.img}" alt="${g.name}">
+            <div class="hp-row-revive" id="brev-${u.uid}"></div>
+          </div>
           <div class="hp-row-mid">
             <div class="hp-row-top">
               <span>${idx + 1}. ${g.name} <small style="color:var(--gold)">[${ut.icon}]</small></span>
@@ -3317,9 +3387,10 @@ const App = {
     // Right Column: Full-Height Virtual Arcade Card Pad (Player Cards + Semi-Transparent Enemy Cards!)
     const surface = document.getElementById('vpad-surface');
     surface.innerHTML = `
+      <canvas id="vpad-cmd-canvas"></canvas>
       <div class="vpad-castle-lbl top">敵 城 門</div>
       <div class="vpad-castle-zone"></div>
-      <div class="vpad-castle-lbl bot">我 城 內（拖入歸城回血）</div>`;
+      <div class="vpad-castle-lbl bot">我 城 內（拖入歸城／預置復活）</div>`;
     this.enemyPadDots.clear();
 
     for (const eu of eUnits) {
@@ -3353,6 +3424,7 @@ const App = {
       tok.style.borderColor = FACTIONS[u.general.faction].color;
       tok.innerHTML = `
         <div class="vt-hp"><div id="vthp-${u.uid}" style="width:100%"></div></div>
+        <div class="vt-revive" id="vtrev-${u.uid}"><span>20</span><small>復活倒數</small></div>
         <img src="${u.general.img}" alt="${u.general.name}">
         <div class="vt-lbl">${u.general.name}</div>`;
       surface.appendChild(tok);
@@ -3413,7 +3485,6 @@ const App = {
       this.ultStage = 1;
       this.ultEvent = ev;
       this.pendingPostVfx = ev.postVfx || [];
-      this.pendingResolveSteps = ev.resolveSteps || [];
       this.ren.cutinFocus = { x: ev.focusX || 0, z: ev.focusZ || 0, orbit: true };
       this.ren.spawnVFX({ type: 'VFX_PILLAR_RING', x: ev.focusX || 0, z: ev.focusZ || 0, radius: 3.6, color: ev.side === 'player' ? 0xffe08a : 0xff5555 });
 
@@ -3441,7 +3512,6 @@ const App = {
     // Minor Stratagems (Morale 3-4): Snappy 0.85s Cut-in Pause + 3D VFX
     this.cutinPauseTimer = 0.85;
     this.pendingPostVfx = ev.postVfx || [];
-    this.pendingResolveSteps = ev.resolveSteps || [];
     this.pendingCutinMeta = { kind: ev.spellKind || 'rally', color: ev.factionColor || '#ffe08a', title: ev.title };
     this.ren.cutinFocus = { x: ev.focusX || 0, z: ev.focusZ || 0, orbit: false };
 
@@ -3454,6 +3524,39 @@ const App = {
     document.getElementById('cutin-desc').textContent = ev.desc || '';
     document.getElementById('cutin-overlay').classList.add('show');
     sfx.stratagem();
+  },
+
+  handlePostVfxItem(v) {
+    if (v.type === 'DMG_JUDGE') {
+      // Zoom-in onto damaged unit + pop hit-judgement cards in center!
+      this.dmgJudgeTimer = 1.2;
+      this.postZoomTimer = 1.2;
+      this.ren.cutinFocus = { x: v.focusX, z: v.focusZ, orbit: false };
+      document.getElementById('dmg-judge-banner').textContent = `${v.title} ・ 傷害判定！`;
+      const wrap = document.getElementById('dmg-judge-cards');
+      wrap.innerHTML = v.hits.map((h, i) => `
+        <div class="dmg-jcard">
+          <img src="${h.img}" alt="${h.name}">
+          <div class="dmg-jcard-num">-${h.dmgPct}%</div>
+          <div class="dmg-jcard-foot">
+            <div class="dmg-jcard-name">${h.name}</div>
+            <div class="dmg-jcard-hp"><div id="djhp-${i}" style="width:${h.beforePct}%"></div></div>
+          </div>
+        </div>`).join('');
+      document.getElementById('dmg-judge-overlay').classList.add('show');
+      setTimeout(() => {
+        v.hits.forEach((h, i) => {
+          const bar = document.getElementById(`djhp-${i}`);
+          if (bar) bar.style.width = `${h.afterPct}%`;
+        });
+      }, 90);
+    } else if (v.type === 'POST_ZOOM') {
+      // Zoom-in onto buffed/debuffed unit during climax animation!
+      this.postZoomTimer = v.dur || 0.95;
+      this.ren.cutinFocus = { x: v.x, z: v.z, orbit: false };
+    } else {
+      this.ren.spawnVFX(v);
+    }
   },
 
   triggerDefeatSlashPause(ev) {
@@ -3521,22 +3624,40 @@ const App = {
       } else sg.style.display = 'none';
     }
 
-    // Update Semi-Transparent Enemy General Cards on Right Virtual Pad (real-time position only)
+    // Measure Virtual Card Pad dimensions for 2D same-side card anti-overlap layout
+    const vpadSurf = document.getElementById('vpad-surface');
+    const padW = (vpadSurf && vpadSurf.clientWidth) || 240;
+    const padH = (vpadSurf && vpadSurf.clientHeight) || 440;
+    const worldToPadPx = (wx, wz, inC, cardH) => ({
+      x: Math.max(0.09, Math.min(0.91, wx / FIELD_W + 0.5)) * padW,
+      y: inC
+        ? Math.min(padH - cardH / 2 - 4, padH * 0.915)
+        : Math.max(0.08, Math.min(0.82, ((wz + CASTLE_Z) / (CASTLE_Z * 1.95)) * 0.87)) * padH
+    });
+
+    // Update Semi-Transparent Enemy General Cards on Right Virtual Pad (with same-side anti-overlap!)
+    const enemyPadItems = [];
     for (const eu of sim.units.filter(x => x.side === 'enemy')) {
       const ec = this.enemyPadDots.get(eu.uid); if (!ec) continue;
       if (!eu.alive || eu.inCastle || eu.stealth) { ec.style.display = 'none'; continue; }
       ec.style.display = 'block';
-      ec.style.left = `${Math.max(9, Math.min(91, (eu.x / FIELD_W + 0.5) * 100))}%`;
-      const etop = Math.max(8, Math.min(84, ((eu.z + CASTLE_Z) / (CASTLE_Z * 1.95)) * 87));
-      ec.style.top = `${etop}%`;
+      const raw = worldToPadPx(eu.x, eu.z, false, 54);
+      enemyPadItems.push({ uid: eu.uid, el: ec, x: raw.x, y: raw.y, inC: false, anchored: false });
       const ehp = document.getElementById(`vehp-${eu.uid}`);
       if (ehp) ehp.style.width = `${(eu.hp / eu.maxHp) * 100}%`;
+    }
+    this.resolvePadCardOverlap(enemyPadItems, padW, padH, 40, 54, 4);
+    for (const it of enemyPadItems) {
+      it.el.style.left = `${it.x.toFixed(1)}px`;
+      it.el.style.top = `${it.y.toFixed(1)}px`;
     }
 
     // Re-render Active Skill Panel whenever selected general changes
     if (this._lastRenderedSkillUid !== this.selectedUid) this.renderActiveSkillPanel();
 
-    // Update Left HP Monitor List, Active Skill Panel & Right Pad Tokens
+    // Update Left HP Monitor List, Active Skill Panel & collect Right Pad Player Tokens
+    const draggingUids = new Set(this.vpadDrags.values());
+    const playerPadItems = [];
     for (const u of sim.units.filter(x => x.side === 'player')) {
       const card = document.getElementById(`bcard-${u.uid}`);
       const st = sim.getEffectiveStats(u);
@@ -3547,10 +3668,6 @@ const App = {
       else if (u.dancing) status = '舞踏發動中';
       else if (u.siegeProgress > 0.05) status = '攻城中！';
       else if (u.isCharging) status = '突擊鬥氣滿載！';
-      else if (u.general.type === 'cav' && u.chargeTimer > 0.35) status = `突擊蓄力 (${Math.round(Math.min(100, u.chargeTimer / 1.85 * 100))}%)`;
-      else if (u.general.type === 'arc' && u.walkShootTimer > 0) status = '走射發動中！';
-      else if (u.general.type === 'arc' && u.walkShootReady) status = '走射就緒（移動觸發）';
-      else if (u.general.type === 'spr' && u.spearJabCd <= 0 && !u.inMelee) status = '槍擊／迎擊就緒';
       else if (u.stealth) status = '伏兵潛行中';
       else if (u.inMelee) status = '接戰混戰中';
       else if (u.general.type === 'arc' && u.standTimer > 0.28) status = '弓箭齊射中';
@@ -3561,8 +3678,10 @@ const App = {
         card.classList.toggle('dead', !u.alive);
         document.getElementById(`bpow-${u.uid}`).textContent = `武${st.pow}`;
         document.getElementById(`bhp-${u.uid}`).style.width = `${hpPct}%`;
-        document.getElementById(`bhptxt-${u.uid}`).textContent = u.alive ? `${Math.round(hpPct)}%` : '撤退';
+        document.getElementById(`bhptxt-${u.uid}`).textContent = u.alive ? `${Math.round(hpPct)}%` : `${Math.ceil(u.respawnTimer)}s`;
         document.getElementById(`bstat-${u.uid}`).textContent = status;
+        const brev = document.getElementById(`brev-${u.uid}`);
+        if (brev) brev.textContent = u.alive ? '' : `${Math.ceil(u.respawnTimer)}s`;
       }
 
       if (u.uid === this.selectedUid) {
@@ -3580,18 +3699,156 @@ const App = {
       const tok = document.getElementById(`vtok-${u.uid}`);
       if (tok) {
         tok.classList.toggle('dead', !u.alive);
-        tok.classList.toggle('in-castle', u.inCastle);
-        tok.classList.toggle('charging', u.isCharging);
-        tok.classList.toggle('walkshoot', u.general.type === 'arc' && u.walkShootTimer > 0);
+        tok.classList.toggle('in-castle', u.alive && u.inCastle);
+        tok.classList.toggle('charging', u.alive && u.isCharging);
         const hpEl = document.getElementById(`vthp-${u.uid}`);
-        if (hpEl) hpEl.style.width = `${hpPct}%`;
-        tok.style.left = `${Math.max(9, Math.min(91, (u.x / FIELD_W + 0.5) * 100))}%`;
-        const topPct = u.inCastle ? 93 : Math.max(8, Math.min(84, ((u.z + CASTLE_Z) / (CASTLE_Z * 1.95)) * 87));
-        tok.style.top  = `${topPct}%`;
+        if (hpEl) hpEl.style.width = `${u.alive ? hpPct : 0}%`;
+        const revEl = document.getElementById(`vtrev-${u.uid}`);
+        if (revEl && !u.alive) {
+          revEl.innerHTML = `<span>${Math.ceil(u.respawnTimer)}s</span><small>${u.rallyInCastle ? '城內待命' : '出城前進'}</small>`;
+        }
+        // When dead, display token right at player's dragged pre-deploy spot!
+        const dispX = u.alive ? u.x : u.rallyX;
+        const dispZ = u.alive ? u.z : u.rallyZ;
+        const inC = u.alive ? u.inCastle : u.rallyInCastle;
+        const raw = worldToPadPx(dispX, dispZ, inC, 58);
+        playerPadItems.push({ uid: u.uid, el: tok, x: raw.x, y: raw.y, inC, anchored: draggingUids.has(u.uid) });
       }
     }
 
+    this.resolvePadCardOverlap(playerPadItems, padW, padH, 44, 58, 4);
+    this.vpadResolvedPos.clear();
+    for (const it of playerPadItems) {
+      it.el.style.left = `${it.x.toFixed(1)}px`;
+      it.el.style.top = `${it.y.toFixed(1)}px`;
+      this.vpadResolvedPos.set(it.uid, { x: it.x, y: it.y });
+    }
+
+    this.drawVpadCommands();
     this.drawMinimap();
+  },
+
+  // Deterministic 2D AABB separation so same-side cards on the Virtual Pad NEVER overlap
+  resolvePadCardOverlap(items, padW, padH, cardW, cardH, gap = 4) {
+    if (items.length <= 1) return;
+    const minX = cardW / 2 + 4;
+    const maxX = Math.max(minX, padW - cardW / 2 - 4);
+    const minY = cardH / 2 + 16;
+    const maxFieldY = Math.max(minY, padH * 0.85 - cardH / 2 - 2);
+    const castleY = Math.min(padH - cardH / 2 - 4, padH * 0.915);
+
+    // 1. In-castle strip cards: spread cleanly side-by-side along X
+    const castleItems = items.filter(it => it.inC);
+    if (castleItems.length > 0) {
+      castleItems.sort((a, b) => a.x - b.x || a.uid - b.uid);
+      const availW = Math.max(0, maxX - minX);
+      const reqX = castleItems.length > 1 ? Math.min(cardW + gap, availW / (castleItems.length - 1)) : (cardW + gap);
+      for (let iter = 0; iter < 8; iter++) {
+        for (let i = 0; i < castleItems.length - 1; i++) {
+          const a = castleItems[i], b = castleItems[i + 1];
+          const dx = b.x - a.x;
+          if (dx < reqX) {
+            const pen = reqX - dx;
+            if (a.anchored && !b.anchored) b.x += pen;
+            else if (b.anchored && !a.anchored) a.x -= pen;
+            else { a.x -= pen * 0.5; b.x += pen * 0.5; }
+          }
+        }
+        for (const it of castleItems) {
+          it.x = Math.max(minX, Math.min(maxX, it.x));
+          it.y = castleY;
+        }
+      }
+    }
+
+    // 2. Battlefield cards: iterative 2D box separation (dragged card stays anchored under finger!)
+    const fieldItems = items.filter(it => !it.inC);
+    const reqW = cardW + gap;
+    const reqH = cardH + gap;
+    for (let iter = 0; iter < 10; iter++) {
+      let anyOverlap = false;
+      for (let i = 0; i < fieldItems.length; i++) {
+        for (let j = i + 1; j < fieldItems.length; j++) {
+          const a = fieldItems[i], b = fieldItems[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const ox = reqW - Math.abs(dx);
+          const oy = reqH - Math.abs(dy);
+          if (ox > 0 && oy > 0) {
+            anyOverlap = true;
+            let pushX = 0, pushY = 0;
+            if (ox <= oy) {
+              const sgn = Math.abs(dx) > 0.5 ? Math.sign(dx) : (b.uid > a.uid ? 1 : -1);
+              pushX = sgn * ox;
+            } else {
+              const sgn = Math.abs(dy) > 0.5 ? Math.sign(dy) : (b.uid > a.uid ? 1 : -1);
+              pushY = sgn * oy;
+            }
+            if (a.anchored && !b.anchored) {
+              b.x += pushX; b.y += pushY;
+            } else if (b.anchored && !a.anchored) {
+              a.x -= pushX; a.y -= pushY;
+            } else {
+              a.x -= pushX * 0.5; a.y -= pushY * 0.5;
+              b.x += pushX * 0.5; b.y += pushY * 0.5;
+            }
+          }
+        }
+      }
+      for (const it of fieldItems) {
+        it.x = Math.max(minX, Math.min(maxX, it.x));
+        it.y = Math.max(minY, Math.min(maxFieldY, it.y));
+      }
+      if (!anyOverlap) break;
+    }
+  },
+
+  drawVpadCommands() {
+    const c = document.getElementById('vpad-cmd-canvas');
+    if (!c || !this.sim) return;
+    const surf = document.getElementById('vpad-surface');
+    const w = surf.clientWidth, h = surf.clientHeight;
+    if (!w || !h) return;
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, w, h);
+
+    const toXY = (wx, wz, inC) => ({
+      x: Math.max(0.09, Math.min(0.91, wx / FIELD_W + 0.5)) * w,
+      y: inC
+        ? Math.min(h - 33, h * 0.915)
+        : Math.max(0.08, Math.min(0.82, ((wz + CASTLE_Z) / (CASTLE_Z * 1.95)) * 0.87)) * h
+    });
+
+    for (const u of this.sim.units.filter(x => x.side === 'player' && x.alive && !x.inCastle)) {
+      const dist = Math.hypot(u.tx - u.x, u.tz - u.z);
+      if (dist < 0.7) continue; // Hide clutter once arrived!
+      const isSel = (u.uid === this.selectedUid);
+      const from = this.vpadResolvedPos.get(u.uid) || toXY(u.x, u.z, false);
+      const toInC = u.tz >= CASTLE_Z - 0.15;
+      const to = toXY(u.tx, u.tz, toInC);
+
+      g.save();
+      g.strokeStyle = isSel ? 'rgba(255, 229, 138, 0.92)' : 'rgba(255, 255, 255, 0.34)';
+      g.lineWidth = isSel ? 2.6 : 1.4;
+      g.setLineDash(isSel ? [6, 4] : [4, 4]);
+      g.beginPath(); g.moveTo(from.x, from.y); g.lineTo(to.x, to.y); g.stroke();
+      g.setLineDash([]);
+
+      // Clean destination marker + directional arrowhead
+      const ang = Math.atan2(to.y - from.y, to.x - from.x);
+      const hl = isSel ? 9 : 6;
+      g.fillStyle = isSel ? '#ffe588' : 'rgba(255,255,255,0.48)';
+      g.beginPath();
+      g.moveTo(to.x, to.y);
+      g.lineTo(to.x - hl * Math.cos(ang - 0.45), to.y - hl * Math.sin(ang - 0.45));
+      g.lineTo(to.x - hl * Math.cos(ang + 0.45), to.y - hl * Math.sin(ang + 0.45));
+      g.closePath(); g.fill();
+
+      g.beginPath(); g.arc(to.x, to.y, isSel ? 5.5 : 3.2, 0, Math.PI * 2);
+      g.strokeStyle = isSel ? '#ffe588' : 'rgba(255,255,255,0.42)';
+      g.lineWidth = 1.5; g.stroke();
+      g.restore();
+    }
   },
 
   drawMinimap() {
@@ -3640,6 +3897,7 @@ const App = {
     document.getElementById('cutin-overlay').classList.remove('show');
     document.getElementById('defeat-overlay').className = '';
     document.getElementById('ult-theater').className = '';
+    document.getElementById('dmg-judge-overlay').classList.remove('show');
     if (this.cutscenePlayer) this.cutscenePlayer.stop();
     document.getElementById('deck-view').style.display = 'flex';
   },
@@ -3692,12 +3950,7 @@ const App = {
         th.className = '';
         this.ren.cutinFocus = null;
         if (this.cutscenePlayer) this.cutscenePlayer.stop();
-        while (this.pendingPostVfx.length) this.ren.spawnVFX(this.pendingPostVfx.shift());
-        if (this.pendingResolveSteps && this.pendingResolveSteps.length) {
-          this.resolveQueue.push(...this.pendingResolveSteps);
-          this.pendingResolveSteps = [];
-          this.resolveTimer = 0.01;
-        }
+        while (this.pendingPostVfx.length) this.handlePostVfxItem(this.pendingPostVfx.shift());
       }
       this.ren.render(0, realDt, this.selectedUid, null);
       if (this.cutscenePlayer) this.cutscenePlayer.updateAndDraw(realDt);
@@ -3713,54 +3966,10 @@ const App = {
         this.cutinPauseTimer = 0;
         document.getElementById('cutin-overlay').classList.remove('show');
         this.ren.cutinFocus = null;
-        while (this.pendingPostVfx.length) this.ren.spawnVFX(this.pendingPostVfx.shift());
-        if (this.pendingResolveSteps && this.pendingResolveSteps.length) {
-          this.resolveQueue.push(...this.pendingResolveSteps);
-          this.pendingResolveSteps = [];
-          this.resolveTimer = 0.01;
+        if (this.cutscenePlayer && this.pendingCutinMeta) {
+          this.cutscenePlayer.start(this.pendingCutinMeta.kind, this.pendingCutinMeta.color, this.pendingCutinMeta.title);
         }
-      }
-      this.ren.render(0, realDt, this.selectedUid, null);
-      this.updateHUD();
-      this.rafId = requestAnimationFrame(t => this.loop(t));
-      return;
-    }
-
-    // Paused Step-by-Step Stratagem Resolution (Damage 1-by-1 / Buff / Debuff Animations!)
-    if (this.resolveQueue.length > 0 || this.resolveTimer > 0) {
-      this.resolveTimer -= realDt;
-      if (this.resolveTimer <= 0 && this.resolveQueue.length > 0) {
-        const step = this.resolveQueue.shift();
-        this.resolveTimer = step.delay || 0.55;
-        if (step.kind === 'damage_one') {
-          const res = step.apply();
-          if (res) {
-            sfx.judgeHit(step.spellKind);
-            this.ren.spawnVFX({ type: res.vfxType, x: res.x, z: res.z });
-            this.spawnCallout({ x: res.x, z: res.z, text: res.text, color: res.color });
-          } else {
-            this.resolveTimer = 0.05;
-          }
-        } else if (step.kind === 'buff_group' || step.kind === 'debuff_group') {
-          const items = step.apply() || [];
-          if (items.length) {
-            if (step.kind === 'buff_group') sfx.buffPop(); else sfx.debuffPop();
-            items.forEach(it => {
-              this.ren.spawnVFX({ type: step.kind === 'buff_group' ? 'VFX_UNIT_BUFF' : 'VFX_UNIT_DEBUFF', x: it.x, z: it.z, color: it.vfxColor });
-              this.spawnCallout({ x: it.x, z: it.z, text: it.text, color: it.color });
-            });
-          } else {
-            this.resolveTimer = 0.1;
-          }
-        }
-      }
-      if (this.resolveQueue.length === 0 && this.resolveTimer <= 0) {
-        while (this.sim.events.length) {
-          const ev = this.sim.events.shift();
-          if (ev.type === 'RETREAT_CUTIN') { this.triggerDefeatSlashPause(ev); break; }
-          else if (ev.type === 'CALLOUT') this.spawnCallout(ev);
-          else this.ren.spawnVFX(ev);
-        }
+        while (this.pendingPostVfx.length) this.handlePostVfxItem(this.pendingPostVfx.shift());
       }
       this.ren.render(0, realDt, this.selectedUid, null);
       this.updateHUD();
@@ -3790,6 +3999,17 @@ const App = {
       if (this.sim.finished) this.showResult();
     }
 
+    if (this.postZoomTimer > 0) {
+      this.postZoomTimer -= realDt;
+      if (this.postZoomTimer <= 0) { this.postZoomTimer = 0; this.ren.cutinFocus = null; }
+    }
+    if (this.dmgJudgeTimer > 0) {
+      this.dmgJudgeTimer -= realDt;
+      if (this.dmgJudgeTimer <= 0) {
+        this.dmgJudgeTimer = 0;
+        document.getElementById('dmg-judge-overlay').classList.remove('show');
+      }
+    }
     this.ren.render(this.paused ? 0 : realDt * this.speedMul, realDt, this.selectedUid, this.dragState);
     if (this.cutscenePlayer) this.cutscenePlayer.updateAndDraw(realDt);
     this.updateHUD();
