@@ -6,10 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="screen-orientation" content="landscape">
-<meta name="x5-orientation" content="landscape">
+<meta name="screen-orientation" content="portrait">
+<meta name="x5-orientation" content="portrait">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰 網頁版 v3.0</title>
+<title>三國志大戰 網頁版 v3.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -20,10 +20,10 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <style>
   :root {
-    --bg-dark: #0b090d;
+    --bg-dark: #09070c;
     --panel-bg: #151118;
     --panel-bg-2: #1c1721;
-    --panel-border: #4a3a24;
+    --panel-border: #524026;
     --gold: #d9b15f;
     --gold-bright: #ffe599;
     --crimson: #b82929;
@@ -33,44 +33,52 @@
     --shu: #2e8f49;
     --wu: #1e6ec7;
     --qun: #8a7f72;
+    --vtok-w: 42px;
+    --vtok-h: 56px;
+    --vgh-w: 38px;
+    --vgh-h: 50px;
+    --ven-w: 34px;
+    --ven-h: 46px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   html, body {
     position: fixed; inset: 0;
     width: 100vw; height: 100vh; height: 100dvh;
     overflow: hidden; overscroll-behavior: none; touch-action: none;
-    background: var(--bg-dark); color: var(--text-main);
+    background: radial-gradient(ellipse at 50% 0%, #201614 0%, #09070c 68%, #040307 100%);
+    color: var(--text-main);
     font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", "Heiti TC", serif;
+    display: flex; justify-content: center; align-items: stretch;
   }
   button { font-family: inherit; cursor: pointer; border: none; outline: none; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: #100d13; }
   ::-webkit-scrollbar-thumb { background: #52412a; border-radius: 3px; }
 
-  /* MANDATORY FULLSCREEN LANDSCAPE LOCK (Blocks Portrait Play on Mobile & Tablet!) */
-  #portrait-lock {
+  /* FORCED PORTRAIT ORIENTATION LOCK (Touch Landscape Devices -> Prompt Vertical Hold!) */
+  #landscape-lock {
     display: none; position: fixed; inset: 0; z-index: 99999;
     background: radial-gradient(circle at 50% 42%, #281915 0%, #0d090e 65%, #050407 100%);
     flex-direction: column; align-items: center; justify-content: center;
-    padding: 28px; text-align: center; gap: 16px;
+    padding: 24px; text-align: center; gap: 14px;
   }
-  #portrait-lock.active { display: flex !important; }
-  @media (orientation: portrait) {
-    #portrait-lock { display: flex !important; }
+  #landscape-lock.active { display: flex !important; }
+  @media (orientation: landscape) and (pointer: coarse) {
+    body:not(.allow-centered-portrait) #landscape-lock { display: flex !important; }
   }
   .pl-device-wrap {
-    width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;
+    width: 88px; height: 88px; display: flex; align-items: center; justify-content: center;
     border-radius: 50%; background: rgba(217,177,95,0.12); border: 2px solid var(--gold);
     box-shadow: 0 0 32px rgba(217,177,95,0.35);
   }
   .pl-device-svg {
-    width: 52px; height: 52px; stroke: var(--gold-bright); fill: none; stroke-width: 2.2;
-    animation: rotateDeviceAnim 2.2s ease-in-out infinite;
+    width: 48px; height: 48px; stroke: var(--gold-bright); fill: none; stroke-width: 2.2;
+    animation: rotateToPortraitAnim 2.2s ease-in-out infinite;
   }
-  @keyframes rotateDeviceAnim {
-    0%, 20% { transform: rotate(0deg); }
-    55%, 80% { transform: rotate(-90deg); }
-    100% { transform: rotate(0deg); }
+  @keyframes rotateToPortraitAnim {
+    0%, 20% { transform: rotate(-90deg); }
+    55%, 80% { transform: rotate(0deg); }
+    100% { transform: rotate(-90deg); }
   }
   .pl-seal {
     display: inline-block; padding: 3px 14px; border-radius: 4px;
@@ -78,54 +86,75 @@
     font-size: 12px; font-weight: 900; letter-spacing: 3px;
   }
   .pl-title {
-    font-size: 24px; font-weight: 900; color: var(--gold-bright); letter-spacing: 4px;
+    font-size: 22px; font-weight: 900; color: var(--gold-bright); letter-spacing: 4px;
     text-shadow: 0 2px 12px rgba(217,177,95,0.5);
   }
   .pl-desc {
-    font-size: 13px; color: #e2d7c5; line-height: 1.7; max-width: 320px;
+    font-size: 13px; color: #e2d7c5; line-height: 1.65; max-width: 340px;
   }
+  .pl-btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
   .pl-fs-btn {
-    margin-top: 6px; padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 900;
+    padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 900;
     letter-spacing: 2px; background: linear-gradient(135deg, #b88128, #fae08e, #a8701d);
     color: #181004; box-shadow: 0 4px 18px rgba(217,177,95,0.45);
   }
+  .pl-alt-btn {
+    padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 800;
+    letter-spacing: 1px; background: rgba(34,26,42,0.92); color: #e5d8c0;
+    border: 1px solid #6b532e;
+  }
 
   #toast {
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: rgba(18,14,22,0.96); border: 1px solid var(--gold); color: var(--gold-bright);
     padding: 8px 18px; border-radius: 8px; font-size: 13px; z-index: 1000;
-    opacity: 0; pointer-events: none; transition: all 0.25s ease;
+    opacity: 0; pointer-events: none; transition: all 0.25s ease; white-space: nowrap;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ================= DECK BUILDER VIEW ================= */
+  /* FORCED PORTRAIT CABINET SHELL (Full-Bleed on Portrait Devices, Centered Cabinet Frame on Desktop/Wide!) */
+  #deck-view, #battle-view {
+    width: 100%; height: 100%; max-width: 100vw;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  @media (min-aspect-ratio: 1/1) {
+    #deck-view, #battle-view {
+      width: min(100vw, calc(100dvh * 0.75));
+      max-width: 820px;
+      border-left: 2px solid #594426;
+      border-right: 2px solid #594426;
+      box-shadow: 0 0 60px rgba(0,0,0,0.95), 0 0 0 1px rgba(217,177,95,0.22);
+    }
+  }
+
+  /* ================= PORTRAIT DECK BUILDER VIEW ================= */
   #deck-view {
-    display: flex; flex-direction: column; width: 100%; height: 100%;
-    padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
+    display: flex; flex-direction: column;
     background: radial-gradient(ellipse at 50% -10%, #2d1f18 0%, #120e14 55%, #09070b 100%);
   }
   .deck-header {
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-    padding: 10px 16px; background: linear-gradient(180deg, #1e171f 0%, #130f16 100%);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+    padding: 8px 12px; background: linear-gradient(180deg, #1e171f 0%, #130f16 100%);
     border-bottom: 2px solid var(--panel-border); box-shadow: 0 4px 18px rgba(0,0,0,0.5);
   }
-  .brand-title { display: flex; align-items: center; gap: 10px; }
+  .brand-title { display: flex; align-items: center; gap: 8px; }
   .brand-seal {
-    width: 30px; height: 30px; border-radius: 4px; background: #a82020; border: 1px solid #ff8c7a;
-    color: #fff4d6; font-weight: 900; font-size: 15px; display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 4px; background: #a82020; border: 1px solid #ff8c7a;
+    color: #fff4d6; font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center;
     box-shadow: inset 0 0 6px rgba(0,0,0,0.45);
   }
   .brand-title h1 {
-    font-size: 20px; letter-spacing: 3px; color: var(--gold-bright);
+    font-size: 18px; letter-spacing: 2px; color: var(--gold-bright);
     text-shadow: 0 2px 10px rgba(217,177,95,0.45);
   }
   .brand-badge {
-    font-size: 11px; padding: 2px 8px; border-radius: 4px;
-    background: rgba(217,177,95,0.14); border: 1px solid rgba(217,177,95,0.45); color: var(--gold);
+    font-size: 10px; padding: 2px 7px; border-radius: 4px;
+    background: rgba(217,177,95,0.16); border: 1px solid rgba(217,177,95,0.48); color: var(--gold-bright);
   }
-  .preset-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .preset-bar { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
   .preset-btn {
-    padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 700;
+    padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 700;
     background: #221c28; color: var(--text-main); border: 1px solid #44374c; transition: 0.15s;
   }
   .preset-btn:hover { border-color: var(--gold); color: var(--gold-bright); }
@@ -134,151 +163,256 @@
   .preset-btn.wu  { border-left: 3px solid var(--wu); }
   .preset-btn.qun { border-left: 3px solid var(--qun); }
 
-  .deck-main { flex: 1; display: flex; overflow: hidden; min-height: 0; }
-  .roster-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 10px 14px; }
+  .deck-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .roster-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 8px 10px 4px; min-height: 0; }
   .filter-row {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; gap: 6px; flex-wrap: wrap;
   }
-  .faction-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .faction-tabs { display: flex; gap: 5px; flex-wrap: wrap; }
   .ftab {
-    padding: 5px 12px; border-radius: 16px; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 700;
     background: #1d1823; color: var(--text-muted); border: 1px solid #382f42; transition: 0.15s;
   }
   .ftab.active { background: linear-gradient(180deg, #f3cf7a, #c7963c); color: #161006; border-color: var(--gold-bright); }
   .roster-grid {
     flex: 1; overflow-y: auto; display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(144px, 1fr)); gap: 12px;
-    padding: 2px 6px 16px 2px; align-content: start;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px;
+    padding: 2px 4px 10px 2px; align-content: start;
   }
 
   .gcard {
-    position: relative; height: 238px; border-radius: 8px; overflow: hidden;
+    position: relative; height: 210px; border-radius: 7px; overflow: hidden;
     border: 2px solid #56452d; background: #141118; cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,0.45);
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
-  .gcard:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(0,0,0,0.7); }
+  .gcard:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,0.7); }
   .gcard.selected {
     border-color: var(--gold-bright);
-    box-shadow: 0 0 0 2px rgba(255,229,153,0.55), 0 10px 24px rgba(217,177,95,0.4);
+    box-shadow: 0 0 0 2px rgba(255,229,153,0.55), 0 8px 20px rgba(217,177,95,0.45);
   }
   .gcard img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .gcard-top {
-    position: absolute; top: 0; left: 0; right: 0; padding: 5px 6px;
+    position: absolute; top: 0; left: 0; right: 0; padding: 4px 5px;
     display: flex; justify-content: space-between; align-items: center;
     background: linear-gradient(180deg, rgba(8,6,10,0.92) 0%, rgba(8,6,10,0) 100%);
   }
   .cost-pill {
-    font-size: 11px; font-weight: 900; padding: 1px 6px; border-radius: 4px;
+    font-size: 10px; font-weight: 900; padding: 1px 5px; border-radius: 4px;
     background: rgba(14,10,16,0.9); border: 1px solid var(--gold); color: var(--gold-bright);
   }
-  .unit-pill { font-size: 11px; font-weight: 800; padding: 1px 6px; border-radius: 4px; color: #fff; }
+  .unit-pill { font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px; color: #fff; }
   .gcard-info-btn {
-    position: absolute; top: 30px; right: 5px; width: 22px; height: 22px; border-radius: 50%;
-    background: rgba(14,11,18,0.85); border: 1px solid rgba(217,177,95,0.75); color: var(--gold-bright);
-    font-size: 11px; display: flex; align-items: center; justify-content: center; z-index: 3;
+    position: absolute; top: 26px; right: 4px; width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(14,11,18,0.86); border: 1px solid rgba(217,177,95,0.78); color: var(--gold-bright);
+    font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 3;
   }
   .gcard-info-btn:hover { background: var(--gold); color: #120e08; }
   .gcard-bottom {
-    position: absolute; bottom: 0; left: 0; right: 0; padding: 22px 7px 6px;
-    background: linear-gradient(0deg, rgba(9,7,12,0.98) 32%, rgba(9,7,12,0.75) 75%, rgba(9,7,12,0) 100%);
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 18px 6px 5px;
+    background: linear-gradient(0deg, rgba(9,7,12,0.98) 36%, rgba(9,7,12,0.75) 76%, rgba(9,7,12,0) 100%);
   }
-  .gcard-name-row { display: flex; justify-content: space-between; align-items: baseline; }
-  .gcard-name { font-size: 14px; font-weight: 900; color: #fff; letter-spacing: 1px; }
-  .gcard-stats { font-size: 11px; font-weight: 800; color: var(--gold-bright); }
-  .gcard-strat { font-size: 10px; color: #dcd2c2; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gcard-traits { display: flex; gap: 3px; margin-top: 3px; flex-wrap: wrap; }
+  .gcard-name-row { display: flex; justify-content: space-between; align-items: baseline; gap: 3px; }
+  .gcard-name { font-size: 13px; font-weight: 900; color: #fff; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gcard-stats { font-size: 10px; font-weight: 800; color: var(--gold-bright); white-space: nowrap; }
+  .gcard-strat { font-size: 9px; color: #dcd2c2; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gcard-traits { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; }
   .trait-tag {
-    font-size: 9px; padding: 1px 4px; border-radius: 3px;
+    font-size: 8px; padding: 1px 3px; border-radius: 3px;
     background: rgba(217,177,95,0.22); border: 1px solid rgba(217,177,95,0.5); color: var(--gold-bright);
   }
   .selected-check {
-    display: none; position: absolute; top: 30px; left: 5px; padding: 1px 6px; border-radius: 4px;
-    background: var(--gold-bright); color: #120d06; font-size: 10px; font-weight: 900;
+    display: none; position: absolute; top: 26px; left: 4px; padding: 1px 5px; border-radius: 4px;
+    background: var(--gold-bright); color: #120d06; font-size: 9px; font-weight: 900;
   }
   .gcard.selected .selected-check { display: block; }
 
+  /* Portrait Bottom Docked Deck Tray */
   .deck-sidebar {
-    width: 315px; min-width: 270px; background: linear-gradient(180deg, #18131d 0%, #120e16 100%);
-    border-left: 2px solid var(--panel-border); display: flex; flex-direction: column;
-    padding: 12px; gap: 10px; overflow-y: auto;
+    width: 100%; flex-shrink: 0;
+    background: linear-gradient(180deg, #191420 0%, #100c14 100%);
+    border-top: 2px solid var(--panel-border);
+    display: flex; flex-direction: column;
+    padding: 8px 10px; gap: 7px;
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.65);
   }
-  .deck-box { background: #100d14; border: 1px solid #352b22; border-radius: 8px; padding: 10px; }
-  .deck-box h3 { font-size: 13px; color: var(--gold-bright); margin-bottom: 6px; display: flex; justify-content: space-between; }
-  .cost-bar-wrap { height: 8px; background: #26202e; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .deck-box { background: #100d14; border: 1px solid #352b22; border-radius: 7px; padding: 7px 9px; }
+  .deck-box-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    font-size: 12px; color: var(--gold-bright); font-weight: 900; margin-bottom: 5px;
+  }
+  .deck-meta { display: flex; gap: 10px; font-size: 10px; color: var(--text-muted); font-weight: 700; }
+  .cost-bar-wrap { height: 6px; background: #26202e; border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
   .cost-bar-fill { height: 100%; background: linear-gradient(90deg, #b88329, #ffe599); transition: width 0.2s; }
-  .deck-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
-  .deck-slots { display: flex; flex-direction: column; gap: 6px; min-height: 146px; }
+  .deck-slots {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; min-height: 46px; align-items: center;
+  }
   .deck-slot-item {
-    display: flex; align-items: center; gap: 8px; padding: 5px 7px; border-radius: 6px;
-    background: #1b1622; border: 1px solid #382f42;
+    display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px;
+    background: #1b1622; border: 1px solid #3c3248; flex-shrink: 0; min-width: 112px;
   }
-  .deck-slot-item img { width: 32px; height: 42px; object-fit: cover; border-radius: 4px; }
+  .deck-slot-item img { width: 28px; height: 38px; object-fit: cover; border-radius: 3px; }
   .deck-slot-info { flex: 1; min-width: 0; }
-  .deck-slot-info .n { font-size: 12px; font-weight: 800; display: flex; justify-content: space-between; }
-  .deck-slot-info .s { font-size: 10px; color: var(--text-muted); }
-  .slot-rm { background: transparent; color: #c77; font-size: 14px; padding: 2px 5px; }
+  .deck-slot-info .n { font-size: 11px; font-weight: 800; display: flex; justify-content: space-between; gap: 4px; }
+  .deck-slot-info .s { font-size: 9px; color: var(--text-muted); }
+  .slot-rm { background: transparent; color: #c77; font-size: 13px; padding: 1px 4px; }
   .slot-rm:hover { color: #ff6b6b; }
-  .cfg-select {
-    width: 100%; padding: 6px 8px; border-radius: 5px; background: #1c1724;
-    color: var(--text-main); border: 1px solid #44384f; font-size: 12px; font-family: inherit;
+
+  .deck-bottom-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: stretch;
   }
-  .cfg-label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; margin-top: 6px; }
+  .deck-cfg-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 8px;
+  }
+  .cfg-field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .cfg-select {
+    width: 100%; padding: 5px 6px; border-radius: 5px; background: #1c1724;
+    color: var(--text-main); border: 1px solid #44384f; font-size: 11px; font-family: inherit;
+  }
+  .cfg-label { display: block; font-size: 10px; color: var(--text-muted); font-weight: 700; }
   .start-battle-btn {
-    width: 100%; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: 900; letter-spacing: 4px;
+    min-width: 108px; padding: 10px 18px; border-radius: 8px; font-size: 18px; font-weight: 900; letter-spacing: 4px;
     background: linear-gradient(135deg, #b88128 0%, #fae08e 50%, #a8701d 100%);
-    color: #181004; box-shadow: 0 4px 18px rgba(217,177,95,0.4); transition: 0.15s;
+    color: #181004; box-shadow: 0 4px 18px rgba(217,177,95,0.42); transition: 0.15s;
+    display: flex; align-items: center; justify-content: center;
   }
   .start-battle-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
   .start-battle-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
-  /* ================= BATTLE VIEW (ARCADE 3-COLUMN: LEFT SKILLS / CENTER 3D / RIGHT PAD) ================= */
+  /* ================= PORTRAIT DUAL-SCREEN ARCADE BATTLE VIEW ================= */
   #battle-view {
-    display: none; flex-direction: column; width: 100%; height: 100%; background: #0a080c;
+    display: none; flex-direction: column; background: #0a080c; overflow: hidden;
   }
   .battle-topbar {
-    height: 38px; min-height: 38px; background: linear-gradient(180deg, #1b1620 0%, #110e15 100%);
+    height: 34px; min-height: 34px; background: linear-gradient(180deg, #1c1622 0%, #110d15 100%);
     border-bottom: 1px solid var(--panel-border);
-    display: flex; align-items: center; justify-content: space-between; padding: 0 10px; gap: 8px;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 8px; gap: 6px;
   }
-  .mode-switch { display: flex; gap: 3px; background: #0c0a10; padding: 3px; border-radius: 6px; border: 1px solid #3a3022; }
+  .mode-switch { display: flex; gap: 2px; background: #0c0a10; padding: 2px; border-radius: 6px; border: 1px solid #3a3022; }
   .mode-btn {
-    padding: 3px 9px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
     background: transparent; color: var(--text-muted); transition: 0.15s; white-space: nowrap;
   }
   .mode-btn.active { background: linear-gradient(180deg, #f0cc74, #bd8c34); color: #161006; }
-  .top-actions { display: flex; gap: 5px; align-items: center; }
+  .top-actions { display: flex; gap: 4px; align-items: center; flex-wrap: nowrap; }
   .top-btn {
-    padding: 4px 9px; border-radius: 4px; font-size: 11px; font-weight: 700;
-    background: #231d2b; color: var(--text-main); border: 1px solid #443850;
+    padding: 3px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;
+    background: #231d2b; color: var(--text-main); border: 1px solid #443850; white-space: nowrap;
   }
   .top-btn:hover { border-color: var(--gold); color: var(--gold-bright); }
 
-  .battle-body { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+  /* DUAL-SCREEN VERTICAL STACK: Upper 3D Battlefield (~45%) + Lower SEGA Arcade Desk Console (~55%) */
+  .battle-body {
+    flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  }
 
-  /* LEFT COLUMN: Left-Hand Stratagems, Hex Morale Gems & Art of War */
+  /* UPPER HALF: Three.js 3D Battlefield + SEGA Arch HUD + All Ver.3 Cutscenes */
+  .col-center {
+    flex: 0 0 45%; width: 100%; min-height: 0;
+    position: relative; overflow: hidden; background: #12100e; --hud-scale: 1;
+    border-bottom: 3px solid #6b4e26;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.88);
+  }
+  #three-container { width: 100%; height: 100%; position: relative; touch-action: none; }
+  #hud-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+  /* LOWER HALF: 3-Column SEGA Arcade Flat Desk Console (Left Info+Stratagem | Center Card Desk | Right Morale+Roster+AoW) */
+  .battle-desk-console {
+    flex: 1; min-height: 0;
+    display: grid; grid-template-columns: 26% minmax(0, 1fr) 26%;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(120,86,42,0.18) 0%, transparent 55%),
+      linear-gradient(180deg, #1b1520 0%, #100c14 100%);
+    overflow: hidden;
+  }
+
+  /* LOWER-LEFT WING: Current General Portrait + Skill Description + Radar + Left Arcade 「戰法・計略」 Button */
   .col-left {
-    width: clamp(148px, 16.5vw, 204px); flex-shrink: 0;
-    background: linear-gradient(180deg, #18131d 0%, #110d15 100%);
-    border-right: 2px solid var(--panel-border); display: flex; flex-direction: column;
+    min-width: 0; min-height: 0;
+    background: linear-gradient(180deg, #19141f 0%, #100c14 100%);
+    border-right: 2px solid var(--panel-border);
+    display: flex; flex-direction: column;
     padding: 6px; gap: 5px; overflow: hidden;
   }
   .left-section-title {
-    font-size: 11px; font-weight: 800; color: var(--gold); letter-spacing: 1px;
+    font-size: 10px; font-weight: 900; color: var(--gold); letter-spacing: 1px;
     display: flex; justify-content: space-between; align-items: center;
   }
+
+  /* Active Selected General Info & Skill Description (Clean, zero redundant button) */
+  #active-skill-panel {
+    flex: 1; min-height: 0; overflow-y: auto;
+    background: linear-gradient(180deg, #1c1624 0%, #110d17 100%);
+    border: 1px solid #6b532e; border-radius: 7px; padding: 6px;
+    display: flex; flex-direction: column; gap: 5px;
+    box-shadow: inset 0 0 14px rgba(217,177,95,0.08);
+  }
+  .asp-head { display: flex; gap: 6px; align-items: center; }
+  .asp-head img {
+    width: 48px; height: 64px; object-fit: cover; border-radius: 5px;
+    border: 2px solid var(--gold); flex-shrink: 0;
+  }
+  .asp-meta { flex: 1; min-width: 0; }
+  .asp-name {
+    font-size: 13px; font-weight: 900; color: #fff;
+    display: flex; align-items: center; justify-content: space-between; gap: 3px; flex-wrap: wrap;
+  }
+  .asp-pill {
+    font-size: 9px; padding: 1px 4px; border-radius: 3px; color: #fff; font-weight: 800; white-space: nowrap;
+  }
+  .asp-stats { font-size: 10px; color: var(--gold-bright); margin-top: 2px; font-weight: 800; }
+  .asp-status { font-size: 10px; color: #7af5ae; margin-top: 1px; font-weight: 700; }
+  .asp-desc-box {
+    flex: 1; background: #0d0a11; border: 1px solid #382e42; border-radius: 5px; padding: 5px 6px;
+    font-size: 10.5px; line-height: 1.42; color: #e8decb;
+  }
+  .asp-strat-title {
+    font-size: 11px; font-weight: 900; color: var(--gold-bright); margin-bottom: 2px;
+    display: flex; justify-content: space-between; align-items: center; gap: 4px;
+  }
+  .asp-strat-cost {
+    font-size: 9.5px; padding: 0 5px; border-radius: 3px;
+    background: rgba(217,177,95,0.2); border: 1px solid rgba(255,215,120,0.5); color: #ffe899; white-space: nowrap;
+  }
+
+  /* Tactical Radar Minimap tucked cleanly in Lower-Left Console (Zero 3D Battlefield Clutter!) */
+  .console-minimap-box {
+    flex-shrink: 0; width: 100%; aspect-ratio: 1.44 / 1; max-height: 112px;
+    background: #0d0a12; border: 1.5px solid #755b30; border-radius: 6px;
+    overflow: hidden; position: relative;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+  }
+  .console-minimap-lbl {
+    position: absolute; top: 2px; left: 5px; font-size: 8px; font-weight: 900;
+    color: rgba(255,229,153,0.72); letter-spacing: 1px; pointer-events: none; z-index: 2;
+  }
+  #minimap-canvas { width: 100%; height: 100%; display: block; }
+
+  /* LOWER-RIGHT WING: Hex Morale Gems + Ally Roster (1-5) + Right Arcade 「奧義・兵法」 Button */
+  .col-right-wing {
+    min-width: 0; min-height: 0;
+    background: linear-gradient(180deg, #19141f 0%, #100c14 100%);
+    border-left: 2px solid var(--panel-border);
+    display: flex; flex-direction: column;
+    padding: 6px; gap: 5px; overflow: hidden;
+  }
+
   .morale-box {
-    background: linear-gradient(180deg, #140e18 0%, #0a080f 100%);
-    border: 1px solid #6b532e; border-radius: 7px; padding: 6px 8px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #150f19 0%, #0a080f 100%);
+    border: 1px solid #725830; border-radius: 7px; padding: 5px 6px;
     box-shadow: inset 0 2px 10px rgba(0,0,0,0.75);
   }
-  .morale-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 900; color: var(--gold-bright); margin-bottom: 5px; }
+  .morale-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 11px; font-weight: 900; color: var(--gold-bright); margin-bottom: 4px;
+  }
+  /* Crisp 2 rows x 7 Chunky Hexagonal Flaming Morale Gems (14 max!) */
   .morale-gems {
-    display: flex; align-items: center; gap: 2px; justify-content: space-between;
-    padding: 2px 1px;
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px 2px;
   }
   .m-gem {
-    flex: 1; height: 15px; position: relative;
+    height: 13px; position: relative;
     clip-path: polygon(50% 0%, 100% 24%, 100% 76%, 50% 100%, 0% 76%, 0% 24%);
     background: #241d2c; overflow: hidden;
     box-shadow: inset 0 0 4px rgba(0,0,0,0.9);
@@ -297,81 +431,95 @@
     100% { filter: drop-shadow(0 0 6px rgba(255,220,90,1)); }
   }
 
-  .aow-btn {
-    padding: 8px 10px; border-radius: 7px; text-align: left; font-weight: 900; font-size: 12px;
-    background: linear-gradient(135deg, #542d10 0%, #9c6218 55%, #5c3312 100%);
-    color: var(--gold-bright); border: 1px solid var(--gold);
-    box-shadow: 0 0 14px rgba(217,177,95,0.28); transition: 0.15s;
-    display: flex; align-items: center; justify-content: space-between; gap: 6px;
-  }
-  .aow-btn:hover:not(:disabled) { filter: brightness(1.16); }
-  .aow-btn:disabled { opacity: 0.38; filter: grayscale(0.85); cursor: not-allowed; box-shadow: none; }
-  .aow-sub { display: block; font-size: 10px; font-weight: 400; color: #f3e0c0; margin-top: 2px; }
-  .aow-badge {
-    font-size: 11px; font-weight: 900; padding: 3px 7px; border-radius: 4px;
-    background: rgba(15,10,6,0.65); border: 1px solid var(--gold-bright); color: var(--gold-bright); white-space: nowrap;
-  }
-
-  /* Active Selected Unit Full Stratagem Panel (Left Hand!) */
-  #active-skill-panel {
-    background: linear-gradient(180deg, #1b1522 0%, #110d16 100%);
-    border: 1px solid #6b532e; border-radius: 8px; padding: 8px;
-    display: flex; flex-direction: column; gap: 6px;
-    box-shadow: inset 0 0 14px rgba(217,177,95,0.08);
-  }
-  .asp-head { display: flex; gap: 8px; align-items: center; }
-  .asp-head img {
-    width: 52px; height: 72px; object-fit: cover; border-radius: 6px;
-    border: 2px solid var(--gold); flex-shrink: 0;
-  }
-  .asp-meta { flex: 1; min-width: 0; }
-  .asp-name { font-size: 14px; font-weight: 900; color: #fff; display: flex; align-items: center; justify-content: space-between; }
-  .asp-stats { font-size: 11px; color: var(--gold-bright); margin-top: 2px; font-weight: 700; }
-  .asp-status { font-size: 10px; color: #7af5ae; margin-top: 2px; }
-  .asp-desc-box {
-    background: #0d0a11; border: 1px solid #382e42; border-radius: 6px; padding: 6px 8px;
-    font-size: 11px; line-height: 1.45; color: #e6dccb;
-  }
-  .asp-strat-title {
-    font-size: 12px; font-weight: 900; color: var(--gold-bright); margin-bottom: 2px;
-    display: flex; justify-content: space-between;
-  }
-  .cast-btn-big {
-    width: 100%; padding: 9px 10px; border-radius: 6px; font-size: 13px; font-weight: 900; letter-spacing: 1px;
-    background: #262030; color: #8c8298; border: 1px solid #3f354d; transition: 0.15s;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .cast-btn-big.ready {
-    background: linear-gradient(90deg, #b87c1e, #ffe08a, #c98f29); color: #191004;
-    border-color: var(--gold-bright); box-shadow: 0 0 16px rgba(255,224,138,0.55);
-    animation: pulseGold 1.6s infinite;
-  }
-
-  /* Compact Allied HP Monitor List */
+  /* Compact Allied Roster List (1-5 Quick Select + HP Monitor) */
   #left-hp-list {
-    flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; padding-right: 2px;
+    flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 1px;
   }
   .hp-row-card {
-    display: flex; align-items: center; gap: 6px; padding: 5px 6px; border-radius: 6px;
-    background: #120e17; border: 1px solid #30273b; cursor: pointer; transition: 0.15s;
+    display: flex; align-items: center; gap: 5px; padding: 4px 5px; border-radius: 5px;
+    background: #120e17; border: 1px solid #30273b; cursor: pointer; transition: 0.14s;
   }
-  .hp-row-card.active-sel { border-color: var(--gold-bright); background: #231b2d; box-shadow: 0 0 8px rgba(217,177,95,0.28); }
+  .hp-row-card.active-sel { border-color: var(--gold-bright); background: #261c32; box-shadow: 0 0 8px rgba(217,177,95,0.32); }
   .hp-row-card.dead { opacity: 0.48; filter: grayscale(0.75); }
-  .hp-row-card img { width: 28px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #59472e; }
   .hp-row-mid { flex: 1; min-width: 0; }
-  .hp-row-top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 800; }
-  .hp-row-sub { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); margin-top: 1px; }
-  .hp-row-bar { height: 5px; background: #241e2c; border-radius: 3px; margin-top: 3px; overflow: hidden; }
+  .hp-row-top { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; font-weight: 800; gap: 2px; }
+  .hp-row-top span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hp-row-sub { display: flex; justify-content: space-between; font-size: 8.5px; color: var(--text-muted); margin-top: 1px; }
+  .hp-row-bar { height: 4px; background: #241e2c; border-radius: 2px; margin-top: 2px; overflow: hidden; }
   .hp-row-bar > div { height: 100%; background: linear-gradient(90deg, #27b35d, #6effa1); transition: width 0.12s; }
+
+  /* AUTHENTIC SEGA ARCADE PUSH-BUTTON HOUSING (Left: 戰法・計略 / Right: 奧義・兵法!) */
+  .arcade-btn-deck {
+    flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 6px 5px 5px; border-radius: 10px;
+    background: linear-gradient(180deg, #251c16 0%, #120d10 100%);
+    border: 1.5px solid #6b522c;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.82), 0 3px 10px rgba(0,0,0,0.65);
+  }
+  .arcade-push-btn {
+    position: relative; width: 100%; min-height: 82px; border-radius: 42px;
+    padding: 8px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    transition: transform 0.08s ease, box-shadow 0.16s ease, filter 0.15s ease;
+    border: 3px solid #6d5738;
+    box-shadow: inset 0 4px 10px rgba(255,255,255,0.22), inset 0 -6px 12px rgba(0,0,0,0.65), 0 5px 14px rgba(0,0,0,0.8);
+    text-align: center; overflow: hidden;
+  }
+  .arcade-push-btn::before {
+    content: ''; position: absolute; top: 4px; left: 14%; right: 14%; height: 34%; border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .arcade-push-btn:active:not(:disabled) {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.75), 0 1px 6px rgba(0,0,0,0.7);
+  }
+  .arcade-push-btn:disabled {
+    opacity: 0.36; filter: grayscale(0.88); cursor: not-allowed; box-shadow: none;
+  }
+  .apb-kicker {
+    font-size: 9px; font-weight: 900; letter-spacing: 2px; opacity: 0.92;
+    padding: 0 6px; border-radius: 8px; background: rgba(0,0,0,0.38);
+  }
+  .apb-main {
+    font-size: 14px; font-weight: 900; letter-spacing: 1px; line-height: 1.15;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .apb-sub {
+    font-size: 10px; font-weight: 800; opacity: 0.94;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* Left Arcade Button: 戰法・計略 (Crimson-Gold SEGA Stratagem Dome) */
+  #arcade-cast-btn {
+    background: radial-gradient(circle at 50% 30%, #3d2e38 0%, #201824 68%, #140f18 100%);
+    color: #9e94a8; border-color: #54465c;
+  }
+  #arcade-cast-btn.ready {
+    background: radial-gradient(circle at 50% 26%, #ffdf7a 0%, #e85a1c 42%, #9e1410 82%, #5e0808 100%);
+    color: #fffbe6; border-color: #ffe899;
+    box-shadow: 0 0 22px rgba(255,145,40,0.85), inset 0 4px 12px rgba(255,250,210,0.5), inset 0 -6px 14px rgba(80,8,4,0.8);
+    animation: arcadeStratPulse 1.45s ease-in-out infinite;
+  }
+  #arcade-cast-btn.ready .apb-kicker { background: rgba(65,10,4,0.65); color: #ffe899; }
+  @keyframes arcadeStratPulse {
+    0%, 100% { box-shadow: 0 0 14px rgba(255,130,30,0.72), inset 0 4px 12px rgba(255,250,210,0.45); }
+    50% { box-shadow: 0 0 28px rgba(255,215,90,0.98), inset 0 4px 14px rgba(255,255,230,0.68); }
+  }
+
+  /* Right Arcade Button: 奧義・兵法 (Emerald-Jade Dragon Orb Dome) */
+  #btn-aow {
+    background: radial-gradient(circle at 50% 26%, #9ef7c8 0%, #1d9a5c 44%, #0c5434 84%, #062b1c 100%);
+    color: #f2fff7; border-color: #b5ffd8;
+    box-shadow: 0 0 20px rgba(60,220,140,0.58), inset 0 4px 12px rgba(220,255,235,0.42), inset 0 -6px 14px rgba(4,36,20,0.82);
+  }
+  #btn-aow:hover:not(:disabled) { filter: brightness(1.12); }
+  #btn-aow .apb-kicker { background: rgba(4,36,22,0.6); color: #ffe899; }
+
   @keyframes pulseGold {
     0%, 100% { box-shadow: 0 0 8px rgba(247,214,120,0.35); }
     50% { box-shadow: 0 0 16px rgba(255,229,153,0.75); }
   }
-
-  /* CENTER COLUMN: Three.js 3D Battlefield + Authentic Arcade Arch Gauge Bar */
-  .col-center { flex: 1; position: relative; overflow: hidden; background: #12100e; --hud-scale: 1; }
-  #three-container { width: 100%; height: 100%; position: relative; touch-action: none; }
-  #hud-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 
   /* Authentic SEGA Ver.3 Arch Top Castle HP & 99 Count Bar */
   .arcade-top-hud {
@@ -435,10 +583,10 @@
   #approach-warning.show { opacity: 1; transform: scaleY(1); }
 
   #revive-banner {
-    position: absolute; left: 0; right: 0; bottom: 44px; z-index: 44; pointer-events: none;
+    position: absolute; left: 0; right: 0; bottom: 26px; z-index: 44; pointer-events: none;
     background: linear-gradient(90deg, transparent 0%, rgba(6,24,14,0.86) 20%, rgba(14,52,26,0.92) 50%, rgba(6,24,14,0.86) 80%, transparent 100%);
     border-top: 1px solid rgba(90,255,150,0.6); border-bottom: 1px solid rgba(90,255,150,0.6);
-    padding: 4px 0; text-align: center; font-size: 15px; font-weight: 900; letter-spacing: 4px;
+    padding: 4px 0; text-align: center; font-size: 14px; font-weight: 900; letter-spacing: 4px;
     color: #7dffb0; text-shadow: 0 0 10px rgba(60,255,130,0.85), 0 2px 4px #000;
     opacity: 0; transform: translateY(10px); transition: all 0.22s ease;
   }
@@ -449,14 +597,6 @@
     background: rgba(14,11,18,0.82); border: 1px solid rgba(217,177,95,0.45); color: #efe3ce;
     padding: 4px 12px; border-radius: 14px; font-size: 11px; pointer-events: none; white-space: nowrap;
   }
-
-  /* Compact Wide SEGA Minimap overlaid bottom-left of 3D view (1.43:1 matches battlefield!) */
-  .minimap-float {
-    position: absolute; left: 10px; bottom: 34px; width: 126px; height: 88px; z-index: 14;
-    background: rgba(12,10,16,0.84); border: 1.5px solid #8c6e38; border-radius: 6px;
-    overflow: hidden; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,0.65);
-  }
-  #minimap-canvas { width: 100%; height: 100%; display: block; }
 
   /* Authentic Minimal High-Contrast Arcade Unit Overhead Tags (Proportional across PC / iPad / iPhone!) */
   .unit-tag {
@@ -1019,47 +1159,44 @@
     text-shadow: 0 0 14px #ff3300, 0 3px 0 #4a0606;
   }
 
-  /* RIGHT COLUMN: Wide Authentic SEGA Parchment Flat Card Reader Board (Primary!) */
-  .col-right {
-    width: clamp(220px, 29.5vw, 368px); flex-shrink: 0;
-    background: linear-gradient(180deg, #1b151e 0%, #110d14 100%);
-    border-left: 2px solid var(--panel-border); display: flex; flex-direction: column;
-    padding: 6px 7px; gap: 5px; overflow: hidden;
+  /* LOWER-CENTER COLUMN: Authentic NDS《三國志大戰‧天》Flat Card Reader Desk! */
+  .col-desk {
+    min-width: 0; min-height: 0;
+    background: linear-gradient(180deg, #1d161f 0%, #120e16 100%);
+    display: flex; flex-direction: column;
+    padding: 5px 6px 6px; gap: 4px; overflow: hidden;
   }
-  .quick-cmd-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .desk-toolbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 4px; flex-shrink: 0;
+  }
+  .quick-cmd-bar { display: flex; gap: 3px; flex: 1; }
   .qcmd-btn {
-    padding: 4px 4px; border-radius: 5px; font-size: 10px; font-weight: 800;
-    background: #241e2c; color: var(--gold-bright); border: 1px solid #483b28;
+    flex: 1; padding: 3px 4px; border-radius: 4px; font-size: 10px; font-weight: 800;
+    background: #241e2c; color: var(--gold-bright); border: 1px solid #483b28; white-space: nowrap;
   }
   .qcmd-btn:hover { background: #332a3e; border-color: var(--gold); }
 
   #virtual-pad-wrap {
-    flex: 1; display: flex; flex-direction: column; gap: 4px; min-height: 0;
-  }
-  .vpad-header {
-    display: flex; justify-content: space-between; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 900; color: var(--gold-bright);
+    flex: 1; display: flex; flex-direction: column; gap: 3px; min-height: 0;
   }
   #vpad-live-badge {
-    font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 10px;
+    font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 10px;
     background: rgba(48,160,92,0.22); border: 1px solid rgba(90,230,140,0.5); color: #8dffb5;
-    white-space: nowrap;
+    white-space: nowrap; flex-shrink: 0;
   }
   #vpad-live-badge.cutscene-free {
     background: rgba(240,175,45,0.26); border-color: #ffe28a; color: #fff2b8;
     animation: pulseGold 1.2s infinite;
   }
 
-  /* Authentic SEGA Sangokushi Taisen Parchment Flat Card Board (with Official BOND Grid & Parchment!) */
+  /* Authentic NDS《三國志大戰‧天》BANN_.KPC HD-Upscaled Flat Card Desk! */
   #vpad-surface {
     flex: 1; position: relative; border-radius: 8px; overflow: hidden; touch-action: none;
     background:
-      url('./assets/img/ui/battleboard_grid.webp') center / 100% 100% no-repeat,
-      radial-gradient(ellipse at 50% 48%, rgba(235,204,148,0.22) 0%, rgba(105,68,28,0.28) 100%),
-      url('./assets/img/ui/parchment.webp') center / cover no-repeat,
+      url('./assets/img/ui/ten_board.webp') center / 100% 100% no-repeat,
       linear-gradient(180deg, #b89154 0%, #cfb076 22%, #d4b67c 50%, #c8a66a 82%, #9a7442 100%);
     border: 3px solid #6b4b22;
-    box-shadow: inset 0 0 26px rgba(45,24,8,0.58), 0 4px 16px rgba(0,0,0,0.65);
+    box-shadow: inset 0 0 22px rgba(45,24,8,0.52), 0 4px 16px rgba(0,0,0,0.68);
   }
 
   /* Official zh-Hant Dual Calligraphy Stamp Slam (Beat 2 of Stratagem Cutscene!) */
@@ -1069,7 +1206,7 @@
   #ult-stamp-glyphs.has-glyphs { display: flex; }
   #ult-stamp-glyphs.has-glyphs + .ult-diamond-seal { display: none; }
   #ult-stamp-glyphs img {
-    width: clamp(120px, 16vw, 190px); height: auto;
+    width: clamp(92px, 22vw, 175px); height: auto;
     filter: drop-shadow(0 0 24px rgba(255,195,70,0.92)) drop-shadow(0 8px 16px rgba(0,0,0,0.8));
     transform: scale(2.2) rotate(-8deg); opacity: 0;
     transition: transform 0.22s cubic-bezier(0.14, 0.96, 0.24, 1.08), opacity 0.14s ease;
@@ -1103,36 +1240,34 @@
     display: flex; align-items: center; justify-content: center; gap: 2px;
   }
   .zh-stamp-row img {
-    height: clamp(82px, 13vh, 132px); width: auto;
+    height: clamp(64px, 11vh, 118px); width: auto;
     filter: drop-shadow(0 0 20px rgba(255,195,70,0.9)) drop-shadow(0 6px 14px rgba(0,0,0,0.88));
   }
   .zh-stamp-row.hidden { display: none; }
   .intro-kaizen .zh-stamp-row:not(.hidden) + .intro-kaizen-fallback { display: none; }
 
-  /* Top Zone (0% - 13%): Enemy Brick Wall Siege Strip + Central Recessed Gate Notch! */
+  /* Top Zone (0% - 13%): Translucent Enemy Wall Siege Strip + Central Recessed Gate Notch over ten_board.webp */
   .vpad-enemy-wall {
     position: absolute; top: 0; left: 0; right: 0; height: 13%; z-index: 1; pointer-events: none;
-    background:
-      repeating-linear-gradient(90deg, rgba(45,18,10,0.38) 0 2px, transparent 2px 24px),
-      linear-gradient(180deg, #6e351e 0%, #8c4828 72%, #522514 100%);
-    border-bottom: 3px solid #3f1b0d;
+    background: linear-gradient(180deg, rgba(84,34,18,0.68) 0%, rgba(110,50,24,0.42) 78%, rgba(60,24,12,0.58) 100%);
+    border-bottom: 2px solid rgba(82,36,16,0.82);
     display: flex; align-items: flex-end; justify-content: space-between; padding: 0 6px 2px;
     transition: box-shadow 0.15s, filter 0.15s;
   }
   .vpad-enemy-wall.active-wall {
-    box-shadow: inset 0 0 20px rgba(255,140,40,0.95); filter: brightness(1.22);
+    box-shadow: inset 0 0 20px rgba(255,140,40,0.95); filter: brightness(1.24);
   }
   .vpad-wall-side-lbl {
-    font-size: 9px; font-weight: 900; color: rgba(255,228,185,0.88); letter-spacing: 1px;
+    font-size: 9px; font-weight: 900; color: rgba(255,232,190,0.92); letter-spacing: 1px;
     text-shadow: 0 1px 3px #000;
   }
   /* Central Recessed Metallic/Gold Enemy Gate Notch (城門凹槽!) */
   .vpad-gate-notch {
     position: absolute; top: 0; left: 36%; width: 28%; height: 100%; z-index: 2; pointer-events: none;
-    background: linear-gradient(180deg, #f3e0b5 0%, #c89d4e 52%, #7d4a1b 100%);
-    border-left: 3px solid #3d1d0c; border-right: 3px solid #3d1d0c; border-bottom: 3px solid #ffe494;
+    background: linear-gradient(180deg, rgba(245,222,168,0.86) 0%, rgba(200,152,72,0.82) 55%, rgba(125,74,26,0.88) 100%);
+    border-left: 2.5px solid #3d1d0c; border-right: 2.5px solid #3d1d0c; border-bottom: 2.5px solid #ffe494;
     border-radius: 0 0 7px 7px;
-    box-shadow: inset 0 4px 10px rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.55);
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.48), 0 2px 10px rgba(0,0,0,0.5);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     transition: all 0.15s ease;
   }
@@ -1140,44 +1275,29 @@
     background: linear-gradient(180deg, #fff6cc 0%, #ff9922 65%, #c8240c 100%);
     box-shadow: 0 0 22px rgba(255,130,30,1), inset 0 0 10px #fff;
   }
-  .vpad-gate-notch strong { font-size: 12px; font-weight: 900; color: #4a1206; letter-spacing: 3px; line-height: 1; }
-  .vpad-gate-notch span { font-size: 8px; font-weight: 900; color: #7a1c0a; }
-  .vpad-gate-notch.active-gate strong, .vpad-gate-notch.active-gate span { color: #fff; text-shadow: 0 1px 4px #000; }
+  .vpad-gate-notch strong { font-size: 11px; font-weight: 900; color: #4a1206; letter-spacing: 2px; line-height: 1; }
+  .vpad-gate-notch.active-gate strong { color: #fff; text-shadow: 0 1px 4px #000; }
 
-  /* Parchment Battlefield Watermarks (敵陣 / 自陣) & Center Frontier Line */
-  .vpad-watermark {
-    position: absolute; left: 50%; transform: translateX(-50%); z-index: 1; pointer-events: none;
-    font-size: clamp(22px, 3vw, 34px); font-weight: 900; letter-spacing: 16px; padding-left: 16px;
-    color: rgba(112,72,28,0.32); white-space: nowrap;
-  }
-  .vpad-watermark.enemy-wm { top: 24%; }
-  .vpad-watermark.ally-wm  { top: 58%; }
-  .vpad-attack-lbl {
-    position: absolute; top: 14.5%; left: 8px; right: 8px; z-index: 1; pointer-events: none;
-    display: flex; justify-content: space-between; font-size: 8px; font-weight: 900;
-    letter-spacing: 1px; color: rgba(122,52,22,0.62);
-  }
   .vpad-frontier {
-    position: absolute; left: 0; right: 0; top: 48.5%; height: 2px; z-index: 1; pointer-events: none;
-    background: linear-gradient(90deg, rgba(110,70,26,0.2), rgba(110,70,26,0.58) 50%, rgba(110,70,26,0.2));
+    position: absolute; left: 0; right: 0; top: 48.5%; height: 1.5px; z-index: 1; pointer-events: none;
+    background: linear-gradient(90deg, rgba(110,70,26,0.12), rgba(110,70,26,0.45) 50%, rgba(110,70,26,0.12));
   }
 
   /* Bottom Crenellated Own Wall Divider (84% - 88%) + Deep Own Castle Shelter Bay (88% - 100%) */
   .vpad-own-wall {
     position: absolute; left: 0; right: 0; top: 84%; height: 4%; z-index: 1; pointer-events: none;
-    background:
-      repeating-linear-gradient(90deg, #5e391b 0 14px, #8f5c2e 14px 18px, #5e391b 18px 32px);
+    background: repeating-linear-gradient(90deg, rgba(94,57,27,0.82) 0 12px, rgba(148,96,46,0.86) 12px 16px, rgba(94,57,27,0.82) 16px 28px);
     border-top: 2px solid #3c210e; border-bottom: 2px solid #3c210e;
     box-shadow: 0 -2px 6px rgba(0,0,0,0.35);
     display: flex; align-items: center; justify-content: center;
   }
   .vpad-own-wall span {
-    font-size: 8px; font-weight: 900; color: #ffe5b5; background: rgba(45,22,10,0.82);
-    padding: 0 7px; border-radius: 3px; letter-spacing: 1px;
+    font-size: 8px; font-weight: 900; color: #ffe5b5; background: rgba(45,22,10,0.86);
+    padding: 0 6px; border-radius: 3px; letter-spacing: 1px;
   }
   .vpad-castle-zone {
     position: absolute; left: 0; right: 0; top: 88%; bottom: 0; z-index: 1; pointer-events: none;
-    background: linear-gradient(180deg, rgba(24,84,48,0.62) 0%, rgba(14,54,32,0.88) 100%);
+    background: linear-gradient(180deg, rgba(20,78,44,0.56) 0%, rgba(12,48,28,0.84) 100%);
     display: flex; align-items: flex-end; justify-content: center; padding-bottom: 3px;
     transition: box-shadow 0.15s, background 0.15s;
   }
@@ -1192,9 +1312,9 @@
 
   /* Semi-transparent Enemy Card on Board (Can overlap with Player Cards!) */
   .vpad-enemy-card {
-    position: absolute; width: 34px; height: 46px; transform: translate(-50%, -50%);
+    position: absolute; width: var(--ven-w); height: var(--ven-h); transform: translate(-50%, -50%);
     border-radius: 5px; overflow: hidden; pointer-events: none; z-index: 4;
-    opacity: 0.62;
+    opacity: 0.64;
     border: 2px solid #d91c1c;
     box-shadow: 0 0 0 2px rgba(255,40,40,0.35), 0 2px 10px rgba(160,10,10,0.75);
     animation: enemyCardPulse 1.8s infinite ease-in-out;
@@ -1205,25 +1325,25 @@
   }
   .vpad-enemy-card img { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.2) hue-rotate(-22deg) contrast(1.08); }
   .vpad-enemy-card .ve-badge {
-    position: absolute; top: 0; left: 0; padding: 0 3px; font-size: 8px; font-weight: 900;
+    position: absolute; top: 0; left: 0; padding: 0 3px; font-size: 7.5px; font-weight: 900;
     background: #d91c1c; color: #fff; border-bottom-right-radius: 4px;
   }
   .vpad-enemy-card .ve-type {
-    position: absolute; top: 0; right: 0; padding: 0 3px; font-size: 8px; font-weight: 900;
+    position: absolute; top: 0; right: 0; padding: 0 3px; font-size: 7.5px; font-weight: 900;
     background: rgba(20,10,14,0.85); color: #ffadad; border-bottom-left-radius: 4px;
   }
   .vpad-enemy-card .ve-lbl {
-    position: absolute; bottom: 0; left: 0; right: 0; font-size: 8px; font-weight: 900;
+    position: absolute; bottom: 0; left: 0; right: 0; font-size: 7.5px; font-weight: 900;
     background: rgba(120,12,12,0.88); color: #ffe5e5; text-align: center; padding: 1px 0;
   }
   .vpad-enemy-card .ve-hp {
-    position: absolute; bottom: 12px; left: 2px; right: 2px; height: 3px; background: rgba(0,0,0,0.8);
+    position: absolute; bottom: 11px; left: 2px; right: 2px; height: 3px; background: rgba(0,0,0,0.8);
   }
   .vpad-enemy-card .ve-hp > div { height: 100%; background: #ff5555; }
 
   /* Translucent Ghost Silhouette = Squad's Real-Time Current Position (虛影!) */
   .vpad-ghost {
-    position: absolute; width: 38px; height: 50px; transform: translate(-50%, -50%);
+    position: absolute; width: var(--vgh-w); height: var(--vgh-h); transform: translate(-50%, -50%);
     border-radius: 6px; overflow: hidden; pointer-events: none; z-index: 3;
     opacity: 0.46; border: 1.5px dashed #fff3b0;
     box-shadow: 0 0 10px rgba(255,235,140,0.55);
@@ -1237,7 +1357,7 @@
 
   /* Solid Physical Card = Instant Command Destination (實體指令卡!) */
   .vpad-token {
-    position: absolute; width: 42px; height: 56px; transform: translate(-50%, -50%);
+    position: absolute; width: var(--vtok-w); height: var(--vtok-h); transform: translate(-50%, -50%);
     border-radius: 6px; overflow: hidden; border: 2px solid var(--gold-bright);
     box-shadow: 0 5px 14px rgba(0,0,0,0.78); cursor: grab; touch-action: none; z-index: 6;
   }
@@ -1250,7 +1370,7 @@
   .vpad-token.cmd-wall { border-color: #ffd055; box-shadow: 0 0 14px rgba(255,190,60,0.88); }
   .vpad-token img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
   .vpad-token .vt-lbl {
-    position: absolute; bottom: 0; left: 0; right: 0; font-size: 9px; font-weight: 900;
+    position: absolute; bottom: 0; left: 0; right: 0; font-size: 8.5px; font-weight: 900;
     background: rgba(0,0,0,0.86); color: #fff; text-align: center; padding: 1px 0;
   }
   .vpad-token .vt-hp {
@@ -1259,8 +1379,8 @@
   .vpad-token .vt-hp > div { height: 100%; background: #52ee90; }
   .vpad-token.in-castle { border-color: #56f59a; box-shadow: 0 0 14px rgba(86,245,154,0.85); }
   .vpad-token.in-castle::after {
-    content: '城內回血'; position: absolute; top: 5px; left: 0; right: 0;
-    font-size: 8px; font-weight: 900; text-align: center;
+    content: '城內'; position: absolute; top: 5px; left: 0; right: 0;
+    font-size: 7.5px; font-weight: 900; text-align: center;
     background: rgba(20,120,62,0.9); color: #eafff2; padding: 1px 0;
   }
   .vpad-token.dead {
@@ -1270,19 +1390,19 @@
   .vpad-token .vt-revive {
     display: none; position: absolute; inset: 0; z-index: 5;
     background: rgba(18, 4, 8, 0.68); color: #ffe588;
-    font-size: 16px; font-weight: 900; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 900; align-items: center; justify-content: center;
     flex-direction: column; text-shadow: 0 2px 6px #000; pointer-events: none;
   }
   .vpad-token.dead .vt-revive { display: flex; }
-  .vpad-token .vt-revive small { font-size: 8px; color: #ffadad; letter-spacing: 1px; }
+  .vpad-token .vt-revive small { font-size: 7px; color: #ffadad; letter-spacing: 0.5px; }
   #vpad-cmd-canvas {
     position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none;
   }
-  .hp-row-avatar { position: relative; width: 28px; height: 36px; flex-shrink: 0; }
-  .hp-row-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #59472e; }
+  .hp-row-avatar { position: relative; width: 24px; height: 32px; flex-shrink: 0; }
+  .hp-row-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; border: 1px solid #59472e; }
   .hp-row-revive {
-    display: none; position: absolute; inset: 0; border-radius: 4px;
-    background: rgba(120,10,16,0.82); color: #ffe588; font-size: 11px; font-weight: 900;
+    display: none; position: absolute; inset: 0; border-radius: 3px;
+    background: rgba(120,10,16,0.82); color: #ffe588; font-size: 10px; font-weight: 900;
     align-items: center; justify-content: center;
   }
   .hp-row-card.dead .hp-row-revive { display: flex; }
@@ -1290,19 +1410,19 @@
   /* Damage Stratagem Hit Judgement Center Cards (Authentic Arcade Zoom-in + Hit Cards!) */
   #dmg-judge-overlay {
     position: absolute; inset: 0; z-index: 59; pointer-events: none;
-    display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
     background: radial-gradient(circle at 50% 50%, rgba(25,8,8,0.22) 0%, rgba(5,2,6,0.58) 100%);
   }
   #dmg-judge-overlay.show { display: flex; }
   .dmg-judge-banner {
-    font-size: 20px; font-weight: 900; color: #ffe588; letter-spacing: 4px;
-    padding: 4px 18px; border-radius: 6px; background: rgba(20,8,10,0.88);
+    font-size: 17px; font-weight: 900; color: #ffe588; letter-spacing: 3px;
+    padding: 3px 14px; border-radius: 6px; background: rgba(20,8,10,0.88);
     border: 2px solid #ff6a33; text-shadow: 0 2px 10px #000;
   }
-  .dmg-judge-cards { display: flex; gap: 14px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .dmg-judge-cards { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
   .dmg-jcard {
-    position: relative; width: 126px; height: 178px; border-radius: 8px; overflow: hidden;
-    border: 2px solid #ff5533; box-shadow: 0 0 28px rgba(255,80,30,0.75);
+    position: relative; width: 100px; height: 142px; border-radius: 7px; overflow: hidden;
+    border: 2px solid #ff5533; box-shadow: 0 0 24px rgba(255,80,30,0.75);
     animation: hitShake 0.45s ease-out;
   }
   @keyframes hitShake {
@@ -1315,22 +1435,22 @@
   .dmg-jcard img { width: 100%; height: 100%; object-fit: cover; }
   .dmg-jcard-num {
     position: absolute; top: 34%; left: 0; right: 0; text-align: center;
-    font-size: 28px; font-weight: 900; color: #ff4233;
+    font-size: 24px; font-weight: 900; color: #ff4233;
     text-shadow: 0 0 12px #000, -2px -2px 0 #ffe699, 2px -2px 0 #ffe699, -2px 2px 0 #ffe699, 2px 2px 0 #ffe699;
   }
   .dmg-jcard-foot {
-    position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 6px 6px;
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 5px 5px;
     background: linear-gradient(0deg, rgba(0,0,0,0.95) 45%, transparent);
   }
-  .dmg-jcard-name { font-size: 12px; font-weight: 900; color: #fff; text-align: center; margin-bottom: 4px; }
-  .dmg-jcard-hp { height: 7px; background: #2a1014; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.25); }
+  .dmg-jcard-name { font-size: 11px; font-weight: 900; color: #fff; text-align: center; margin-bottom: 3px; }
+  .dmg-jcard-hp { height: 6px; background: #2a1014; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.25); }
   .dmg-jcard-hp > div { height: 100%; background: linear-gradient(90deg, #ff3333, #ffaa44); transition: width 0.55s ease-out; }
 
-  /* Mode 1/3 Tactical Guide Panel on Right when Virtual Pad is hidden */
+  /* Mode 1/3 Tactical Guide Panel in Center Desk when Virtual Pad is hidden */
   #alt-right-panel {
-    display: none; flex: 1; flex-direction: column; gap: 8px; overflow-y: auto;
+    display: none; flex: 1; flex-direction: column; gap: 7px; overflow-y: auto;
     background: #100d14; border: 1px solid #352b22; border-radius: 8px; padding: 10px;
-    font-size: 12px; color: var(--text-muted); line-height: 1.6;
+    font-size: 11.5px; color: var(--text-muted); line-height: 1.55;
   }
   #alt-right-panel.show { display: flex; }
   #alt-right-panel h4 { color: var(--gold-bright); font-size: 13px; margin-bottom: 2px; }
@@ -1343,89 +1463,100 @@
   .modal-backdrop.open { display: flex; }
   .modal-card {
     background: #1a1520; border: 2px solid var(--gold); border-radius: 12px;
-    max-width: 560px; width: 100%; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.85);
+    max-width: 520px; width: 100%; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.85);
   }
-  .inspect-body { display: flex; gap: 16px; padding: 16px; flex-wrap: wrap; }
-  .inspect-body img { width: 192px; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--gold); }
-  .inspect-info { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
-  .inspect-title { font-size: 22px; font-weight: 900; color: var(--gold-bright); }
-  .inspect-meta { font-size: 13px; color: #ddd; line-height: 1.7; }
-  .inspect-strat-box { background: #120e17; border: 1px solid #44374f; border-radius: 8px; padding: 10px; font-size: 13px; line-height: 1.5; }
-  .modal-footer { padding: 10px 16px; background: #130f18; border-top: 1px solid #2e2736; display: flex; justify-content: flex-end; gap: 8px; }
-  .result-body { padding: 24px; text-align: center; }
-  .result-title { font-size: 38px; font-weight: 900; letter-spacing: 8px; margin-bottom: 10px; }
-  .result-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 16px 0; text-align: left; }
+  .inspect-body { display: flex; gap: 14px; padding: 14px; flex-wrap: wrap; }
+  .inspect-body img { width: 160px; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--gold); }
+  .inspect-info { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 8px; }
+  .inspect-title { font-size: 20px; font-weight: 900; color: var(--gold-bright); }
+  .inspect-meta { font-size: 12.5px; color: #ddd; line-height: 1.65; }
+  .inspect-strat-box { background: #120e17; border: 1px solid #44374f; border-radius: 8px; padding: 9px; font-size: 12.5px; line-height: 1.5; }
+  .modal-footer { padding: 10px 14px; background: #130f18; border-top: 1px solid #2e2736; display: flex; justify-content: flex-end; gap: 8px; }
+  .result-body { padding: 22px; text-align: center; }
+  .result-title { font-size: 36px; font-weight: 900; letter-spacing: 8px; margin-bottom: 10px; }
+  .result-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 14px 0; text-align: left; }
   .rstat { background: #120e17; border: 1px solid #352b3f; border-radius: 6px; padding: 8px 10px; font-size: 12px; }
   .rstat strong { color: var(--gold-bright); display: block; font-size: 16px; margin-top: 2px; }
 
-  #battle-view {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
+  /* Portrait Upper-Screen Cutscene Proportions (Applies cleanly inside 45% height top screen!) */
+  .ult-title-big { font-size: clamp(19px, 4.4vw, 30px); letter-spacing: 4px; }
+  .ult-desc-line, .ult-quote-bar { font-size: clamp(10px, 2.2vw, 12.5px); }
+  .ult-caption-wrap { left: 4%; right: 4%; bottom: 10.5%; padding: 6px 12px; }
+  #ult-3d-hero-echo { width: clamp(115px, 24vw, 195px); height: clamp(140px, 28vw, 230px); bottom: 19%; }
+  .clash-flag-char { font-size: clamp(56px, 13vw, 94px); }
+  .clash-name-ribbon .cn-main { font-size: clamp(18px, 4vw, 24px); }
+  .intro-kaizen, .finale-big-text { font-size: clamp(50px, 12vw, 84px); letter-spacing: 12px; }
+  .ic-flag { padding: 8px 10px; }
+  .ic-flag-title { font-size: clamp(14px, 3.6vw, 20px); }
+  .ic-vs-seal { width: 48px; height: 48px; }
+  .ic-vs-seal span { font-size: 24px; }
+  .ic-mini-card { width: clamp(38px, 9vw, 54px); height: clamp(58px, 14vw, 84px); }
+  .defeat-stage { width: clamp(148px, 32vw, 210px); height: clamp(208px, 44vw, 296px); }
+  .defeat-stamp-main { font-size: clamp(36px, 8.5vw, 54px); }
 
-  /* Compact Fullscreen Mobile Landscape Scaling (e.g. iPhone/Android 667x375 ~ 932x430) */
-  @media (max-height: 520px) and (orientation: landscape) {
-    .deck-header { padding: 5px 10px; gap: 6px; }
-    .brand-title h1 { font-size: 15px; letter-spacing: 2px; }
-    .brand-badge { display: none; }
-    .preset-btn { padding: 3px 7px; font-size: 10px; }
-    .roster-col { padding: 6px 8px; }
-    .filter-row { margin-bottom: 6px; }
+  /* Compact Phone Portrait Responsive Tuning (e.g. iPhone 390x844 ~ 430x932) */
+  @media (max-width: 520px) {
+    .deck-header { padding: 6px 8px; gap: 5px; }
+    .brand-title h1 { font-size: 15px; letter-spacing: 1.5px; }
+    .preset-btn { padding: 3px 6px; font-size: 10px; }
+    .roster-col { padding: 6px 7px 3px; }
     .ftab { padding: 3px 8px; font-size: 10px; }
-    .roster-grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; }
-    .gcard { height: 172px; }
-    .deck-sidebar { width: 242px; min-width: 224px; padding: 7px; gap: 6px; }
-    .deck-box { padding: 7px; }
-    .deck-slots { min-height: 80px; gap: 4px; }
-    .deck-slot-item { padding: 3px 5px; }
-    .deck-slot-item img { width: 24px; height: 32px; }
-    .start-battle-btn { padding: 8px; font-size: 14px; }
+    .roster-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .gcard { height: 158px; }
+    .gcard-name { font-size: 11px; }
+    .gcard-stats { font-size: 9px; }
+    .deck-sidebar { padding: 6px 7px; gap: 5px; }
+    .deck-box { padding: 5px 7px; }
+    .deck-slot-item { min-width: 96px; padding: 3px 5px; }
+    .deck-slot-item img { width: 22px; height: 30px; }
+    .deck-bottom-row { grid-template-columns: 1fr; gap: 6px; }
+    .start-battle-btn { width: 100%; min-width: 0; padding: 9px 12px; font-size: 16px; }
 
-    .battle-topbar { height: 30px; min-height: 30px; padding: 0 6px; }
-    .mode-btn, .top-btn { padding: 2px 6px; font-size: 10px; }
-    .col-left { width: clamp(134px, 16.5vw, 164px); padding: 4px 4px; gap: 3px; }
-    .col-right { width: clamp(204px, 31.5vw, 280px); padding: 4px 5px; gap: 4px; }
-    .morale-box { padding: 4px 5px; }
-    .morale-head { font-size: 10px; margin-bottom: 3px; }
-    .m-gem { height: 11px; }
-    .aow-btn { padding: 4px 6px; font-size: 11px; }
-    .aow-sub { display: none; }
-    .left-section-title { font-size: 9px; }
-    #active-skill-panel { padding: 5px; gap: 4px; }
-    .asp-head img { width: 32px; height: 42px; }
-    .asp-name { font-size: 12px; }
-    .asp-stats, .asp-status { font-size: 9px; }
-    .asp-desc-box { padding: 4px 5px; font-size: 9px; line-height: 1.3; }
-    .cast-btn-big { padding: 5px 7px; font-size: 11px; }
-    .hp-row-card { padding: 3px 4px; gap: 5px; }
-    .hp-row-avatar { width: 22px; height: 28px; }
-    .hp-row-top { font-size: 10px; }
-    .hp-row-sub { font-size: 8px; }
-    .arcade-gauge-wrap { padding: 2px 7px 3px; }
-    .ag-head { font-size: 9px; margin-bottom: 2px; }
-    .ag-track { height: 8px; }
-    .arcade-timer-badge { width: 54px; height: 42px; }
-    .arcade-timer-badge .tv { font-size: 20px; }
-    .minimap-float { width: 82px; height: 58px; left: 6px; bottom: 8px; }
-    .mode-tip { display: none; }
-    .vpad-token { width: 32px; height: 42px; }
-    .vpad-ghost { width: 30px; height: 40px; }
-    .vpad-enemy-card { width: 28px; height: 38px; }
-    .vpad-gate-notch strong { font-size: 10px; }
-    .vpad-gate-notch span { display: none; }
-    .ult-title-big { font-size: 22px; }
-    .ult-desc-line, .ult-quote-bar { font-size: 11px; }
-    #ult-3d-hero-echo { width: 145px; height: 175px; bottom: 21%; }
-    .intro-kaizen, .finale-big-text { font-size: 62px; }
-    .defeat-stage { width: 176px; height: 250px; }
-    .defeat-stamp-main { font-size: 44px; }
+    .battle-topbar { height: 30px; min-height: 30px; padding: 0 4px; gap: 3px; }
+    .top-actions { gap: 2.5px; }
+    .mode-btn { padding: 2px 5px; font-size: 9.5px; }
+    .top-btn { padding: 2px 4.5px; font-size: 9px; }
+    .col-center { flex: 0 0 43%; }
+    .battle-desk-console { grid-template-columns: 27.5% minmax(0, 1fr) 27.5%; }
+    .col-left, .col-right-wing { padding: 4px; gap: 4px; }
+    .col-desk { padding: 4px 4px 5px; gap: 3px; }
+
+    #active-skill-panel { padding: 4px; gap: 3px; }
+    .asp-head { flex-direction: column; align-items: flex-start; gap: 3px; }
+    .asp-head img { width: 38px; height: 50px; }
+    .asp-name { font-size: 11px; }
+    .asp-stats, .asp-status { font-size: 8.5px; }
+    .asp-desc-box { padding: 4px; font-size: 9px; line-height: 1.32; }
+    .asp-strat-title { font-size: 9.5px; flex-direction: column; align-items: flex-start; gap: 1px; }
+    .console-minimap-box { max-height: 68px; }
+
+    .morale-box { padding: 4px; }
+    .morale-head { font-size: 9.5px; margin-bottom: 3px; }
+    .m-gem { height: 10px; }
+    .left-section-title { font-size: 8.5px; }
+    .hp-row-card { padding: 3px 3px; gap: 3px; }
+    .hp-row-avatar { width: 18px; height: 24px; }
+    .hp-row-top { font-size: 9px; }
+    .hp-row-sub { font-size: 7.5px; }
+
+    .arcade-btn-deck { padding: 4px 3px; border-radius: 8px; }
+    .arcade-push-btn { min-height: 68px; padding: 5px 4px; border-radius: 34px; border-width: 2.5px; }
+    .apb-kicker { font-size: 7.5px; letter-spacing: 1px; padding: 0 4px; }
+    .apb-main { font-size: 11px; letter-spacing: 0.5px; }
+    .apb-sub { font-size: 8.5px; }
+
+    .qcmd-btn { font-size: 9px; padding: 2px 2px; }
+    #vpad-live-badge { font-size: 8px; padding: 1px 4px; }
+    .vpad-wall-side-lbl { font-size: 7.5px; }
+    .vpad-gate-notch strong { font-size: 9.5px; letter-spacing: 1px; }
+    .vpad-own-wall span, .vpad-castle-zone span { font-size: 7.5px; }
   }
 </style>
 </head>
 <body>
 
-<!-- MANDATORY LANDSCAPE LOCK OVERLAY (Un-dismissible in Portrait Orientation) -->
-<div id="portrait-lock" role="dialog" aria-modal="true" aria-label="請將裝置轉為橫向">
+<!-- FORCED PORTRAIT ORIENTATION OVERLAY (Touch Landscape -> Prompt Vertical Hold!) -->
+<div id="landscape-lock" role="dialog" aria-modal="true" aria-label="請將裝置轉為直向">
   <span class="pl-seal">三國志大戰 網頁版</span>
   <div class="pl-device-wrap">
     <svg class="pl-device-svg" viewBox="0 0 64 64">
@@ -1435,22 +1566,25 @@
       <polyline points="47,40 51,45 56,41"></polyline>
     </svg>
   </div>
-  <div class="pl-title">請將裝置轉為橫向</div>
+  <div class="pl-title">請將裝置轉為直向</div>
   <div class="pl-desc">
-    本遊戲強制以<strong>滿版橫屏</strong>進行對戰，不支援直立遊玩。<br>
-    請關閉系統方向鎖定並將手機／平板橫放，即可享受雙手街機操作（左手計略・右手虛擬卡盤）。
+    本遊戲採用<strong>直屏雙畫面街機佈局</strong>（上方戰場・下方中央卡盤・兩側戰法與奧義按鈕）。<br>
+    請將手機／平板直立持握，即可體驗最道地的三國志大戰控卡手感。
   </div>
-  <button class="pl-fs-btn" id="btn-lock-landscape">嘗試切換全螢幕橫屏</button>
+  <div class="pl-btn-row">
+    <button class="pl-fs-btn" id="btn-lock-portrait">切換全螢幕直屏</button>
+    <button class="pl-alt-btn" id="btn-allow-centered">以置中直屏視窗遊玩</button>
+  </div>
 </div>
 <div id="toast"></div>
 
-<!-- ================= DECK BUILDER VIEW ================= -->
+<!-- ================= PORTRAIT DECK BUILDER VIEW ================= -->
 <div id="deck-view">
   <div class="deck-header">
     <div class="brand-title">
       <div class="brand-seal">戰</div>
       <h1>三國志大戰 網頁版</h1>
-      <span class="brand-badge">v3.0</span>
+      <span class="brand-badge">v3.1</span>
     </div>
     <div class="preset-bar">
       <button class="preset-btn wei" data-preset="wei">魏・神速</button>
@@ -1471,63 +1605,67 @@
           <button class="ftab" data-faction="wu">吳 (5)</button>
           <button class="ftab" data-faction="qun">群雄 (5)</button>
         </div>
-        <span style="font-size:11px;color:var(--text-muted)">點卡編隊・點「詳」檢視</span>
+        <span style="font-size:10px;color:var(--text-muted)">點卡編隊・點「詳」檢視</span>
       </div>
       <div class="roster-grid" id="roster-grid"></div>
     </div>
 
     <div class="deck-sidebar">
       <div class="deck-box">
-        <h3>
-          <span>出陣牌組</span>
-          <span id="cost-readout">0.0 / 8.0</span>
-        </h3>
-        <div class="cost-bar-wrap"><div class="cost-bar-fill" id="cost-bar-fill" style="width:0%"></div></div>
-        <div class="deck-meta">
-          <span id="morale-cap-readout">士氣上限：14</span>
-          <span id="start-morale-readout">開局：2.0</span>
+        <div class="deck-box-head">
+          <span>出陣牌組 <strong id="cost-readout" style="margin-left:4px;color:#fff">0.0 / 8.0</strong></span>
+          <div class="deck-meta">
+            <span id="morale-cap-readout">士氣上限：14</span>
+            <span id="start-morale-readout">開局：2.0</span>
+          </div>
         </div>
+        <div class="cost-bar-wrap"><div class="cost-bar-fill" id="cost-bar-fill" style="width:0%"></div></div>
         <div class="deck-slots" id="deck-slots"></div>
       </div>
 
-      <div class="deck-box">
-        <h3><span>對戰設定</span></h3>
-        <label class="cfg-label" for="map-select">戰場</label>
-        <select class="cfg-select" id="map-select">
-          <option value="grassland" selected>草原河川（白晝）</option>
-          <option value="desert">荒漠峽谷（暮色）</option>
-        </select>
-
-        <label class="cfg-label" for="aow-select">兵法</label>
-        <select class="cfg-select" id="aow-select">
-          <option value="saiki">再起之法（復活＋回血）</option>
-          <option value="zouen">增援之法（全軍回血 45%）</option>
-          <option value="renkan">連環之法（敵軍減速）</option>
-          <option value="shinsoku">神速之法（武力+2 加速）</option>
-        </select>
-
-        <label class="cfg-label" for="ai-deck-select">對手牌組</label>
-        <select class="cfg-select" id="ai-deck-select">
-          <option value="wei">魏・神速號令</option>
-          <option value="shu">蜀・五虎強攻</option>
-          <option value="wu" selected>吳・赤壁弓陣</option>
-          <option value="qun">群雄・無雙暴虐</option>
-        </select>
-
-        <label class="cfg-label" for="ai-diff-select">AI 難度</label>
-        <select class="cfg-select" id="ai-diff-select">
-          <option value="easy">入門</option>
-          <option value="normal" selected>標準</option>
-          <option value="hard">頂上對決</option>
-        </select>
+      <div class="deck-bottom-row">
+        <div class="deck-cfg-grid">
+          <div class="cfg-field">
+            <label class="cfg-label" for="map-select">戰場</label>
+            <select class="cfg-select" id="map-select">
+              <option value="grassland" selected>草原河川</option>
+              <option value="desert">荒漠峽谷</option>
+            </select>
+          </div>
+          <div class="cfg-field">
+            <label class="cfg-label" for="aow-select">兵法・奧義</label>
+            <select class="cfg-select" id="aow-select">
+              <option value="saiki">再起之法（復活）</option>
+              <option value="zouen">增援之法（回血）</option>
+              <option value="renkan">連環之法（減速）</option>
+              <option value="shinsoku">神速之法（加速）</option>
+            </select>
+          </div>
+          <div class="cfg-field">
+            <label class="cfg-label" for="ai-deck-select">對手牌組</label>
+            <select class="cfg-select" id="ai-deck-select">
+              <option value="wei">魏・神速號令</option>
+              <option value="shu">蜀・五虎強攻</option>
+              <option value="wu" selected>吳・赤壁弓陣</option>
+              <option value="qun">群雄・無雙暴虐</option>
+            </select>
+          </div>
+          <div class="cfg-field">
+            <label class="cfg-label" for="ai-diff-select">AI 難度</label>
+            <select class="cfg-select" id="ai-diff-select">
+              <option value="easy">入門</option>
+              <option value="normal" selected>標準</option>
+              <option value="hard">頂上對決</option>
+            </select>
+          </div>
+        </div>
+        <button class="start-battle-btn" id="start-battle-btn">開 戰</button>
       </div>
-
-      <button class="start-battle-btn" id="start-battle-btn">開 戰</button>
     </div>
   </div>
 </div>
 
-<!-- ================= BATTLE VIEW ================= -->
+<!-- ================= PORTRAIT DUAL-SCREEN BATTLE VIEW ================= -->
 <div id="battle-view">
   <div class="battle-topbar">
     <div class="mode-switch" id="mode-switch">
@@ -1546,34 +1684,7 @@
   </div>
 
   <div class="battle-body">
-    <!-- LEFT COLUMN: Left-Hand Skills (Hex Morale Gems + Art of War + General Stratagems) -->
-    <div class="col-left">
-      <div class="morale-box">
-        <div class="morale-head">
-          <span>士氣</span>
-          <span id="morale-txt">2.5 / 14</span>
-        </div>
-        <div class="morale-gems" id="morale-gems"></div>
-      </div>
-
-      <button class="aow-btn" id="btn-aow">
-        <div>
-          <span id="aow-name-lbl">再起之法</span>
-          <span class="aow-sub" id="aow-sub-lbl">復活撤退武將</span>
-        </div>
-        <span class="aow-badge">兵法</span>
-      </button>
-
-      <div id="active-skill-panel"></div>
-
-      <div class="left-section-title">
-        <span>我軍部隊</span>
-        <span style="font-size:10px;color:var(--text-muted)">1~5</span>
-      </div>
-      <div id="left-hp-list"></div>
-    </div>
-
-    <!-- CENTER COLUMN: Three.js 3D Battlefield + Authentic Arcade Arch HUD + All Cutscenes -->
+    <!-- UPPER SCREEN: Three.js 3D PBR Battlefield + SEGA Arch Castle HUD + Ver.3 HD Cutscenes -->
     <div class="col-center">
       <div id="three-container"></div>
       <div id="hud-overlay"></div>
@@ -1598,10 +1709,6 @@
       <div id="approach-warning">敵將接近！</div>
       <div id="revive-banner">武將復活！</div>
 
-      <div class="minimap-float">
-        <canvas id="minimap-canvas" width="144" height="100"></canvas>
-      </div>
-
       <div class="mode-tip" id="mode-tip" style="display:none"></div>
 
       <!-- 1. Opening Dual-Banner Clash + Deck Lineup + 出陣 + 開戰 -->
@@ -1620,7 +1727,7 @@
           </div>
           <div class="ic-decks-row">
             <div class="ic-deck-strip" id="ic-player-cards"></div>
-            <div style="width:24px"></div>
+            <div style="width:14px"></div>
             <div class="ic-deck-strip" id="ic-enemy-cards"></div>
           </div>
         </div>
@@ -1773,28 +1880,73 @@
       </div>
     </div>
 
-    <!-- RIGHT COLUMN: Right-Hand Virtual Arcade Card Pad -->
-    <div class="col-right">
-      <div class="quick-cmd-bar">
-        <button class="qcmd-btn" id="qcmd-advance">前進</button>
-        <button class="qcmd-btn" id="qcmd-retreat">回城</button>
-        <button class="qcmd-btn" id="qcmd-stop">停步</button>
+    <!-- LOWER SEGA ARCADE DESK CONSOLE: Left Info+Stratagem | Center Flat Card Desk | Right Morale+Roster+AoW -->
+    <div class="battle-desk-console">
+      <!-- LOWER-LEFT WING: Selected General Info & Skill Explanation + Radar + Left SEGA 「戰法・計略」 Button -->
+      <div class="col-left">
+        <div id="active-skill-panel"></div>
+
+        <div class="console-minimap-box">
+          <span class="console-minimap-lbl">戰場雷達</span>
+          <canvas id="minimap-canvas" width="144" height="100"></canvas>
+        </div>
+
+        <div class="arcade-btn-deck">
+          <button class="arcade-push-btn" id="arcade-cast-btn">
+            <span class="apb-kicker">戰法・計略</span>
+            <span class="apb-main" id="arcade-cast-name">計略發動</span>
+            <span class="apb-sub" id="arcade-cast-cost">士氣 5</span>
+          </button>
+        </div>
       </div>
 
-      <div id="virtual-pad-wrap">
-        <div class="vpad-header">
-          <span>感應卡盤</span>
+      <!-- LOWER-CENTER DESK: Authentic NDS《三國志大戰‧天》Flat Card Reader Surface -->
+      <div class="col-desk">
+        <div class="desk-toolbar">
+          <div class="quick-cmd-bar">
+            <button class="qcmd-btn" id="qcmd-advance">前進</button>
+            <button class="qcmd-btn" id="qcmd-retreat">回城</button>
+            <button class="qcmd-btn" id="qcmd-stop">停步</button>
+          </div>
           <span id="vpad-live-badge">多指控卡</span>
         </div>
-        <div id="vpad-surface"></div>
+
+        <div id="virtual-pad-wrap">
+          <div id="vpad-surface"></div>
+        </div>
+
+        <div id="alt-right-panel">
+          <h4>兵種相剋</h4>
+          <div><strong style="color:#ff9e44">騎</strong>：衝刺突擊・怕槍迎擊</div>
+          <div><strong style="color:#52f2a0">槍</strong>：槍頭迎擊・甩槍槍擊</div>
+          <div><strong style="color:#5cb8ff">弓</strong>：停步齊射・起步走射</div>
+          <div id="alt-mode-guide" style="margin-top:6px"></div>
+        </div>
       </div>
 
-      <div id="alt-right-panel">
-        <h4>兵種相剋</h4>
-        <div><strong style="color:#ff9e44">騎</strong>：衝刺突擊・怕槍迎擊</div>
-        <div><strong style="color:#52f2a0">槍</strong>：槍頭迎擊・甩槍槍擊</div>
-        <div><strong style="color:#5cb8ff">弓</strong>：停步齊射・起步走射</div>
-        <div id="alt-mode-guide" style="margin-top:6px"></div>
+      <!-- LOWER-RIGHT WING: SEGA Hex Morale Gauge + Ally Roster (1-5) + Right SEGA 「奧義・兵法」 Button -->
+      <div class="col-right-wing">
+        <div class="morale-box">
+          <div class="morale-head">
+            <span>士氣</span>
+            <span id="morale-txt">2.5 / 14</span>
+          </div>
+          <div class="morale-gems" id="morale-gems"></div>
+        </div>
+
+        <div class="left-section-title">
+          <span>我軍部隊</span>
+          <span style="font-size:9px;color:var(--text-muted)">點選切換</span>
+        </div>
+        <div id="left-hp-list"></div>
+
+        <div class="arcade-btn-deck">
+          <button class="arcade-push-btn" id="btn-aow">
+            <span class="apb-kicker">奧義・兵法</span>
+            <span class="apb-main" id="aow-name-lbl">再起之法</span>
+            <span class="apb-sub" id="aow-sub-lbl">復活撤退武將</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -5912,8 +6064,10 @@ const App = {
     this.renderRoster();
     this.renderDeckSidebar();
     this.checkOrientation();
+    this.updateFullscreenButtons();
     const onViewportChange = () => {
       this.checkOrientation();
+      this.updateFullscreenButtons();
       if (this.ren) this.ren.resize();
     };
     window.addEventListener('resize', onViewportChange);
@@ -5932,19 +6086,21 @@ const App = {
   },
 
   isPortraitBlocked() {
-    return window.innerHeight > window.innerWidth;
+    if (this._allowCenteredPortrait) return false;
+    const isCoarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    return isCoarse && window.innerWidth > window.innerHeight;
   },
 
   checkOrientation() {
-    const lock = document.getElementById('portrait-lock');
-    const portrait = this.isPortraitBlocked();
-    lock.classList.toggle('active', portrait);
+    const lock = document.getElementById('landscape-lock');
+    const blocked = this.isPortraitBlocked();
+    if (lock) lock.classList.toggle('active', blocked);
     if (this.sim && !this.sim.finished) {
-      if (portrait && !this.paused) {
+      if (blocked && !this.paused) {
         this._pausedByPortrait = true;
         this.paused = true;
         document.getElementById('btn-pause').textContent = '繼續';
-      } else if (!portrait && this._pausedByPortrait) {
+      } else if (!blocked && this._pausedByPortrait) {
         this._pausedByPortrait = false;
         this.paused = false;
         document.getElementById('btn-pause').textContent = '暫停';
@@ -5954,14 +6110,15 @@ const App = {
 
   updateFullscreenButtons() {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    const lbl = isFs ? '⛶ 退出全螢幕' : '⛶ 全螢幕';
+    const narrow = window.innerWidth <= 440;
+    const lbl = narrow ? (isFs ? '⛶ 退' : '⛶ 全') : (isFs ? '⛶ 退出' : '⛶ 全螢幕');
     const b1 = document.getElementById('btn-fullscreen-deck');
     const b2 = document.getElementById('btn-fullscreen');
     if (b1) b1.textContent = lbl;
     if (b2) b2.textContent = lbl;
   },
 
-  async enterFullscreenLandscape(toggleIfActive = false) {
+  async enterFullscreenPortrait(toggleIfActive = false) {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
     try {
       if (toggleIfActive && isFs) {
@@ -5975,11 +6132,11 @@ const App = {
         else if (root.webkitRequestFullscreen) await root.webkitRequestFullscreen();
       }
       if (screen.orientation && screen.orientation.lock) {
-        await screen.orientation.lock('landscape').catch(() => {});
+        await screen.orientation.lock('portrait').catch(() => {});
       }
     } catch (e) {
       if (this.isPortraitBlocked()) {
-        this.toast('此瀏覽器需手動橫放手機／平板（請確認未鎖定螢幕旋轉）');
+        this.toast('請將手機／平板直立持握，或點選「以置中直屏視窗遊玩」');
       }
     } finally {
       this.updateFullscreenButtons();
@@ -5999,8 +6156,14 @@ const App = {
   deckCost() { return this.deck.reduce((sum, id) => sum + GENERAL_MAP[id].cost, 0); },
 
   bindDeckUI() {
-    document.getElementById('btn-lock-landscape').addEventListener('click', () => this.enterFullscreenLandscape(false));
-    document.getElementById('btn-fullscreen-deck').addEventListener('click', () => this.enterFullscreenLandscape(true));
+    document.getElementById('btn-lock-portrait').addEventListener('click', () => this.enterFullscreenPortrait(false));
+    document.getElementById('btn-allow-centered').addEventListener('click', () => {
+      this._allowCenteredPortrait = true;
+      document.body.classList.add('allow-centered-portrait');
+      this.checkOrientation();
+      if (this.ren) this.ren.resize();
+    });
+    document.getElementById('btn-fullscreen-deck').addEventListener('click', () => this.enterFullscreenPortrait(true));
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.deck = [...PRESET_DECKS[btn.dataset.preset]];
@@ -6127,9 +6290,9 @@ const App = {
   // ---------------- BATTLE LIFECYCLE ----------------
   startBattle() {
     if (!this.deck.length || this.isPortraitBlocked()) return;
-    // Automatically request fullscreen + landscape lock on touch devices
+    // Automatically request fullscreen + portrait lock on touch devices
     if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
-      this.enterFullscreenLandscape(false);
+      this.enterFullscreenPortrait(false);
     }
     sfx.bannerClash();
     sfx.playBGM('battle');
@@ -6246,7 +6409,7 @@ const App = {
       this.toast(next === 'high' ? '高畫質（PBR＋柔光泛光＋2K陰影）' : '流暢模式（省電降級）');
     });
 
-    document.getElementById('btn-fullscreen').addEventListener('click', () => this.enterFullscreenLandscape(true));
+    document.getElementById('btn-fullscreen').addEventListener('click', () => this.enterFullscreenPortrait(true));
 
     document.getElementById('btn-skip-intro').addEventListener('click', () => {
       if (this.introTimer > 0) {
@@ -6274,6 +6437,11 @@ const App = {
     document.getElementById('btn-exit').addEventListener('click', () => this.exitToDeck());
     document.getElementById('btn-back-deck').addEventListener('click', () => this.exitToDeck());
     document.getElementById('btn-rematch').addEventListener('click', () => this.startBattle());
+
+    document.getElementById('arcade-cast-btn').addEventListener('click', () => {
+      if (!this.sim || this.paused || this.isCutsceneBlocking() || this.isPortraitBlocked()) return;
+      if (this.selectedUid) this.dispatchPlayerCmd({ type: 'CAST_STRATAGEM', unitId: this.selectedUid });
+    });
 
     document.getElementById('btn-aow').addEventListener('click', () => {
       if (!this.sim || this.paused || this.isCutsceneBlocking()) return;
@@ -6367,7 +6535,7 @@ const App = {
         <div class="asp-meta">
           <div class="asp-name">
             <span>${g.name}</span>
-            <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${f.color}">${f.name}・${ut.icon}</span>
+            <span class="asp-pill" style="background:${f.color}">${f.name}・${ut.icon}</span>
           </div>
           <div class="asp-stats" id="asp-stats">武 ${g.pow} ｜ 知 ${g.intl}</div>
           <div class="asp-status" id="asp-status">待機</div>
@@ -6376,18 +6544,14 @@ const App = {
       <div class="asp-desc-box">
         <div class="asp-strat-title">
           <span>${g.strat.name}</span>
-          <span>士氣 ${g.strat.cost}</span>
+          <span class="asp-strat-cost">士氣 ${g.strat.cost}</span>
         </div>
         <div>${g.strat.desc}</div>
-      </div>
-      <button class="cast-btn-big" id="asp-cast-btn">
-        <span>${g.strat.name}</span>
-        <span>${g.strat.cost}</span>
-      </button>`;
-    document.getElementById('asp-cast-btn').addEventListener('click', () => {
-      if (this.isCutsceneBlocking() || this.isPortraitBlocked()) return;
-      this.dispatchPlayerCmd({ type: 'CAST_STRATAGEM', unitId: u.uid });
-    });
+      </div>`;
+    const castName = document.getElementById('arcade-cast-name');
+    const castCost = document.getElementById('arcade-cast-cost');
+    if (castName) castName.textContent = g.strat.name;
+    if (castCost) castCost.textContent = `士氣 ${g.strat.cost} ｜ ${g.name}`;
   },
 
   // Single-source-of-truth coordinate mapping between SEGA Parchment Card Board & 3D Battlefield!
@@ -6475,9 +6639,7 @@ const App = {
           <strong>城 門</strong>
         </div>
       </div>
-      <div class="vpad-watermark enemy-wm">敵 陣</div>
       <div class="vpad-frontier"></div>
-      <div class="vpad-watermark ally-wm">自 陣</div>
       <div class="vpad-own-wall"><span>我方城壁</span></div>
       <div class="vpad-castle-zone" id="vpad-castle-zone"><span>自城內</span></div>
       <canvas id="vpad-cmd-canvas"></canvas>`;
@@ -6994,14 +7156,25 @@ const App = {
       } else sg.style.display = 'none';
     }
 
-    // Measure SEGA Parchment Card Board dimensions for 2D same-side card anti-overlap layout
+    // Measure SEGA Parchment Card Board dimensions & sync proportional CSS token sizes
     const vpadSurf = document.getElementById('vpad-surface');
     const padW = (vpadSurf && vpadSurf.clientWidth) || 260;
     const padH = (vpadSurf && vpadSurf.clientHeight) || 440;
-    const isCompactPad = (window.innerHeight <= 520);
-    const eCardW = isCompactPad ? 28 : 34, eCardH = isCompactPad ? 38 : 46;
-    const pCardW = isCompactPad ? 34 : 42, pCardH = isCompactPad ? 46 : 56;
-    const gCardW = isCompactPad ? 30 : 38, gCardH = isCompactPad ? 40 : 50;
+    const pCardW = Math.round(Math.max(28, Math.min(46, padW * 0.145)));
+    const pCardH = Math.round(pCardW * 1.34);
+    const gCardW = Math.round(pCardW * 0.90);
+    const gCardH = Math.round(pCardH * 0.90);
+    const eCardW = Math.round(pCardW * 0.82);
+    const eCardH = Math.round(pCardH * 0.82);
+    if (vpadSurf && this._lastPadCardW !== pCardW) {
+      this._lastPadCardW = pCardW;
+      vpadSurf.style.setProperty('--vtok-w', `${pCardW}px`);
+      vpadSurf.style.setProperty('--vtok-h', `${pCardH}px`);
+      vpadSurf.style.setProperty('--vgh-w', `${gCardW}px`);
+      vpadSurf.style.setProperty('--vgh-h', `${gCardH}px`);
+      vpadSurf.style.setProperty('--ven-w', `${eCardW}px`);
+      vpadSurf.style.setProperty('--ven-h', `${eCardH}px`);
+    }
 
     // Update Decoupled Live Control Badge during cutscenes
     const liveBadge = document.getElementById('vpad-live-badge');
@@ -7011,7 +7184,7 @@ const App = {
       liveBadge.textContent = inCut ? '演出控卡' : '多指控卡';
     }
 
-    // Update Semi-Transparent Enemy General Cards on Right Virtual Pad (independent anti-overlap so opposing cards CAN overlap!)
+    // Update Semi-Transparent Enemy General Cards on Center Desk (independent anti-overlap so opposing cards CAN overlap!)
     const enemyPadItems = [];
     for (const eu of sim.units.filter(x => x.side === 'enemy')) {
       const ec = this.enemyPadDots.get(eu.uid); if (!ec) continue;
@@ -7031,7 +7204,7 @@ const App = {
     // Re-render Active Skill Panel whenever selected general changes
     if (this._lastRenderedSkillUid !== this.selectedUid) this.renderActiveSkillPanel();
 
-    // Update Left HP Monitor List, Active Skill Panel, Translucent Ghosts (Real Pos) & Solid Cards (Instant Command Target!)
+    // Update Right Roster List, Left Skill Info + Arcade Cast Button, Translucent Ghosts & Solid Cards!
     const draggingUids = new Set(this.vpadDrags.values());
     const playerPadItems = [];
     let anyGate = false, anyWall = false, anyRetreat = false;
@@ -7066,12 +7239,12 @@ const App = {
       if (u.uid === this.selectedUid) {
         const aspStats = document.getElementById('asp-stats');
         const aspStat = document.getElementById('asp-status');
-        const aspBtn = document.getElementById('asp-cast-btn');
+        const arcadeCastBtn = document.getElementById('arcade-cast-btn');
         if (aspStats) aspStats.textContent = `武 ${st.pow} ｜ 知 ${u.general.intl} ｜ ${Math.round(hpPct)}%`;
         if (aspStat) aspStat.textContent = status;
-        if (aspBtn) {
+        if (arcadeCastBtn) {
           const ready = u.alive && !u.inCastle && sim.morale.player >= u.general.strat.cost && !u.dancing;
-          aspBtn.classList.toggle('ready', ready);
+          arcadeCastBtn.classList.toggle('ready', ready);
         }
       }
 
@@ -7224,8 +7397,9 @@ const App = {
     const g = c.getContext('2d');
     g.clearRect(0, 0, w, h);
 
-    const isCompactPad = (window.innerHeight <= 520);
-    const gCardW = isCompactPad ? 30 : 38, gCardH = isCompactPad ? 40 : 50;
+    const pCardW = Math.round(Math.max(28, Math.min(46, w * 0.145)));
+    const pCardH = Math.round(pCardW * 1.34);
+    const gCardW = Math.round(pCardW * 0.90), gCardH = Math.round(pCardH * 0.90);
     const draggingUids = new Set(this.vpadDrags.values());
 
     // Draw Command Trail Arrows from Translucent Ghost (Real Current Pos) -> Solid Card (Instant Command Target!)
