@@ -9,7 +9,7 @@
 <meta name="screen-orientation" content="landscape">
 <meta name="x5-orientation" content="landscape">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰 網頁版 v1.95</title>
+<title>三國志大戰 網頁版 v2.0</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -17,6 +17,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <style>
   :root {
     --bg-dark: #0b090d;
@@ -1021,17 +1022,64 @@
     animation: pulseGold 1.2s infinite;
   }
 
-  /* Authentic SEGA Sangokushi Taisen Parchment Flat Card Board! */
+  /* Authentic SEGA Sangokushi Taisen Parchment Flat Card Board (with Official BOND Grid & Parchment!) */
   #vpad-surface {
     flex: 1; position: relative; border-radius: 8px; overflow: hidden; touch-action: none;
     background:
-      radial-gradient(ellipse at 50% 48%, rgba(235,204,148,0.28) 0%, rgba(125,84,38,0.22) 100%),
-      repeating-linear-gradient(0deg, rgba(95,62,28,0.08) 0 1px, transparent 1px 28px),
-      repeating-linear-gradient(90deg, rgba(95,62,28,0.08) 0 1px, transparent 1px 28px),
+      url('./assets/img/ui/battleboard_grid.webp') center / 100% 100% no-repeat,
+      radial-gradient(ellipse at 50% 48%, rgba(235,204,148,0.22) 0%, rgba(105,68,28,0.28) 100%),
+      url('./assets/img/ui/parchment.webp') center / cover no-repeat,
       linear-gradient(180deg, #b89154 0%, #cfb076 22%, #d4b67c 50%, #c8a66a 82%, #9a7442 100%);
     border: 3px solid #6b4b22;
     box-shadow: inset 0 0 26px rgba(45,24,8,0.58), 0 4px 16px rgba(0,0,0,0.65);
   }
+
+  /* Official zh-Hant Dual Calligraphy Stamp Slam (Beat 2 of Stratagem Cutscene!) */
+  #ult-stamp-glyphs {
+    position: relative; z-index: 2; display: none; align-items: center; justify-content: center; gap: 6px;
+  }
+  #ult-stamp-glyphs.has-glyphs { display: flex; }
+  #ult-stamp-glyphs.has-glyphs + .ult-diamond-seal { display: none; }
+  #ult-stamp-glyphs img {
+    width: clamp(120px, 16vw, 190px); height: auto;
+    filter: drop-shadow(0 0 24px rgba(255,195,70,0.92)) drop-shadow(0 8px 16px rgba(0,0,0,0.8));
+    transform: scale(2.2) rotate(-8deg); opacity: 0;
+    transition: transform 0.22s cubic-bezier(0.14, 0.96, 0.24, 1.08), opacity 0.14s ease;
+  }
+  #ult-stamp-glyphs img:nth-child(2) { transition-delay: 0.08s; transform: scale(2.2) rotate(6deg); }
+  #ult-theater.seal-phase #ult-stamp-glyphs img { transform: scale(1) rotate(0deg); opacity: 1; }
+
+  /* Twin Gold-Ink Imperial Dragons Backdrop during Stratagem Theater Beat 3 */
+  #ult-dragon-bg {
+    position: absolute; inset: 0; z-index: 64; pointer-events: none; opacity: 0;
+    background: url('./assets/img/ui/sp_dragon.webp') center / cover no-repeat;
+    mix-blend-mode: screen; transition: opacity 0.28s ease;
+  }
+  #ult-theater.stage2 #ult-dragon-bg { opacity: 0.42; }
+
+  /* Official Transparent Gunshi (Strategist) Bust-Up during Art of War (兵法) Cutscene */
+  #aow-gunshi-stage {
+    position: absolute; inset: 0; z-index: 67; pointer-events: none; display: none;
+    align-items: center; justify-content: flex-start; padding-left: 4%;
+  }
+  #aow-gunshi-stage.show { display: flex; }
+  #aow-gunshi-stage img {
+    height: 78%; max-width: 58%; object-fit: contain;
+    filter: drop-shadow(0 0 28px rgba(255,210,95,0.88)) drop-shadow(0 10px 24px rgba(0,0,0,0.85));
+    animation: gunshiSlide 0.36s cubic-bezier(0.14, 0.96, 0.24, 1) forwards;
+  }
+  @keyframes gunshiSlide { from { opacity: 0; transform: translateX(-60px) scale(0.92); } to { opacity: 1; transform: translateX(0) scale(1); } }
+
+  /* Official zh-Hant Start / Finale Calligraphy Banner Rows */
+  .zh-stamp-row {
+    display: flex; align-items: center; justify-content: center; gap: 2px;
+  }
+  .zh-stamp-row img {
+    height: clamp(82px, 13vh, 132px); width: auto;
+    filter: drop-shadow(0 0 20px rgba(255,195,70,0.9)) drop-shadow(0 6px 14px rgba(0,0,0,0.88));
+  }
+  .zh-stamp-row.hidden { display: none; }
+  .intro-kaizen .zh-stamp-row:not(.hidden) + .intro-kaizen-fallback { display: none; }
 
   /* Top Zone (0% - 13%): Enemy Brick Wall Siege Strip + Central Recessed Gate Notch! */
   .vpad-enemy-wall {
@@ -1374,7 +1422,7 @@
     <div class="brand-title">
       <div class="brand-seal">戰</div>
       <h1>三國志大戰 網頁版</h1>
-      <span class="brand-badge">v1.95</span>
+      <span class="brand-badge">v2.0</span>
     </div>
     <div class="preset-bar">
       <button class="preset-btn wei" data-preset="wei">魏・神速</button>
@@ -1555,7 +1603,13 @@
           </div>
           <div class="shutsujin-beam"><span>出</span><span>陣</span></div>
         </div>
-        <div class="intro-kaizen">開 戰</div>
+        <div class="intro-kaizen" id="intro-kaizen-wrap">
+          <div class="zh-stamp-row" id="intro-stamp-row">
+            <img src="./assets/img/stamps/start_01.webp" alt="" onerror="this.parentElement.classList.add('hidden')">
+            <img src="./assets/img/stamps/start_02.webp" alt="" onerror="this.parentElement.classList.add('hidden')">
+          </div>
+          <span class="intro-kaizen-fallback">開 戰</span>
+        </div>
         <button class="intro-skip-btn" id="btn-skip-intro">跳過開場 ▸</button>
       </div>
 
@@ -1589,6 +1643,7 @@
       <!-- 4. Unified 4-Beat Stratagem Cutscene Theater (ALL 20 Generals: Clash -> Ink Seal -> CG / 3D Cinema -> Climax) -->
       <div id="ult-theater">
         <div class="letterbox-bar top"></div>
+        <div id="ult-dragon-bg"></div>
         <div id="ult-clash-stage">
           <div class="clash-portrait-box">
             <img id="clash-img" src="" alt="武將發動">
@@ -1604,6 +1659,7 @@
         </div>
         <div id="ult-seal-stage">
           <div class="ult-seal-inkring"></div>
+          <div id="ult-stamp-glyphs"></div>
           <div class="ult-diamond-seal">
             <div class="ult-diamond-inner">
               <div class="ult-diamond-en" id="ult-diamond-en">ATTACK COMMAND!</div>
@@ -1627,6 +1683,9 @@
         </div>
         <div class="letterbox-bar bot"></div>
       </div>
+
+      <!-- Official Transparent Gunshi (Strategist) Art of War Cut-in -->
+      <div id="aow-gunshi-stage"><img id="aow-gunshi-img" src="" alt=""></div>
 
       <!-- Full-Screen 60fps Animated Skill / Golden Dragon / VFX Cutscene Canvas -->
       <canvas id="cutscene-canvas"></canvas>
@@ -1667,6 +1726,7 @@
           <div class="finale-hero-caption" id="finale-hero-quote"></div>
         </div>
         <div class="finale-big-text">
+          <div class="zh-stamp-row hidden" id="finale-stamp-row"></div>
           <div id="finale-main-txt">勝 利</div>
           <div class="finale-sub-seal" id="finale-sub-txt">敵城攻略！</div>
         </div>
@@ -1846,6 +1906,14 @@ const GENERALS = [
     strat:{ name:'惡鬼猛進', cost:4, kind:'self', powDelta:5, siegeMul:1.85, dur:12, desc:'自身武力+5、攻城破壞力大幅提升。' } }
 ];
 
+// Bind Official Licensed BOND Tablet-Optimized WebP Art (Full Card + Native Alpha Bust-Up + Thumb) with Base64 fallback!
+GENERALS.forEach(g => {
+  g.fallbackImg = g.img;
+  g.img = `./assets/img/card/${g.id}.webp`;
+  g.cutoutImg = `./assets/img/bustup/${g.id}.webp`;
+  g.thumbImg = `./assets/img/thumb/${g.id}.webp`;
+});
+
 const GENERAL_MAP = Object.fromEntries(GENERALS.map(g => [g.id, g]));
 
 const PRESET_DECKS = {
@@ -1856,10 +1924,21 @@ const PRESET_DECKS = {
 };
 
 // ============================================================
-// 2. WEB AUDIO SYNTHESIZER
+// 2. HYBRID AUDIO ENGINE (Official BOND Mono MP3 BGM/SE/Voices + Web Audio Fallback!)
 // ============================================================
 class SoundFX {
-  constructor() { this.ctx = null; this.muted = false; }
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+    this.seBase = './assets/audio/se/';
+    this.bgmBase = './assets/audio/bgm/';
+    this.voiceBase = './assets/audio/voice/';
+    this.sePool = new Map();
+    this.seLastPlay = new Map();
+    this.bgmEl = null;
+    this.bgmTrack = null;
+    this.voiceEl = null;
+  }
   ensure() {
     if (this.muted) return null;
     if (!this.ctx) {
@@ -1868,6 +1947,64 @@ class SoundFX {
     }
     if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
     return this.ctx;
+  }
+  setMuted(m) {
+    this.muted = !!m;
+    if (this.bgmEl) {
+      if (this.muted) { try { this.bgmEl.pause(); } catch (e) {} }
+      else if (this.bgmTrack) { this.bgmEl.play().catch(() => {}); }
+    }
+    if (this.muted && this.voiceEl) { try { this.voiceEl.pause(); } catch (e) {} }
+  }
+  playBGM(track) {
+    this.bgmTrack = track;
+    if (this.muted) return;
+    const src = `${this.bgmBase}${track}.mp3`;
+    if (this.bgmEl && this.bgmEl._track === track) {
+      if (this.bgmEl.paused) this.bgmEl.play().catch(() => {});
+      return;
+    }
+    if (this.bgmEl) { try { this.bgmEl.pause(); } catch (e) {} }
+    const a = new Audio(src);
+    a.loop = (track === 'battle' || track === 'setup' || track === 'title');
+    a.volume = 0.26;
+    a._track = track;
+    this.bgmEl = a;
+    a.play().catch(() => {});
+  }
+  stopBGM() {
+    if (this.bgmEl) { try { this.bgmEl.pause(); this.bgmEl.currentTime = 0; } catch (e) {} }
+    this.bgmTrack = null;
+  }
+  playSE(name, vol = 0.62, cooldownMs = 60, fallbackFn = null) {
+    if (this.muted) return;
+    const now = performance.now();
+    if (now - (this.seLastPlay.get(name) || 0) < cooldownMs) return;
+    this.seLastPlay.set(name, now);
+    try {
+      let a = this.sePool.get(name);
+      if (!a) {
+        a = new Audio(`${this.seBase}${name}.mp3`);
+        a.preload = 'auto';
+        this.sePool.set(name, a);
+      }
+      const inst = a.cloneNode(true);
+      inst.volume = Math.min(1, vol);
+      const p = inst.play();
+      if (p && p.catch) p.catch(() => { if (fallbackFn) fallbackFn(); });
+    } catch (e) {
+      if (fallbackFn) fallbackFn();
+    }
+  }
+  playVoice(genId, kind = 'cast') {
+    if (this.muted || !genId) return;
+    try {
+      if (this.voiceEl) { try { this.voiceEl.pause(); } catch (e) {} }
+      const a = new Audio(`${this.voiceBase}${genId}_${kind}.mp3`);
+      a.volume = 0.85;
+      this.voiceEl = a;
+      a.play().catch(() => {});
+    } catch (e) {}
   }
   playTone(freq, endFreq, dur, type = 'triangle', gainVal = 0.14) {
     const ctx = this.ensure(); if (!ctx) return;
@@ -1893,78 +2030,31 @@ class SoundFX {
     src.connect(filt); filt.connect(g); g.connect(ctx.destination);
     src.start();
   }
-  charge()    { this.playNoise(0.24, 1100, 0.15); this.playTone(210, 520, 0.24, 'sawtooth', 0.11); }
-  intercept() { this.playTone(940, 240, 0.3, 'square', 0.15); this.playNoise(0.2, 2400, 0.16); }
-  arrow()     { this.playTone(620, 300, 0.08, 'triangle', 0.045); }
-  siege()     { this.playTone(125, 38, 0.38, 'sawtooth', 0.22); this.playNoise(0.32, 280, 0.18); }
-  siegeFirst() {
-    this.playTone(95, 32, 0.55, 'sawtooth', 0.28);
-    this.playNoise(0.45, 220, 0.25);
-    setTimeout(() => this.playTone(392, 587, 0.28, 'triangle', 0.15), 110);
-  }
-  sealSlam()  { this.playTone(140, 48, 0.32, 'sine', 0.3); this.playNoise(0.2, 2000, 0.2); }
-  kaizenGong() {
-    this.playTone(110, 52, 0.65, 'sine', 0.32);
-    this.playTone(220, 440, 0.45, 'triangle', 0.18);
-    this.playNoise(0.3, 900, 0.15);
-  }
-  stratagem() {
-    this.playTone(146, 58, 0.42, 'sine', 0.28); // taiko boom
-    setTimeout(() => this.playTone(220, 440, 0.45, 'sawtooth', 0.14), 70);
-    setTimeout(() => this.playTone(587, 880, 0.4, 'triangle', 0.12), 180);
-    this.playNoise(0.38, 1700, 0.12);
-  }
-  ambush()    { this.playTone(300, 740, 0.2, 'square', 0.12); }
-  enterCastle() { this.playTone(440, 660, 0.18, 'sine', 0.11); }
-  exitCastle()  { this.playTone(330, 520, 0.16, 'triangle', 0.11); }
-  swordSlash() {
-    this.playNoise(0.22, 3400, 0.28);
-    this.playTone(1650, 220, 0.22, 'sawtooth', 0.2);
-  }
-  retreatEnemy() {
-    this.swordSlash();
-    setTimeout(() => { this.playTone(130, 52, 0.35, 'sine', 0.28); this.playTone(587, 880, 0.3, 'triangle', 0.14); }, 180);
-  }
-  retreatAlly() {
-    this.swordSlash();
-    setTimeout(() => { this.playTone(260, 110, 0.45, 'sawtooth', 0.18); }, 180);
-  }
-  spellFire()      { this.playNoise(0.75, 650, 0.22); this.playTone(150, 55, 0.65, 'sawtooth', 0.2); }
-  spellWater()     { this.playNoise(0.75, 1100, 0.2); this.playTone(260, 120, 0.6, 'sine', 0.18); }
-  spellLightning() {
-    this.playNoise(0.35, 2800, 0.25);
-    setTimeout(() => this.playNoise(0.45, 1800, 0.24), 160);
-    setTimeout(() => this.playTone(120, 42, 0.45, 'sawtooth', 0.22), 180);
-  }
-  startDrum() {
-    this.playTone(108, 46, 0.45, 'sine', 0.28);
-    setTimeout(() => this.playTone(146, 58, 0.5, 'sine', 0.28), 240);
-  }
-  bannerClash() {
-    this.playNoise(0.28, 1800, 0.26);
-    this.playTone(190, 62, 0.36, 'sawtooth', 0.24);
-    setTimeout(() => this.playTone(520, 840, 0.22, 'triangle', 0.14), 80);
-  }
-  dragonRoar() {
-    this.playNoise(0.85, 720, 0.24);
-    this.playTone(185, 62, 0.8, 'sawtooth', 0.22);
-    setTimeout(() => this.playTone(320, 120, 0.65, 'sawtooth', 0.2), 180);
-    setTimeout(() => { this.playTone(620, 980, 0.35, 'triangle', 0.16); this.playNoise(0.4, 2200, 0.18); }, 420);
-  }
-  ramImpact() {
-    this.playTone(88, 28, 0.6, 'sawtooth', 0.32);
-    this.playNoise(0.45, 240, 0.28);
-  }
-  warningPing() {
-    this.playTone(880, 660, 0.14, 'square', 0.09);
-    setTimeout(() => this.playTone(880, 660, 0.14, 'square', 0.09), 160);
-  }
-  reviveChime() {
-    this.playTone(440, 660, 0.18, 'triangle', 0.12);
-    setTimeout(() => this.playTone(660, 880, 0.24, 'triangle', 0.13), 120);
-  }
-  victory()   { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => this.playTone(f, f * 1.01, 0.38, 'triangle', 0.16), i * 115)); }
-  defeat()    { [392, 349, 311, 261].forEach((f, i) => setTimeout(() => this.playTone(f, f * 0.98, 0.42, 'sawtooth', 0.14), i * 145)); }
+  charge()       { this.playSE('charge', 0.65, 160, () => { this.playNoise(0.24, 1100, 0.15); this.playTone(210, 520, 0.24, 'sawtooth', 0.11); }); }
+  intercept()    { this.playSE('counter', 0.72, 160, () => { this.playTone(940, 240, 0.3, 'square', 0.15); this.playNoise(0.2, 2400, 0.16); }); }
+  arrow()        { this.playSE('bow', 0.28, 130, () => this.playTone(620, 300, 0.08, 'triangle', 0.045)); }
+  siege()        { this.playSE('castledmg', 0.72, 240, () => { this.playTone(125, 38, 0.38, 'sawtooth', 0.22); this.playNoise(0.32, 280, 0.18); }); }
+  siegeFirst()   { this.playSE('siege', 0.80, 200, () => { this.playTone(95, 32, 0.55, 'sawtooth', 0.28); }); }
+  sealSlam()     { this.playSE('stamp1', 0.78, 120, () => { this.playTone(140, 48, 0.32, 'sine', 0.3); }); }
+  kaizenGong()   { this.playSE('gong', 0.78, 250, () => { this.playTone(110, 52, 0.65, 'sine', 0.32); }); }
+  stratagem()    { this.playSE('buff', 0.74, 180, () => { this.playTone(146, 58, 0.42, 'sine', 0.28); }); }
+  ambush()       { this.playSE('engage', 0.68, 200, () => this.playTone(300, 740, 0.2, 'square', 0.12)); }
+  enterCastle()  { this.playSE('confirm', 0.46, 150, () => this.playTone(440, 660, 0.18, 'sine', 0.11)); }
+  exitCastle()   { this.playSE('horse', 0.44, 220, () => this.playTone(330, 520, 0.16, 'triangle', 0.11)); }
+  swordSlash()   { this.playSE('sword', 0.68, 120, () => { this.playNoise(0.22, 3400, 0.28); this.playTone(1650, 220, 0.22, 'sawtooth', 0.2); }); }
+  retreatEnemy() { this.playSE('defeat', 0.78, 160, () => this.swordSlash()); }
+  retreatAlly()  { this.playSE('defeat', 0.68, 160, () => this.swordSlash()); }
+  spellFire()      { this.playSE('fire', 0.80, 200, () => { this.playNoise(0.75, 650, 0.22); }); }
+  spellWater()     { this.playSE('water', 0.80, 200, () => { this.playNoise(0.75, 1100, 0.2); }); }
+  spellLightning() { this.playSE('thunder', 0.82, 200, () => { this.playNoise(0.35, 2800, 0.25); }); }
+  startDrum()      { this.playSE('drum', 0.74, 200, () => { this.playTone(108, 46, 0.45, 'sine', 0.28); }); }
+  bannerClash()    { this.playSE('stamp2', 0.75, 140, () => { this.playNoise(0.28, 1800, 0.26); }); }
+  dragonRoar()     { this.playSE('gunshi', 0.82, 240, () => { this.playNoise(0.85, 720, 0.24); }); }
+  ramImpact()      { this.playSE('gatestrike', 0.84, 200, () => { this.playTone(88, 28, 0.6, 'sawtooth', 0.32); }); }
+  warningPing()    { this.playSE('cursor', 0.55, 180, () => this.playTone(880, 660, 0.14, 'square', 0.09)); }
+  reviveChime()    { this.playSE('confirm', 0.52, 180, () => this.playTone(440, 660, 0.18, 'triangle', 0.12)); }
+  victory()        { this.playSE('victory', 0.85, 300); this.playBGM('win'); }
+  defeat()         { this.playSE('siegeended', 0.80, 300); this.playBGM('lose'); }
 }
 const sfx = new SoundFX();
 
@@ -2594,18 +2684,8 @@ class BattleSimulation {
           }
         }
 
-        // Stationary friendly squad holds its tile: incoming ally yields without pushing occupant!
-        if (!blocked) {
-          for (const p of this.units) {
-            if (!p.alive || p.inCastle || p.side !== u.side || p.uid === u.uid) continue;
-            const dNext = Math.hypot(nx - p.x, nz - p.z);
-            const movingToward = stepX * (p.x - u.x) + stepZ * (p.z - u.z) > 0;
-            if (dNext < 1.72 && movingToward) {
-              blocked = true;
-              break;
-            }
-          }
-        }
+        // Authentic Arcade Sangokushi Taisen Rule: Friendly squads freely pass/overlap through each other
+        // while marching (only physical cards on the sensor board cannot overlap; enemies lock in melee!).
 
         if (!blocked) {
           u.vx = (nx - u.x) / dt; u.vz = (nz - u.z) / dt;
@@ -2661,6 +2741,7 @@ class BattleSimulation {
             this.events.push({ type: 'CALLOUT', x: b.x, z: b.z, text: '突擊！RUSH!!', color: '#ffffff' });
             this.events.push({ type: 'VFX_CHARGE_HIT', x: b.x, z: b.z });
             sfx.charge();
+            if (a.side === 'player') sfx.playVoice(a.general.id, 'atk');
           }
           if (b.isCharging && b.chargeCd <= 0 && !a.stealth) {
             const stB = this.getEffectiveStats(b), stA = this.getEffectiveStats(a);
@@ -2684,38 +2765,8 @@ class BattleSimulation {
       }
     }
 
-    // Same-side non-overlap WITHOUT pushing stationary occupants!
-    for (let iter = 0; iter < 2; iter++) {
-      for (let i = 0; i < this.units.length; i++) {
-        const a = this.units[i]; if (!a.alive || a.inCastle) continue;
-        for (let j = i + 1; j < this.units.length; j++) {
-          const b = this.units[j]; if (!b.alive || b.inCastle || a.side !== b.side) continue;
-          const dx = b.x - a.x, dz = b.z - a.z;
-          const dist = Math.hypot(dx, dz);
-          const minSep = 1.65;
-          if (dist < minSep) {
-            const aMoving = Math.hypot(a.tx - a.x, a.tz - a.z) > 0.28;
-            const bMoving = Math.hypot(b.tx - b.x, b.tz - b.z) > 0.28;
-            if (!aMoving && !bMoving) continue;
-            const nx = dist > 0.01 ? dx / dist : (b.uid > a.uid ? 1 : -1);
-            const nz = dist > 0.01 ? dz / dist : 0;
-            const push = (minSep - dist) * 0.45;
-            if (aMoving && !bMoving) {
-              a.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, a.x - nx * push));
-              a.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, a.z - nz * push));
-            } else if (bMoving && !aMoving) {
-              b.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, b.x + nx * push));
-              b.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, b.z + nz * push));
-            } else {
-              a.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, a.x - nx * push * 0.5));
-              a.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, a.z - nz * push * 0.5));
-              b.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, b.x + nx * push * 0.5));
-              b.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, b.z + nz * push * 0.5));
-            }
-          }
-        }
-      }
-    }
+    // Authentic Arcade Rule: No battlefield push/collision between friendly squads (they freely cross/overlap while
+    // marching to non-overlapping physical card targets on the board!). Only sheltered in-castle slots stay spaced.
     // Keep same-side in-castle units neatly spaced along X so castle cards never stack
     for (const side of ['player', 'enemy']) {
       const sheltered = this.units.filter(u => u.side === side && u.alive && u.inCastle)
@@ -3075,6 +3126,7 @@ class BattleRenderer3D {
     this.buildEmbers();
     this.buildEntities();
     this.setupPostProcessing(w, h);
+    this.loadOfficialModels();
 
     this.selRing = new THREE.Mesh(
       new THREE.RingGeometry(1.15, 1.42, 36),
@@ -3722,9 +3774,14 @@ class BattleRenderer3D {
     }
   }
 
-  // High-Detail Physical-Material Han Dynasty Castle (Masonry + Glossy Imperial Lacquer + Glazed Ceramic Roofs + Gilded Bronze!)
+  // High-Detail Physical-Material Han Dynasty Castle:
+  // - Enemy Castle (Background): Full imposing Han Dynasty fortress + Official BOND 3D Wall GLB!
+  // - Player Castle (Foreground): Low-profile cutaway semi-transparent rampart so it NEVER blocks battlefield view!
   createCastle(zPos, bannerHex, flagChar) {
     const grp = new THREE.Group();
+    const isPlayer = zPos > 0;
+    const fDir = zPos < 0 ? 1 : -1;
+
     const stone = new THREE.MeshPhysicalMaterial({
       color: 0xa2947e, map: this.pbrTex.stoneDiffuse, bumpMap: this.pbrTex.stoneBump, bumpScale: 0.085,
       roughness: 0.86, metalness: 0.04, envMapIntensity: 0.72
@@ -3732,6 +3789,10 @@ class BattleRenderer3D {
     const darkStone = new THREE.MeshPhysicalMaterial({
       color: 0x5d5245, map: this.pbrTex.stoneDiffuse, bumpMap: this.pbrTex.stoneBump, bumpScale: 0.095,
       roughness: 0.90, metalness: 0.06, envMapIntensity: 0.65
+    });
+    const cutStone = new THREE.MeshPhysicalMaterial({
+      color: 0x7b6f5e, map: this.pbrTex.stoneDiffuse, bumpMap: this.pbrTex.stoneBump, bumpScale: 0.07,
+      roughness: 0.84, metalness: 0.05, transparent: true, opacity: 0.44, depthWrite: false
     });
     const lacquerRed = new THREE.MeshPhysicalMaterial({
       color: 0x961c16, roughness: 0.24, metalness: 0.08, clearcoat: 0.94, clearcoatRoughness: 0.10,
@@ -3751,109 +3812,141 @@ class BattleRenderer3D {
     const banner = new THREE.MeshStandardMaterial({
       color: bannerHex, emissive: bannerHex, emissiveIntensity: 0.22, roughness: 0.62, side: THREE.DoubleSide
     });
-    const fDir = zPos < 0 ? 1 : -1;
-
-    // Grounded Stone Plinth + Beveled Cornice Course + Parapet Wall
-    const baseWall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.8, 1.32, 2.45), darkStone);
-    baseWall.position.set(0, 0.66, 0); baseWall.receiveShadow = true; baseWall.castShadow = true; grp.add(baseWall);
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.2, 1.62, 1.82), stone);
-    wall.position.set(0, 1.92, 0); wall.castShadow = true; wall.receiveShadow = true; grp.add(wall);
-    const cornice = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.45, 0.16, 2.02), darkStone);
-    cornice.position.set(0, 2.72, 0); cornice.castShadow = true; grp.add(cornice);
-
-    // Ornate Battlements with Capstones
-    for (let x = -11.2; x <= 11.2; x += 1.4) {
-      const c = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.56, 1.88), darkStone);
-      c.position.set(x, 3.04, 0); c.castShadow = true; grp.add(c);
-    }
-
-    // Grand Two-Tier Han Dynasty Gatehouse
-    const tower1 = new THREE.Mesh(new THREE.BoxGeometry(6.3, 3.6, 2.55), stone);
-    tower1.position.set(0, 1.8, 0); tower1.castShadow = true; tower1.receiveShadow = true; grp.add(tower1);
-    const gallery1 = new THREE.Mesh(new THREE.BoxGeometry(5.85, 1.18, 2.38), lacquerRed);
-    gallery1.position.set(0, 3.88, 0); gallery1.castShadow = true; grp.add(gallery1);
-    [-2.5, -1.25, 0, 1.25, 2.5].forEach(px => {
-      const pil = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 1.32, 12), lacquerRed);
-      pil.position.set(px, 3.88, fDir * 1.24); pil.castShadow = true; grp.add(pil);
-      const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.14, 10), darkStone);
-      plinth.position.set(px, 3.28, fDir * 1.24); grp.add(plinth);
-    });
-    // Flared Glazed Han Eave Tier 1 + Golden Ridge + Chiwei Roof Ornaments!
-    const eave1 = new THREE.Mesh(new THREE.BoxGeometry(7.35, 0.24, 3.7), roof);
-    eave1.position.set(0, 4.48, 0); eave1.castShadow = true; grp.add(eave1);
-    const roof1 = new THREE.Mesh(new THREE.ConeGeometry(4.9, 1.18, 4), roof);
-    roof1.rotation.y = Math.PI / 4; roof1.position.set(0, 5.10, 0); roof1.castShadow = true; grp.add(roof1);
-    const ridge1 = new THREE.Mesh(new THREE.BoxGeometry(3.7, 0.22, 0.26), goldTrim);
-    ridge1.position.set(0, 5.64, 0); grp.add(ridge1);
-    [-1.85, 1.85].forEach(ox => {
-      const chiwei = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.42, 6), goldTrim);
-      chiwei.position.set(ox, 5.84, 0); grp.add(chiwei);
-    });
-
-    // Upper Han Watchtower Tier 2
-    const tower2 = new THREE.Mesh(new THREE.BoxGeometry(3.45, 1.35, 1.85), lacquerRed);
-    tower2.position.set(0, 5.90, 0); tower2.castShadow = true; grp.add(tower2);
-    const eave2 = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.22, 2.7), roof);
-    eave2.position.set(0, 6.55, 0); eave2.castShadow = true; grp.add(eave2);
-    const roof2 = new THREE.Mesh(new THREE.ConeGeometry(2.85, 1.12, 4), roof);
-    roof2.rotation.y = Math.PI / 4; roof2.position.set(0, 7.12, 0); roof2.castShadow = true; grp.add(roof2);
-    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), goldTrim);
-    finial.position.set(0, 7.75, 0); grp.add(finial);
-
-    // Bronze-Studded Double Castle Gate with Golden Lion-Ring Knockers!
-    const gateFrame = new THREE.Mesh(new THREE.BoxGeometry(3.55, 2.38, 2.62), darkStone);
-    gateFrame.position.set(0, 1.19, 0); grp.add(gateFrame);
-    const door = new THREE.Mesh(new THREE.BoxGeometry(3.02, 2.12, 2.68), gate);
-    door.position.set(0, 1.06, 0); grp.add(door);
-    [-0.65, 0.65].forEach(dx => {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.048, 10, 18), goldTrim);
-      ring.position.set(dx, 1.12, fDir * 1.38); grp.add(ring);
-    });
-    // Bronze gate studs
-    for (let sx = -1.1; sx <= 1.1; sx += 0.55) {
-      for (let sy = 0.45; sy <= 1.75; sy += 0.45) {
-        const stud = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), goldTrim);
-        stud.position.set(sx, sy, fDir * 1.35); grp.add(stud);
-      }
-    }
-
-    // Twin Flanking Corner Watchtowers with Vertical War Banners
-    [-9.2, 9.2].forEach(x => {
-      const t = new THREE.Mesh(new THREE.BoxGeometry(2.85, 3.4, 2.25), stone);
-      t.position.set(x, 1.7, 0); t.castShadow = true; t.receiveShadow = true; grp.add(t);
-      const tTop = new THREE.Mesh(new THREE.BoxGeometry(2.55, 0.92, 1.95), lacquerRed);
-      tTop.position.set(x, 3.72, 0); tTop.castShadow = true; grp.add(tTop);
-      const tr = new THREE.Mesh(new THREE.ConeGeometry(2.48, 1.15, 4), roof);
-      tr.rotation.y = Math.PI / 4; tr.position.set(x, 4.58, 0); tr.castShadow = true; grp.add(tr);
-      const bPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.65, 8), goldTrim);
-      bPole.position.set(x, 5.5, 0); grp.add(bPole);
-      const b = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 2.2), banner);
-      b.position.set(x + 0.6, 5.4, 0); grp.add(b);
-    });
-
-    // Glowing Bronze Braziers Flanking Gate (HDR emissive triggers subtle UnrealBloomPass fire halo!)
     const flameMat = new THREE.MeshStandardMaterial({
       color: 0xffd275, emissive: 0xff8a22, emissiveIntensity: 3.1, roughness: 0.25, metalness: 0.0
     });
-    [-2.8, 2.8].forEach(x => {
-      const brazier = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.16, 0.46, 12), darkStone);
-      brazier.position.set(x, 2.35, fDir * 1.26); grp.add(brazier);
-      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.60, 8), flameMat);
-      flame.position.set(x, 2.76, fDir * 1.26);
-      grp.add(flame);
-      const pl = new THREE.PointLight(0xff8e2b, 4.2, 9.5, 2);
-      pl.position.copy(flame.position);
-      grp.add(pl);
-      this.torchLights.push({ light: pl, flame, base: 4.2 });
-    });
+
+    if (isPlayer) {
+      // ---- UNOBSTRUCTED LOW-PROFILE FOREGROUND PLAYER FORTRESS (ZERO CAMERA OCCLUSION!) ----
+      const baseWall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.8, 0.72, 2.0), darkStone);
+      baseWall.position.set(0, 0.36, 0.2); baseWall.receiveShadow = true; grp.add(baseWall);
+      const cutParapet = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.4, 0.42, 1.55), cutStone);
+      cutParapet.position.set(0, 0.92, 0.2); grp.add(cutParapet);
+      // Low crenellation silhouettes (translucent so units directly behind stay 100% readable)
+      for (let x = -11.2; x <= 11.2; x += 1.6) {
+        if (Math.abs(x) < 2.2) continue; // Keep central gate mouth completely open!
+        const c = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.28, 1.5), cutStone);
+        c.position.set(x, 1.24, 0.2); grp.add(c);
+      }
+      // Clean Low Gate Sill + Bronze-Studded Gate Framing (max y = 1.15, zero roof occlusion!)
+      const gateFrameL = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.18, 2.15), darkStone);
+      gateFrameL.position.set(-1.78, 0.59, 0.2); grp.add(gateFrameL);
+      const gateFrameR = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.18, 2.15), darkStone);
+      gateFrameR.position.set(1.78, 0.59, 0.2); grp.add(gateFrameR);
+      const door = new THREE.Mesh(new THREE.BoxGeometry(3.05, 0.92, 1.85), gate);
+      door.position.set(0, 0.46, 0.25); grp.add(door);
+      [-0.65, 0.65].forEach(dx => {
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.04, 10, 16), goldTrim);
+        ring.position.set(dx, 0.56, fDir * 0.75); grp.add(ring);
+      });
+      // Compact Gold Corner Finials & Far-Edge Green Banners (tucked outside playfield width!)
+      [-11.5, 11.5].forEach(x => {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 1.85, 8), goldTrim);
+        post.position.set(x, 1.35, 0.2); grp.add(post);
+        const b = new THREE.Mesh(new THREE.PlaneGeometry(0.88, 1.25), banner);
+        b.position.set(x + (x < 0 ? -0.45 : 0.45), 1.65, 0.2); grp.add(b);
+      });
+      // Low Gate Braziers
+      [-2.35, 2.35].forEach(x => {
+        const brazier = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.14, 0.36, 10), darkStone);
+        brazier.position.set(x, 1.18, fDir * 0.55); grp.add(brazier);
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.44, 8), flameMat);
+        flame.position.set(x, 1.50, fDir * 0.55); grp.add(flame);
+        const pl = new THREE.PointLight(0xff8e2b, 3.0, 8.0, 2);
+        pl.position.copy(flame.position); grp.add(pl);
+        this.torchLights.push({ light: pl, flame, base: 3.0 });
+      });
+    } else {
+      // ---- GRAND ENEMY HAN DYNASTY FORTRESS (BACKGROUND) ----
+      const baseWall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.8, 1.32, 2.45), darkStone);
+      baseWall.position.set(0, 0.66, 0); baseWall.receiveShadow = true; baseWall.castShadow = true; grp.add(baseWall);
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.2, 1.62, 1.82), stone);
+      wall.position.set(0, 1.92, 0); wall.castShadow = true; wall.receiveShadow = true; grp.add(wall);
+      const cornice = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.45, 0.16, 2.02), darkStone);
+      cornice.position.set(0, 2.72, 0); cornice.castShadow = true; grp.add(cornice);
+
+      for (let x = -11.2; x <= 11.2; x += 1.4) {
+        const c = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.56, 1.88), darkStone);
+        c.position.set(x, 3.04, 0); c.castShadow = true; grp.add(c);
+      }
+
+      const tower1 = new THREE.Mesh(new THREE.BoxGeometry(6.3, 3.6, 2.55), stone);
+      tower1.position.set(0, 1.8, 0); tower1.castShadow = true; tower1.receiveShadow = true; grp.add(tower1);
+      const gallery1 = new THREE.Mesh(new THREE.BoxGeometry(5.85, 1.18, 2.38), lacquerRed);
+      gallery1.position.set(0, 3.88, 0); gallery1.castShadow = true; grp.add(gallery1);
+      [-2.5, -1.25, 0, 1.25, 2.5].forEach(px => {
+        const pil = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 1.32, 12), lacquerRed);
+        pil.position.set(px, 3.88, fDir * 1.24); pil.castShadow = true; grp.add(pil);
+        const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.14, 10), darkStone);
+        plinth.position.set(px, 3.28, fDir * 1.24); grp.add(plinth);
+      });
+      const eave1 = new THREE.Mesh(new THREE.BoxGeometry(7.35, 0.24, 3.7), roof);
+      eave1.position.set(0, 4.48, 0); eave1.castShadow = true; grp.add(eave1);
+      const roof1 = new THREE.Mesh(new THREE.ConeGeometry(4.9, 1.18, 4), roof);
+      roof1.rotation.y = Math.PI / 4; roof1.position.set(0, 5.10, 0); roof1.castShadow = true; grp.add(roof1);
+      const ridge1 = new THREE.Mesh(new THREE.BoxGeometry(3.7, 0.22, 0.26), goldTrim);
+      ridge1.position.set(0, 5.64, 0); grp.add(ridge1);
+      [-1.85, 1.85].forEach(ox => {
+        const chiwei = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.42, 6), goldTrim);
+        chiwei.position.set(ox, 5.84, 0); grp.add(chiwei);
+      });
+
+      const tower2 = new THREE.Mesh(new THREE.BoxGeometry(3.45, 1.35, 1.85), lacquerRed);
+      tower2.position.set(0, 5.90, 0); tower2.castShadow = true; grp.add(tower2);
+      const eave2 = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.22, 2.7), roof);
+      eave2.position.set(0, 6.55, 0); eave2.castShadow = true; grp.add(eave2);
+      const roof2 = new THREE.Mesh(new THREE.ConeGeometry(2.85, 1.12, 4), roof);
+      roof2.rotation.y = Math.PI / 4; roof2.position.set(0, 7.12, 0); roof2.castShadow = true; grp.add(roof2);
+      const finial = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), goldTrim);
+      finial.position.set(0, 7.75, 0); grp.add(finial);
+
+      const gateFrame = new THREE.Mesh(new THREE.BoxGeometry(3.55, 2.38, 2.62), darkStone);
+      gateFrame.position.set(0, 1.19, 0); grp.add(gateFrame);
+      const door = new THREE.Mesh(new THREE.BoxGeometry(3.02, 2.12, 2.68), gate);
+      door.position.set(0, 1.06, 0); grp.add(door);
+      [-0.65, 0.65].forEach(dx => {
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.048, 10, 18), goldTrim);
+        ring.position.set(dx, 1.12, fDir * 1.38); grp.add(ring);
+      });
+      for (let sx = -1.1; sx <= 1.1; sx += 0.55) {
+        for (let sy = 0.45; sy <= 1.75; sy += 0.45) {
+          const stud = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), goldTrim);
+          stud.position.set(sx, sy, fDir * 1.35); grp.add(stud);
+        }
+      }
+
+      [-9.2, 9.2].forEach(x => {
+        const t = new THREE.Mesh(new THREE.BoxGeometry(2.85, 3.4, 2.25), stone);
+        t.position.set(x, 1.7, 0); t.castShadow = true; t.receiveShadow = true; grp.add(t);
+        const tTop = new THREE.Mesh(new THREE.BoxGeometry(2.55, 0.92, 1.95), lacquerRed);
+        tTop.position.set(x, 3.72, 0); tTop.castShadow = true; grp.add(tTop);
+        const tr = new THREE.Mesh(new THREE.ConeGeometry(2.48, 1.15, 4), roof);
+        tr.rotation.y = Math.PI / 4; tr.position.set(x, 4.58, 0); tr.castShadow = true; grp.add(tr);
+        const bPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.65, 8), goldTrim);
+        bPole.position.set(x, 5.5, 0); grp.add(bPole);
+        const b = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 2.2), banner);
+        b.position.set(x + 0.6, 5.4, 0); grp.add(b);
+      });
+
+      [-2.8, 2.8].forEach(x => {
+        const brazier = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.16, 0.46, 12), darkStone);
+        brazier.position.set(x, 2.35, fDir * 1.26); grp.add(brazier);
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.60, 8), flameMat);
+        flame.position.set(x, 2.76, fDir * 1.26); grp.add(flame);
+        const pl = new THREE.PointLight(0xff8e2b, 4.2, 9.5, 2);
+        pl.position.copy(flame.position); grp.add(pl);
+        this.torchLights.push({ light: pl, flame, base: 4.2 });
+      });
+    }
 
     // Castle Battle-Damage Fire & Black Smoke Group
     const dmgFireGrp = new THREE.Group();
     const fireCones = [];
     const smokePuffs = [];
-    [[-0.9, 3.2, 0.4], [0, 4.1, 0.5], [1.1, 3.1, 0.4], [-3.2, 2.7, 0.3], [3.2, 2.7, 0.3]].forEach(([fx, fy, fz], idx) => {
+    const fyOff = isPlayer ? 1.0 : 3.1;
+    [[-0.9, fyOff, 0.4], [0, fyOff + 0.7, 0.5], [1.1, fyOff, 0.4], [-3.2, fyOff - 0.3, 0.3], [3.2, fyOff - 0.3, 0.3]].forEach(([fx, fy, fz], idx) => {
       const fc = new THREE.Mesh(
-        new THREE.ConeGeometry(0.55 + (idx % 2) * 0.25, 2.2 + (idx % 3) * 0.6, 8),
+        new THREE.ConeGeometry(0.55 + (idx % 2) * 0.25, 2.0 + (idx % 3) * 0.5, 8),
         new THREE.MeshBasicMaterial({ color: idx % 2 === 0 ? 0xff5211 : 0xffbe33, transparent: true, opacity: 0.90 })
       );
       fc.position.set(fx, fy, fz * (zPos < 0 ? 1 : -1));
@@ -3863,18 +3956,117 @@ class BattleRenderer3D {
         this.sharedGeo.smoke,
         new THREE.MeshBasicMaterial({ color: 0x1a1718, transparent: true, opacity: 0.56 })
       );
-      sm.position.set(fx, fy + 1.4, fz * (zPos < 0 ? 1 : -1));
-      dmgFireGrp.add(sm); smokePuffs.push({ mesh: sm, baseY: fy + 1.2, phase: idx * 1.3 });
+      sm.position.set(fx, fy + 1.2, fz * (zPos < 0 ? 1 : -1));
+      dmgFireGrp.add(sm); smokePuffs.push({ mesh: sm, baseY: fy + 1.0, phase: idx * 1.3 });
     });
     const fireLight = new THREE.PointLight(0xff5500, 0, 14, 2);
-    fireLight.position.set(0, 4.6, zPos < 0 ? 1.5 : -1.5);
+    fireLight.position.set(0, fyOff + 1.0, zPos < 0 ? 1.5 : -1.5);
     dmgFireGrp.add(fireLight);
     dmgFireGrp.visible = false;
     grp.add(dmgFireGrp);
-    grp.userData = { dmgFireGrp, fireCones, smokePuffs, fireLight };
+    grp.userData = { dmgFireGrp, fireCones, smokePuffs, fireLight, stoneMat: stone, darkStoneMat: darkStone };
 
     grp.position.set(0, 0, zPos);
     return grp;
+  }
+
+  // Asynchronous Loader for Official BOND 3D GLB Models (Castle Wall, Battering Ram, Pine Trees, Weapons) + VFX Sprites!
+  loadOfficialModels() {
+    this.officialRamProto = null;
+    this.officialWeapons = {};
+    // 1. Official Particle VFX Sprites (Fire / Smoke / Spark)
+    const tl = new THREE.TextureLoader();
+    this.vfxTex = {};
+    ['fire', 'smoke', 'spark'].forEach(k => {
+      tl.load(`./assets/img/vfx/${k}.webp`, tex => {
+        tex.encoding = THREE.sRGBEncoding;
+        this.vfxTex[k] = tex;
+        if (k === 'spark' && this.embers && this.embers.material) {
+          this.embers.material.map = tex;
+          this.embers.material.transparent = true;
+          this.embers.material.blending = THREE.AdditiveBlending;
+          this.embers.material.depthWrite = false;
+          this.embers.material.size = 0.42;
+          this.embers.material.needsUpdate = true;
+        }
+      }, undefined, () => {});
+    });
+
+    if (typeof THREE.GLTFLoader !== 'function') return;
+    const loader = new THREE.GLTFLoader();
+
+    // 2. Official Sculpted 3D Han Bastion Wall Overlay for Enemy Castle (bt_101_own_wall_mesh!)
+    loader.load('./assets/models/castle_wall.glb', gltf => {
+      if (!this.enemyCastle) return;
+      const wallMat = new THREE.MeshPhysicalMaterial({
+        color: 0x8f806b, map: this.pbrTex.stoneDiffuse, bumpMap: this.pbrTex.stoneBump, bumpScale: 0.09,
+        roughness: 0.88, metalness: 0.05, envMapIntensity: 0.72
+      });
+      const root = gltf.scene;
+      root.traverse(o => {
+        if (o.isMesh) {
+          o.geometry.computeVertexNormals();
+          o.material = wallMat;
+          o.castShadow = true;
+          o.receiveShadow = true;
+        }
+      });
+      // Center and fit bt_101_own_wall_mesh cleanly behind Enemy Castle rampart!
+      root.scale.set(1.04, 0.92, 0.36);
+      root.position.set(0, 0.02, 0.55);
+      this.enemyCastle.add(root);
+    }, undefined, () => {});
+
+    // 3. Official 3D Battering Ram (CollisionCar + Ram + 6 Wheels + Chains) for Siege Gate Cutscene!
+    loader.load('./assets/models/battering_ram.glb', gltf => {
+      const woodMat = new THREE.MeshPhysicalMaterial({
+        color: 0x6b3e1b, roughness: 0.72, metalness: 0.08, bumpMap: this.pbrTex.woodBump, bumpScale: 0.06, clearcoat: 0.16
+      });
+      const ironMat = new THREE.MeshPhysicalMaterial({
+        color: 0x3b414c, roughness: 0.28, metalness: 0.90, roughnessMap: this.pbrTex.metalRough, clearcoat: 0.45, envMapIntensity: 1.5
+      });
+      const root = gltf.scene;
+      root.traverse(o => {
+        if (o.isMesh) {
+          o.geometry.computeVertexNormals();
+          const isMetal = /ram|chain/i.test(o.name);
+          o.material = isMetal ? ironMat : woodMat;
+          o.castShadow = true;
+          o.receiveShadow = true;
+        }
+      });
+      root.scale.setScalar(1.45);
+      root.position.y = 0.18;
+      this.officialRamProto = root;
+    }, undefined, () => {});
+
+    // 4. Official 3D Pine Tree Mesh on Grassland Right Flank!
+    if (this.mapTheme === 'grassland') {
+      loader.load('./assets/models/pine_tree.glb', gltf => {
+        const pineMat = new THREE.MeshPhysicalMaterial({ color: 0x264820, roughness: 0.80, clearcoat: 0.10, bumpMap: this.pbrTex.groundBump, bumpScale: 0.04 });
+        const proto = gltf.scene;
+        proto.traverse(o => {
+          if (o.isMesh) { o.geometry.computeVertexNormals(); o.material = pineMat; o.castShadow = true; o.receiveShadow = true; }
+        });
+        for (let z = -10; z <= 10; z += 4.0) {
+          const clone = proto.clone();
+          clone.position.set(FIELD_W / 2 + 2.75 + (Math.abs(z) % 3) * 0.35, 0.15, z);
+          clone.scale.setScalar(1.05 + (Math.abs(z) % 2) * 0.22);
+          clone.rotation.y = z * 1.1;
+          this.scene.add(clone);
+        }
+      }, undefined, () => {});
+    }
+
+    // 5. Official Low-Poly 3D Weapons Cache (spear_low / bow_low / sword_low / shield_low)
+    loader.load('./assets/models/weapons.glb', gltf => {
+      gltf.scene.traverse(o => {
+        if (o.isMesh) {
+          o.geometry.computeVertexNormals();
+          this.officialWeapons[o.name] = o.geometry;
+        }
+      });
+    }, undefined, () => {});
   }
 
   buildEmbers() {
@@ -4500,21 +4692,27 @@ class BattleRenderer3D {
     let ramGrp = null;
 
     if (ev.isGate) {
-      // Massive Wheeled Battering Ram charging straight into Gate!
+      // Massive Wheeled Battering Ram charging straight into Gate (Official BOND 3D GLB when loaded!)
       ramGrp = new THREE.Group();
-      const log = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 4.4, 10), woodMat);
-      log.rotation.x = Math.PI / 2; log.position.set(0, 1.05, 0); ramGrp.add(log);
-      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.36, 0.85, 8), ironMat);
-      tip.rotation.x = ev.side === 'enemy' ? -Math.PI / 2 : Math.PI / 2;
-      tip.position.set(0, 1.05, -dir * 2.5); ramGrp.add(tip);
-      [-0.55, 0.55].forEach(wx => {
-        [-1.1, 1.1].forEach(wz => {
-          const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.16, 10), woodMat);
-          wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.45, wz); ramGrp.add(wh);
+      if (this.officialRamProto) {
+        const ramModel = this.officialRamProto.clone();
+        if (ev.side === 'enemy') ramModel.rotation.y = Math.PI;
+        ramGrp.add(ramModel);
+      } else {
+        const log = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 4.4, 10), woodMat);
+        log.rotation.x = Math.PI / 2; log.position.set(0, 1.05, 0); ramGrp.add(log);
+        const tip = new THREE.Mesh(new THREE.ConeGeometry(0.36, 0.85, 8), ironMat);
+        tip.rotation.x = ev.side === 'enemy' ? -Math.PI / 2 : Math.PI / 2;
+        tip.position.set(0, 1.05, -dir * 2.5); ramGrp.add(tip);
+        [-0.55, 0.55].forEach(wx => {
+          [-1.1, 1.1].forEach(wz => {
+            const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.16, 10), woodMat);
+            wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.45, wz); ramGrp.add(wh);
+          });
         });
-      });
+      }
       // 6 pushing soldiers along ram sides
-      [-0.82, 0.82].forEach(px => {
+      [-1.08, 1.08].forEach(px => {
         [-1.2, 0, 1.2].forEach(pz => {
           const b = new THREE.Mesh(this.sharedGeo.infBody, soldMat);
           b.position.set(px, 0.38, pz); b.scale.setScalar(1.3); ramGrp.add(b);
@@ -5606,6 +5804,14 @@ const App = {
   applyBustImg(imgEl, obj) {
     if (!imgEl || !obj) return;
     const src = obj.cutoutImg || obj.img || '';
+    const fb = obj.fallbackImg || obj.img || '';
+    imgEl.onerror = () => {
+      if (fb && imgEl.src !== fb) {
+        imgEl.onerror = null;
+        imgEl.src = fb;
+        imgEl.classList.remove('is-alpha-cutout');
+      }
+    };
     imgEl.src = src;
     imgEl.classList.toggle('is-alpha-cutout', !!obj.cutoutImg);
   },
@@ -5844,6 +6050,7 @@ const App = {
       this.enterFullscreenLandscape(false);
     }
     sfx.bannerClash();
+    sfx.playBGM('battle');
 
     const mapTheme = document.getElementById('map-select').value || 'grassland';
     const pAoW = document.getElementById('aow-select').value;
@@ -5976,7 +6183,7 @@ const App = {
       document.getElementById('btn-speed').textContent = `${this.speedMul}x`;
     });
     document.getElementById('btn-mute').addEventListener('click', () => {
-      sfx.muted = !sfx.muted;
+      sfx.setMuted(!sfx.muted);
       document.getElementById('btn-mute').textContent = sfx.muted ? '音效：關' : '音效：開';
     });
     document.getElementById('btn-exit').addEventListener('click', () => this.exitToDeck());
@@ -6346,6 +6553,24 @@ const App = {
     document.getElementById('ult-diamond-en').textContent = enLbl;
     document.getElementById('ult-diamond-zh').innerHTML = zhLbl;
 
+    // Populate Official BOND zh-Hant Dual-Glyph Calligraphy Stamp (Gold for Player, Ice-Blue for Enemy!)
+    const stampKeyMap = {
+      fire: 'burning', water: 'flood', lightning: 'thunderbolt',
+      rally: 'powerup', self: 'powerup',
+      debuff: 'interruput', taunt: 'interruput',
+      heal_aoe: 'reinforcementes',
+      dance_heal: 'lovelydance', dance_curse: 'lovelydance'
+    };
+    const stKey = stampKeyMap[ev.spellKind] || 'powerup';
+    const stSide = ev.side === 'enemy' ? 'enemy' : 'player';
+    const glyphWrap = document.getElementById('ult-stamp-glyphs');
+    if (glyphWrap) {
+      glyphWrap.className = 'has-glyphs';
+      glyphWrap.innerHTML =
+        `<img src="./assets/img/stamps/stamp_${stKey}_${stSide}_01.webp" alt="" onerror="this.parentElement.classList.remove('has-glyphs')">` +
+        `<img src="./assets/img/stamps/stamp_${stKey}_${stSide}_02.webp" alt="" onerror="this.parentElement.classList.remove('has-glyphs')">`;
+    }
+
     // Beat 1 Clash Panel (Frameless Close-up Bust!)
     this.applyBustImg(document.getElementById('clash-img'), bustObj);
     document.getElementById('clash-faction').textContent = ev.factionName || ev.factionTag;
@@ -6379,13 +6604,23 @@ const App = {
       dur
     };
     sfx.bannerClash();
+    if (bustObj && bustObj.id) sfx.playVoice(bustObj.id, 'cast');
   },
 
   triggerAoWDragon(ev) {
-    // SEGA Ver.3 Cosmic Taiji -> Coiling Golden Dragon Art of War Cutscene!
+    // SEGA Ver.3 Cosmic Taiji -> Coiling Golden Dragon Art of War Cutscene + Official Gunshi Bust-Up!
     this.aowDragonTimer = 2.65;
     this.aowDragonPhase = 0;
     this.pendingPostVfx = ev.postVfx || [];
+    const gMap = { saiki: 'saiki', renkan: 'renkan', shinsoku: 'shinsoku', zouen: 'zoen', zoen: 'zoen' };
+    const gKey = gMap[ev.aowId] || 'saiki';
+    const gStage = document.getElementById('aow-gunshi-stage');
+    const gImg = document.getElementById('aow-gunshi-img');
+    if (gStage && gImg) {
+      gImg.onerror = () => gStage.classList.remove('show');
+      gImg.src = `./assets/img/bustup/gunshi_${gKey}.webp`;
+      gStage.classList.add('show');
+    }
     if (this.cutscenePlayer) {
       this.cutscenePlayer.start(
         'aow_dragon',
@@ -6417,6 +6652,7 @@ const App = {
     this.applyBustImg(document.getElementById('ambush-img'), ambGen || ev);
     document.getElementById('ambush-overlay').className = 'show' + (ev.side === 'enemy' ? ' enemy-ambush' : '');
     this.ren.cutinFocus = { x: ev.x, z: ev.z, orbit: false };
+    if (ambGen) sfx.playVoice(ambGen.id, 'atk');
   },
 
   flashCastleGauge(targetSide) {
@@ -6467,12 +6703,24 @@ const App = {
     }
 
     const ov = document.getElementById('finale-overlay');
+    const fStamp = document.getElementById('finale-stamp-row');
+    const fMain = document.getElementById('finale-main-txt');
+    let stampFiles = [];
     if (sim.winBySiege) {
-      document.getElementById('finale-main-txt').textContent = '攻 略';
+      fMain.textContent = '攻 略';
       document.getElementById('finale-sub-txt').textContent = isWin ? '敵城陷落・大勝利！' : '我城陷落・敗北';
+      stampFiles = isLose ? ['lose_01', 'lose_02'] : ['siegeend_01', 'siegeend_02', 'siegeend_03', 'siegeend_04'];
     } else {
-      document.getElementById('finale-main-txt').textContent = '時間終了';
-      document.getElementById('finale-sub-txt').textContent = 'TIME UP';
+      fMain.textContent = '時間終了';
+      document.getElementById('finale-sub-txt').textContent = isWin ? '判定勝利' : isLose ? '判定敗北' : '平手';
+      stampFiles = (!isWin && !isLose) ? ['draw_01', 'draw_02'] : ['timeup_01', 'timeup_02', 'timeup_03', 'timeup_04'];
+    }
+    if (fStamp && stampFiles.length) {
+      fStamp.classList.remove('hidden');
+      fMain.style.display = 'none';
+      fStamp.innerHTML = stampFiles.map(sf =>
+        `<img src="./assets/img/stamps/${sf}.webp" alt="" onerror="this.parentElement.classList.add('hidden');document.getElementById('finale-main-txt').style.display=''">`
+      ).join('');
     }
     ov.className = 'show text-on' + (isLose ? ' defeat-pose' : '');
     sfx.kaizenGong();
@@ -6908,6 +7156,9 @@ const App = {
     cancelAnimationFrame(this.rafId);
     this.sim = null;
     this.vpadDrags.clear();
+    const gs = document.getElementById('aow-gunshi-stage');
+    if (gs) gs.classList.remove('show');
+    sfx.playBGM('setup');
     if (this.ren) {
       this.ren.stopHeroStratagem3D();
       this.ren.stopSiegeCinema();
@@ -7040,6 +7291,8 @@ const App = {
       }
       if (this.aowDragonTimer <= 0) {
         this.aowDragonTimer = 0;
+        const gs = document.getElementById('aow-gunshi-stage');
+        if (gs) gs.classList.remove('show');
         if (this.cutscenePlayer) this.cutscenePlayer.stop();
         while (this.pendingPostVfx.length) this.handlePostVfxItem(this.pendingPostVfx.shift());
       }
