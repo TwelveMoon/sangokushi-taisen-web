@@ -9,7 +9,7 @@
 <meta name="screen-orientation" content="landscape">
 <meta name="x5-orientation" content="landscape">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰 網頁版 v2.0</title>
+<title>三國志大戰 網頁版 v3.0</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -630,10 +630,37 @@
     text-shadow: 0 0 14px rgba(255,220,100,0.98), 0 4px 0 #3a0404;
   }
 
-  /* Beat 3: Pure Live 3D Character Animation Stage (No static poster covering 3D hero!) */
+  /* Beat 3: Upscaled SEGA Ver.3 3D Skill Movie Stage + Live 3D Fallback! */
   #ult-cg-stage { display: none; }
+  #ult-video-stage {
+    position: absolute; inset: 0; z-index: 64; overflow: hidden; pointer-events: none;
+    opacity: 0; background: #06040a;
+    transition: opacity 0.24s ease;
+  }
+  #ult-theater.stage2.has-video #ult-video-stage { opacity: 1; }
+  #ult-video-stage video,
+  #aow-video-stage video,
+  #siege-video-stage video {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; filter: contrast(1.04) saturate(1.08);
+    transform: scale(1.03);
+  }
+  .ult-vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 78% 72% at 50% 48%, transparent 44%, rgba(6,4,10,0.72) 100%);
+  }
+  #aow-video-stage {
+    position: absolute; inset: 0; z-index: 62; overflow: hidden; pointer-events: none;
+    display: none; opacity: 0.96; background: #04060c;
+  }
+  #aow-video-stage.show { display: block; }
+  #siege-video-stage {
+    position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+    opacity: 0; background: #08060a; transition: opacity 0.22s ease;
+  }
+  #siege-cutscene.has-video.action-on #siege-video-stage { opacity: 0.94; }
 
-  /* Frameless Close-up Hero Bust Cutout Echo alongside Live 3D Character Animation! */
+  /* Frameless Close-up Hero Bust Cutout Echo alongside Ver.3 Skill Animation! */
   #ult-3d-hero-echo {
     position: absolute; right: 2%; bottom: 19%; width: 220px; height: 260px; z-index: 65;
     overflow: visible; opacity: 0; pointer-events: none;
@@ -783,6 +810,7 @@
   }
   #siege-cutscene.show { display: flex; }
   .sc-stamp-box {
+    position: relative; z-index: 3;
     padding: 16px 34px; border-radius: 12px; text-align: center;
     background: linear-gradient(180deg, rgba(210,38,18,0.94), rgba(110,12,8,0.96));
     border: 4px solid #ffe494; box-shadow: 0 0 45px rgba(255,100,20,0.95);
@@ -796,7 +824,7 @@
   .sc-stamp-zh { font-size: 54px; font-weight: 900; color: #fff; letter-spacing: 14px; line-height: 1; text-shadow: 0 4px 0 #2e0606; }
   .sc-stamp-en { font-size: 13px; font-weight: 900; color: #ffe699; letter-spacing: 3px; margin-top: 4px; }
   .sc-hud-bar {
-    position: absolute; left: 10%; right: 10%; bottom: 12%; padding: 8px 18px;
+    position: absolute; z-index: 3; left: 10%; right: 10%; bottom: 12%; padding: 8px 18px;
     background: linear-gradient(90deg, transparent, rgba(16,8,6,0.9), transparent);
     border-top: 2px solid var(--gold-bright); border-bottom: 2px solid var(--gold-bright);
     text-align: center; opacity: 0; transition: opacity 0.22s;
@@ -1422,7 +1450,7 @@
     <div class="brand-title">
       <div class="brand-seal">戰</div>
       <h1>三國志大戰 網頁版</h1>
-      <span class="brand-badge">v2.0</span>
+      <span class="brand-badge">v3.0</span>
     </div>
     <div class="preset-bar">
       <button class="preset-btn wei" data-preset="wei">魏・神速</button>
@@ -1613,8 +1641,12 @@
         <button class="intro-skip-btn" id="btn-skip-intro">跳過開場 ▸</button>
       </div>
 
-      <!-- 2. First-Siege 3D Target Strike Cutscene Overlay (Wall Ladder / Gate Battering Ram) -->
+      <!-- 2. First-Siege 3D Target Strike Cutscene Overlay (Wall Ladder / Battering Ram + Ver.3 HD Movie!) -->
       <div id="siege-cutscene">
+        <div id="siege-video-stage">
+          <video id="siege-video" playsinline webkit-playsinline muted preload="none"></video>
+          <div class="ult-vignette"></div>
+        </div>
         <div class="sc-stamp-box">
           <div class="sc-stamp-zh">攻 城</div>
           <div class="sc-stamp-en">TARGET STRIKE!</div>
@@ -1640,7 +1672,7 @@
         </div>
       </div>
 
-      <!-- 4. Unified 4-Beat Stratagem Cutscene Theater (ALL 20 Generals: Clash -> Ink Seal -> CG / 3D Cinema -> Climax) -->
+      <!-- 4. Unified 4-Beat Stratagem Cutscene Theater (ALL 20 Generals: Clash -> Ink Seal -> Ver.3 HD Movie / 3D Cinema -> Climax) -->
       <div id="ult-theater">
         <div class="letterbox-bar top"></div>
         <div id="ult-dragon-bg"></div>
@@ -1671,6 +1703,10 @@
           <img id="ult-cg-img" src="" alt="">
           <div class="ult-vignette"></div>
         </div>
+        <div id="ult-video-stage">
+          <video id="ult-video" playsinline webkit-playsinline muted preload="none"></video>
+          <div class="ult-vignette"></div>
+        </div>
         <div id="ult-3d-hero-echo"><img id="ult-3d-hero-img" src="" alt=""></div>
         <div class="ult-caption-wrap">
           <div class="ult-cap-top">
@@ -1684,7 +1720,11 @@
         <div class="letterbox-bar bot"></div>
       </div>
 
-      <!-- Official Transparent Gunshi (Strategist) Art of War Cut-in -->
+      <!-- Ver.3 Golden Dragon Jade Orb Art of War Movie + BOND Gunshi Cut-in -->
+      <div id="aow-video-stage">
+        <video id="aow-video" playsinline webkit-playsinline muted preload="none"></video>
+        <div class="ult-vignette"></div>
+      </div>
       <div id="aow-gunshi-stage"><img id="aow-gunshi-img" src="" alt=""></div>
 
       <!-- Full-Screen 60fps Animated Skill / Golden Dragon / VFX Cutscene Canvas -->
@@ -1906,12 +1946,23 @@ const GENERALS = [
     strat:{ name:'惡鬼猛進', cost:4, kind:'self', powDelta:5, siegeMul:1.85, dur:12, desc:'自身武力+5、攻城破壞力大幅提升。' } }
 ];
 
-// Bind Official Licensed BOND Tablet-Optimized WebP Art (Full Card + Native Alpha Bust-Up + Thumb) with Base64 fallback!
+// Bind NDS《三國志大戰‧天》Upscaled Ver.3 Primary Art (Card + Alpha Bust-Up + Thumb + HD Skill Movie) with fallback!
+const SKILL_VIDEO_MAP = {
+  caocao: 'skill_caocao', zhangliao: 'skill_zhangliao', xiahoudun: 'skill_xiahoudun',
+  guojia: 'skill_guojia', yuejin: 'skill_charge',
+  liubei: 'skill_liubei', guanyu: 'skill_guanyu', zhaoyun: 'skill_charge',
+  zhugeliang: 'skill_zhugeliang', zhangfei: 'skill_zhangfei',
+  zhouyu: 'skill_zhouyu', sunce: 'skill_rage', taishici: 'skill_charge',
+  daqiao: 'skill_daqiao', zhoutai: 'skill_rage',
+  lubu: 'skill_lubu', dongzhuo: 'skill_dongzhuo', diaochan: 'skill_diaochan',
+  zhangjiao: 'skill_zhangjiao', huaxiong: 'skill_rage'
+};
 GENERALS.forEach(g => {
   g.fallbackImg = g.img;
   g.img = `./assets/img/card/${g.id}.webp`;
   g.cutoutImg = `./assets/img/bustup/${g.id}.webp`;
   g.thumbImg = `./assets/img/thumb/${g.id}.webp`;
+  g.skillVideo = `./assets/video/${SKILL_VIDEO_MAP[g.id] || 'skill_charge'}.mp4`;
 });
 
 const GENERAL_MAP = Object.fromEntries(GENERALS.map(g => [g.id, g]));
@@ -1924,7 +1975,7 @@ const PRESET_DECKS = {
 };
 
 // ============================================================
-// 2. HYBRID AUDIO ENGINE (Official BOND Mono MP3 BGM/SE/Voices + Web Audio Fallback!)
+// 2. HYBRID AUDIO ENGINE (NDS Ver.3 Voices/Narrator/Stratagem SE + BOND Orchestral BGM/Combat SE!)
 // ============================================================
 class SoundFX {
   constructor() {
@@ -1933,11 +1984,13 @@ class SoundFX {
     this.seBase = './assets/audio/se/';
     this.bgmBase = './assets/audio/bgm/';
     this.voiceBase = './assets/audio/voice/';
+    this.narratorBase = './assets/audio/narrator/';
     this.sePool = new Map();
     this.seLastPlay = new Map();
     this.bgmEl = null;
     this.bgmTrack = null;
     this.voiceEl = null;
+    this.narratorEl = null;
   }
   ensure() {
     if (this.muted) return null;
@@ -1955,6 +2008,7 @@ class SoundFX {
       else if (this.bgmTrack) { this.bgmEl.play().catch(() => {}); }
     }
     if (this.muted && this.voiceEl) { try { this.voiceEl.pause(); } catch (e) {} }
+    if (this.muted && this.narratorEl) { try { this.narratorEl.pause(); } catch (e) {} }
   }
   playBGM(track) {
     this.bgmTrack = track;
@@ -1967,7 +2021,7 @@ class SoundFX {
     if (this.bgmEl) { try { this.bgmEl.pause(); } catch (e) {} }
     const a = new Audio(src);
     a.loop = (track === 'battle' || track === 'setup' || track === 'title');
-    a.volume = 0.26;
+    a.volume = 0.25;
     a._track = track;
     this.bgmEl = a;
     a.play().catch(() => {});
@@ -2001,10 +2055,31 @@ class SoundFX {
     try {
       if (this.voiceEl) { try { this.voiceEl.pause(); } catch (e) {} }
       const a = new Audio(`${this.voiceBase}${genId}_${kind}.mp3`);
-      a.volume = 0.85;
+      a.volume = 0.88;
       this.voiceEl = a;
       a.play().catch(() => {});
     } catch (e) {}
+  }
+  playNarrator(key, vol = 0.90) {
+    if (this.muted || !key) return;
+    try {
+      if (this.narratorEl) { try { this.narratorEl.pause(); } catch (e) {} }
+      const a = new Audio(`${this.narratorBase}${key}.mp3`);
+      a.volume = Math.min(1, vol);
+      this.narratorEl = a;
+      a.play().catch(() => {});
+    } catch (e) {}
+  }
+  playStratagemSE(kind, isMajor = false) {
+    if (kind === 'fire') return this.spellFire();
+    if (kind === 'water') return this.spellWater();
+    if (kind === 'lightning') return this.spellLightning();
+    if (kind === 'dance_heal' || kind === 'dance_curse') return this.playSE('ten_dance', 0.78, 180, () => this.stratagem());
+    if (kind === 'taunt') return this.playSE('ten_provoke', 0.78, 180, () => this.stratagem());
+    if (kind === 'debuff') return this.playSE('ten_fear', 0.76, 180, () => this.stratagem());
+    if (kind === 'rally') return this.playSE(isMajor ? 'ten_eiketsu' : 'ten_gourei', 0.80, 180, () => this.stratagem());
+    if (kind === 'self') return this.playSE('ten_powerup', 0.78, 180, () => this.stratagem());
+    this.playSE('ten_gourei', 0.76, 180, () => this.stratagem());
   }
   playTone(freq, endFreq, dur, type = 'triangle', gainVal = 0.14) {
     const ctx = this.ensure(); if (!ctx) return;
@@ -2037,19 +2112,19 @@ class SoundFX {
   siegeFirst()   { this.playSE('siege', 0.80, 200, () => { this.playTone(95, 32, 0.55, 'sawtooth', 0.28); }); }
   sealSlam()     { this.playSE('stamp1', 0.78, 120, () => { this.playTone(140, 48, 0.32, 'sine', 0.3); }); }
   kaizenGong()   { this.playSE('gong', 0.78, 250, () => { this.playTone(110, 52, 0.65, 'sine', 0.32); }); }
-  stratagem()    { this.playSE('buff', 0.74, 180, () => { this.playTone(146, 58, 0.42, 'sine', 0.28); }); }
+  stratagem()    { this.playSE('ten_gourei', 0.76, 180, () => this.playSE('buff', 0.72, 180)); }
   ambush()       { this.playSE('engage', 0.68, 200, () => this.playTone(300, 740, 0.2, 'square', 0.12)); }
   enterCastle()  { this.playSE('confirm', 0.46, 150, () => this.playTone(440, 660, 0.18, 'sine', 0.11)); }
-  exitCastle()   { this.playSE('horse', 0.44, 220, () => this.playTone(330, 520, 0.16, 'triangle', 0.11)); }
+  exitCastle()   { this.playSE('ten_dooropen', 0.52, 220, () => this.playSE('horse', 0.44, 220)); }
   swordSlash()   { this.playSE('sword', 0.68, 120, () => { this.playNoise(0.22, 3400, 0.28); this.playTone(1650, 220, 0.22, 'sawtooth', 0.2); }); }
   retreatEnemy() { this.playSE('defeat', 0.78, 160, () => this.swordSlash()); }
   retreatAlly()  { this.playSE('defeat', 0.68, 160, () => this.swordSlash()); }
-  spellFire()      { this.playSE('fire', 0.80, 200, () => { this.playNoise(0.75, 650, 0.22); }); }
-  spellWater()     { this.playSE('water', 0.80, 200, () => { this.playNoise(0.75, 1100, 0.2); }); }
-  spellLightning() { this.playSE('thunder', 0.82, 200, () => { this.playNoise(0.35, 2800, 0.25); }); }
-  startDrum()      { this.playSE('drum', 0.74, 200, () => { this.playTone(108, 46, 0.45, 'sine', 0.28); }); }
+  spellFire()      { this.playSE('ten_flame', 0.82, 200, () => this.playSE('fire', 0.80, 200)); }
+  spellWater()     { this.playSE('ten_flood', 0.82, 200, () => this.playSE('water', 0.80, 200)); }
+  spellLightning() { this.playSE('ten_thunder', 0.84, 200, () => this.playSE('thunder', 0.82, 200)); }
+  startDrum()      { this.playSE('ten_shutsujin', 0.78, 200, () => this.playSE('drum', 0.74, 200)); }
   bannerClash()    { this.playSE('stamp2', 0.75, 140, () => { this.playNoise(0.28, 1800, 0.26); }); }
-  dragonRoar()     { this.playSE('gunshi', 0.82, 240, () => { this.playNoise(0.85, 720, 0.24); }); }
+  dragonRoar()     { this.playSE('ten_meteo', 0.80, 240, () => this.playSE('gunshi', 0.82, 240)); }
   ramImpact()      { this.playSE('gatestrike', 0.84, 200, () => { this.playTone(88, 28, 0.6, 'sawtooth', 0.32); }); }
   warningPing()    { this.playSE('cursor', 0.55, 180, () => this.playTone(880, 660, 0.14, 'square', 0.09)); }
   reviveChime()    { this.playSE('confirm', 0.52, 180, () => this.playTone(440, 660, 0.18, 'triangle', 0.12)); }
@@ -5357,12 +5432,19 @@ class SpellCutscenePlayer {
   }
 
   drawGoldenDragonAoW(g, W, H, p) {
-    // Authentic SEGA Ver.3 Art of War Cutscene: Cosmic Taiji -> MASTER Burst -> Golden Dragon Coil & Dive!
+    // Authentic SEGA Ver.3 Art of War Cutscene: Ver.3 3D Jade Dragon Orb Movie + MASTER Burst + Golden Dragon Coil!
     const cx = W * 0.5, cy = H * 0.46;
+    const hasAoWVideo = !!(document.getElementById('aow-video-stage') && document.getElementById('aow-video-stage').classList.contains('show'));
     const bg = g.createRadialGradient(cx, cy, 20, cx, cy, Math.max(W, H) * 0.72);
-    bg.addColorStop(0, p < 0.42 ? 'rgba(65,36,12,0.92)' : 'rgba(28,16,8,0.94)');
-    bg.addColorStop(0.55, 'rgba(14,10,22,0.96)');
-    bg.addColorStop(1, 'rgba(4,4,8,0.99)');
+    if (hasAoWVideo) {
+      bg.addColorStop(0, 'rgba(35,20,8,0.12)');
+      bg.addColorStop(0.55, 'rgba(10,12,20,0.34)');
+      bg.addColorStop(1, 'rgba(4,4,8,0.68)');
+    } else {
+      bg.addColorStop(0, p < 0.42 ? 'rgba(65,36,12,0.92)' : 'rgba(28,16,8,0.94)');
+      bg.addColorStop(0.55, 'rgba(14,10,22,0.96)');
+      bg.addColorStop(1, 'rgba(4,4,8,0.99)');
+    }
     g.fillStyle = bg; g.fillRect(0, 0, W, H);
 
     // Cosmic starlight streaks
@@ -5373,8 +5455,8 @@ class SpellCutscenePlayer {
       g.fill();
     }
 
-    if (p < 0.42) {
-      // Phase 1: Spinning Taiji Dual-Fish Emblem + 4 Orbiting Treasure Orbs + 「兵法解放」
+    if (p < 0.42 && !hasAoWVideo) {
+      // Phase 1 Fallback: Spinning Taiji Dual-Fish Emblem + 4 Orbiting Treasure Orbs + 「兵法解放」
       const lp = p / 0.42;
       const rad = Math.min(W, H) * (0.19 + lp * 0.06);
       g.save(); g.translate(cx, cy); g.rotate(this.age * 3.8);
@@ -6106,10 +6188,12 @@ const App = {
     document.getElementById('ic-enemy-cards').innerHTML = mkMini(enemyIds);
 
     const leadGen = this.deck.map(id => GENERAL_MAP[id]).sort((a, b) => b.cost - a.cost || b.pow - a.pow)[0];
+    this._introLeadGen = leadGen;
     this.applyBustImg(document.getElementById('intro-hero-img'), leadGen);
     document.getElementById('intro-hero-quote').textContent = `${leadGen.name}：${leadGen.quote}`;
 
-    // Reset all cutscene state machines
+    // Reset all cutscene state machines & video stages
+    this.stopAllCutsceneVideos();
     this.introTimer = 3.85;
     this.introPhase = 0;
     this.defeatPauseTimer = 0;
@@ -6132,6 +6216,7 @@ const App = {
     document.getElementById('approach-warning').classList.remove('show');
     document.getElementById('revive-banner').classList.remove('show');
     document.getElementById('intro-overlay').className = 'show phase-clash';
+    sfx.playNarrator('challenger', 0.80);
 
     this.bindThreePointer();
     this.buildLeftSkillsAndRightPad();
@@ -6521,13 +6606,54 @@ const App = {
     }
   },
 
+  playCutsceneVideo(containerId, videoId, src, activeClass = 'has-video') {
+    const c = document.getElementById(containerId);
+    const v = document.getElementById(videoId);
+    if (!c || !v || !src) return;
+    c.classList.remove(activeClass);
+    v.muted = true;
+    v.playsInline = true;
+    v.loop = false;
+    v.onloadeddata = null;
+    v.onplaying = null;
+    v.onerror = () => { c.classList.remove(activeClass); };
+    const markReady = () => { c.classList.add(activeClass); };
+    v.onplaying = markReady;
+    v.onloadeddata = markReady;
+    if (v.getAttribute('data-src') !== src) {
+      v.setAttribute('data-src', src);
+      v.src = src;
+      v.load();
+    } else {
+      try { v.currentTime = 0; } catch (e) {}
+      if (v.readyState >= 2) markReady();
+    }
+    const p = v.play();
+    if (p && p.catch) p.catch(() => { c.classList.remove(activeClass); });
+  },
+
+  stopCutsceneVideo(containerId, videoId, activeClass = 'has-video') {
+    const c = document.getElementById(containerId);
+    const v = document.getElementById(videoId);
+    if (c) c.classList.remove(activeClass);
+    if (v) {
+      try { v.pause(); v.currentTime = 0; } catch (e) {}
+    }
+  },
+
+  stopAllCutsceneVideos() {
+    this.stopCutsceneVideo('ult-theater', 'ult-video', 'has-video');
+    this.stopCutsceneVideo('aow-video-stage', 'aow-video', 'show');
+    this.stopCutsceneVideo('siege-cutscene', 'siege-video', 'has-video');
+  },
+
   triggerCutinPause(ev) {
-    // UNIFIED 4-BEAT SEGA VER.3 LIVE 3D HERO STRATAGEM CUTSCENE THEATER FOR ALL 20 GENERALS!
-    // Beat 1 (stage1): Frameless Bust Portrait + Faction War Banner High-Speed Clash
-    // Beat 2 (seal-phase): White Sumi-e Paper Ink Splash + Crimson Seal Slam
-    // Beat 3 (stage2): Live 3D Articulated Hero Performance + 3D Elemental Stage + 60fps Spell VFX + SEGA Info Strip
+    // UNIFIED 4-BEAT SEGA VER.3 STRATAGEM CUTSCENE THEATER FOR ALL 20 GENERALS!
+    // Beat 1 (stage1): Upscaled Ver.3 Frameless Bust Portrait + Faction War Banner Clash
+    // Beat 2 (seal-phase): Official BOND zh-Hant Calligraphy Stamp + Crimson Seal Slam
+    // Beat 3 (stage2): Upscaled Ver.3 3D Skill Animation Movie (+ Live 3D Fallback) + SEGA Info Strip
     // Beat 4 (End): Detonate 3D Battlefield VFX & Damage Hit Judgement Cards!
-    const dur = ev.isMajor ? 2.85 : 2.15;
+    const dur = ev.isMajor ? 3.25 : 2.55;
     this.ultDur = dur;
     this.ultTheaterTimer = dur;
     this.ultStage = 1;
@@ -6571,7 +6697,7 @@ const App = {
         `<img src="./assets/img/stamps/stamp_${stKey}_${stSide}_02.webp" alt="" onerror="this.parentElement.classList.remove('has-glyphs')">`;
     }
 
-    // Beat 1 Clash Panel (Frameless Close-up Bust!)
+    // Beat 1 Clash Panel (Upscaled Ver.3 Frameless Close-up Bust!)
     this.applyBustImg(document.getElementById('clash-img'), bustObj);
     document.getElementById('clash-faction').textContent = ev.factionName || ev.factionTag;
     document.getElementById('clash-name').textContent = ev.unitName || ev.factionTag;
@@ -6581,7 +6707,7 @@ const App = {
     const fc = ev.factionColor || '#b82929';
     flagBox.style.background = `radial-gradient(circle at 50% 45%, ${fc}e0, rgba(16,8,12,0.96))`;
 
-    // Beat 3 Live 3D Hero Stage + Frameless Bust Echo + SEGA Translucent Info Strip (ALL 20 Generals!)
+    // Beat 3 Ver.3 Skill Movie + Frameless Bust Echo + SEGA Translucent Info Strip
     this.applyBustImg(document.getElementById('ult-3d-hero-img'), bustObj);
     const pill = document.getElementById('ult-faction-pill');
     pill.textContent = ev.factionTag;
@@ -6594,7 +6720,18 @@ const App = {
     const th = document.getElementById('ult-theater');
     th.className = 'show stage1' + (ev.side === 'enemy' ? ' enemy-cast' : '') + ' mode-3d';
 
-    // Launch Live 3D Articulated Hero Stratagem Performance + Close-Up 3D Cinema Camera!
+    // Preload Ver.3 HD skill video immediately so Beat 3 plays instantaneously with zero lag!
+    this._ultPendingVideoSrc = (bustObj && bustObj.skillVideo) ? bustObj.skillVideo : null;
+    if (this._ultPendingVideoSrc) {
+      const uv = document.getElementById('ult-video');
+      if (uv && uv.getAttribute('data-src') !== this._ultPendingVideoSrc) {
+        uv.setAttribute('data-src', this._ultPendingVideoSrc);
+        uv.src = this._ultPendingVideoSrc;
+        uv.load();
+      }
+    }
+
+    // Launch Live 3D Articulated Hero Stratagem Performance as seamless layer/fallback + Close-Up 3D Cinema Camera!
     this.ren.startHeroStratagem3D(ev);
     this.ren.cinemaMode = {
       kind: ev.spellKind || 'rally',
@@ -6608,12 +6745,13 @@ const App = {
   },
 
   triggerAoWDragon(ev) {
-    // SEGA Ver.3 Cosmic Taiji -> Coiling Golden Dragon Art of War Cutscene + Official Gunshi Bust-Up!
-    this.aowDragonTimer = 2.65;
+    // SEGA Ver.3 Golden Dragon Jade Orb HD Movie + Official BOND Gunshi Bust-Up!
+    this.aowDragonTimer = 2.85;
     this.aowDragonPhase = 0;
     this.pendingPostVfx = ev.postVfx || [];
     const gMap = { saiki: 'saiki', renkan: 'renkan', shinsoku: 'shinsoku', zouen: 'zoen', zoen: 'zoen' };
     const gKey = gMap[ev.aowId] || 'saiki';
+    this.playCutsceneVideo('aow-video-stage', 'aow-video', './assets/video/aow_orb.mp4', 'show');
     const gStage = document.getElementById('aow-gunshi-stage');
     const gImg = document.getElementById('aow-gunshi-img');
     if (gStage && gImg) {
@@ -6627,7 +6765,7 @@ const App = {
         ev.side === 'player' ? '#ffe08a' : '#ff5555',
         ev.title,
         false,
-        2.65,
+        2.85,
         `${ev.factionTag} ｜ ${ev.desc}`
       );
     }
@@ -6635,15 +6773,23 @@ const App = {
   },
 
   triggerFirstSiegeCutscene(ev) {
-    // Authentic SEGA Ver.3 First-Siege 3D Target Strike Cutscene (Climbing Ladders on Wall / Battering Ram on Gate!)
-    this.siegeCutsceneTimer = 1.95;
+    // Authentic SEGA Ver.3 First-Siege HD Movie (Climbing Ladders on Wall / Battering Ram on Gate!)
+    this.siegeCutsceneTimer = 2.35;
     this.siegeCutscenePhase = 0;
     document.getElementById('sc-hud-main').textContent = ev.isGate ? '城門衝車強襲！' : '雲梯登城突擊！';
     document.getElementById('sc-hud-sub').textContent = `${ev.unitName} 突破防線，重創城池耐力 -${ev.dmg}%！`;
     const sc = document.getElementById('siege-cutscene');
     sc.className = 'show stamp-on' + (ev.attackerSide === 'enemy' ? ' enemy-strike' : '');
+    this.playCutsceneVideo(
+      'siege-cutscene',
+      'siege-video',
+      ev.isGate ? './assets/video/siege_ram.mp4' : './assets/video/siege_wall.mp4',
+      'has-video'
+    );
     this.ren.startSiegeCinema(ev);
     sfx.sealSlam();
+    const sg = GENERALS.find(g => g.name === ev.unitName);
+    if (sg) sfx.playVoice(sg.id, 'siege');
   },
 
   triggerAmbushCutin(ev) {
@@ -6652,7 +6798,7 @@ const App = {
     this.applyBustImg(document.getElementById('ambush-img'), ambGen || ev);
     document.getElementById('ambush-overlay').className = 'show' + (ev.side === 'enemy' ? ' enemy-ambush' : '');
     this.ren.cutinFocus = { x: ev.x, z: ev.z, orbit: false };
-    if (ambGen) sfx.playVoice(ambGen.id, 'atk');
+    if (ambGen) sfx.playVoice(ambGen.id, 'deploy');
   },
 
   flashCastleGauge(targetSide) {
@@ -6778,6 +6924,9 @@ const App = {
       ? (ev.killerName ? `${ev.killerName} 斬殺 ${ev.name}！` : `敵將 ${ev.name} 擊破！`)
       : `我軍 ${ev.name} 部隊撤退！`;
     this._defeatIsEnemy = isEnemy;
+    const dg = GENERALS.find(g => g.name === ev.name);
+    if (dg) sfx.playVoice(dg.id, 'retreat');
+    if (!isEnemy) sfx.playNarrator('retreat', 0.82);
   },
 
   spawnCallout(ev) {
@@ -7156,6 +7305,7 @@ const App = {
     cancelAnimationFrame(this.rafId);
     this.sim = null;
     this.vpadDrags.clear();
+    this.stopAllCutsceneVideos();
     const gs = document.getElementById('aow-gunshi-stage');
     if (gs) gs.classList.remove('show');
     sfx.playBGM('setup');
@@ -7195,12 +7345,14 @@ const App = {
         this.introPhase = 1;
         ov.className = 'show phase-parade';
         this.ren.cinemaMode = { kind: 'intro_parade', age: 0, dur: 1.4 };
-        sfx.sealSlam();
+        sfx.startDrum();
+        if (this._introLeadGen && this._introLeadGen.id) sfx.playVoice(this._introLeadGen.id, 'deploy');
       } else if (this.introPhase === 1 && elapsed >= 2.95) {
         this.introPhase = 2;
         ov.className = 'show kaizen';
         this.ren.cinemaMode = { kind: 'intro_overview', age: 0, dur: 0.9 };
         sfx.kaizenGong();
+        sfx.playNarrator('kaizen', 0.94);
       }
       if (this.introTimer <= 0) {
         this.introTimer = 0;
@@ -7228,11 +7380,14 @@ const App = {
         if (isWin) {
           ov.classList.add('victory-pose');
           sfx.victory();
+          sfx.playNarrator(this.sim.winBySiege ? 'unify' : 'victory', 0.94);
         } else if (isLose) {
           ov.classList.add('defeat-pose');
           sfx.defeat();
+          sfx.playNarrator('defeat', 0.92);
         } else {
           sfx.sealSlam();
+          sfx.playNarrator('draw', 0.90);
         }
         if (this._finaleLeadUnit) {
           this.ren.cinemaMode = {
@@ -7284,13 +7439,14 @@ const App = {
     // 4. SEGA Ver.3 Golden Dragon Art of War Cutscene
     if (this.aowDragonTimer > 0) {
       this.aowDragonTimer -= realDt;
-      const elapsed = 2.65 - this.aowDragonTimer;
+      const elapsed = 2.85 - this.aowDragonTimer;
       if (this.aowDragonPhase === 0 && elapsed >= 1.05) {
         this.aowDragonPhase = 1;
         sfx.dragonRoar();
       }
       if (this.aowDragonTimer <= 0) {
         this.aowDragonTimer = 0;
+        this.stopCutsceneVideo('aow-video-stage', 'aow-video', 'show');
         const gs = document.getElementById('aow-gunshi-stage');
         if (gs) gs.classList.remove('show');
         if (this.cutscenePlayer) this.cutscenePlayer.stop();
@@ -7303,7 +7459,7 @@ const App = {
       return;
     }
 
-    // 5. Unified 4-Beat Live 3D Hero Stratagem Cutscene Theater (ALL 20 Generals!)
+    // 5. Unified 4-Beat Ver.3 HD Movie + Live 3D Stratagem Cutscene Theater (ALL 20 Generals!)
     if (this.ultTheaterTimer > 0) {
       this.ultTheaterTimer -= realDt;
       const ev = this.ultEvent;
@@ -7321,7 +7477,10 @@ const App = {
         this.ultStage = 3;
         th.classList.remove('seal-phase');
         th.classList.add('stage2');
-        sfx.stratagem();
+        if (this._ultPendingVideoSrc) {
+          this.playCutsceneVideo('ult-theater', 'ult-video', this._ultPendingVideoSrc, 'has-video');
+        }
+        sfx.playStratagemSE(ev ? ev.spellKind : 'rally', !!(ev && ev.isMajor));
         if (this.cutscenePlayer && ev) {
           const vKind = (ev.spdBoost && (ev.spellKind === 'self' || ev.spellKind === 'rally'))
             ? 'speed'
@@ -7331,6 +7490,7 @@ const App = {
       }
       if (this.ultTheaterTimer <= 0) {
         this.ultTheaterTimer = 0;
+        this.stopCutsceneVideo('ult-theater', 'ult-video', 'has-video');
         th.className = '';
         this.ren.stopHeroStratagem3D();
         this.ren.cinemaMode = null;
@@ -7345,10 +7505,10 @@ const App = {
       return;
     }
 
-    // 6. First-Siege 3D Target Strike Cutscene (Climbing Ladders on Wall / Battering Ram on Gate!)
+    // 6. First-Siege HD Movie + 3D Target Strike Cutscene (Climbing Ladders on Wall / Battering Ram on Gate!)
     if (this.siegeCutsceneTimer > 0) {
       this.siegeCutsceneTimer -= realDt;
-      const elapsed = 1.95 - this.siegeCutsceneTimer;
+      const elapsed = 2.35 - this.siegeCutsceneTimer;
       const sc = document.getElementById('siege-cutscene');
       if (this.siegeCutscenePhase === 0 && elapsed >= 0.45) {
         this.siegeCutscenePhase = 1;
@@ -7357,6 +7517,7 @@ const App = {
       }
       if (this.siegeCutsceneTimer <= 0) {
         this.siegeCutsceneTimer = 0;
+        this.stopCutsceneVideo('siege-cutscene', 'siege-video', 'has-video');
         sc.className = '';
         this.ren.stopSiegeCinema();
       }
