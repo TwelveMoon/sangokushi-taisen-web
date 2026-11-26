@@ -9,8 +9,14 @@
 <meta name="screen-orientation" content="landscape">
 <meta name="x5-orientation" content="landscape">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰 網頁版 v1.9 — 街機多指羊皮紙卡盤・虛影即時下令・全3D角色計略動畫・高精細3D軍團</title>
+<title>三國志大戰 網頁版 v1.95</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <style>
   :root {
     --bg-dark: #0b090d;
@@ -1368,14 +1374,13 @@
     <div class="brand-title">
       <div class="brand-seal">戰</div>
       <h1>三國志大戰 網頁版</h1>
-      <span class="brand-badge">v1.9 · 多指羊皮紙卡盤・虛影即時下令・全3D角色動畫・高精細軍團</span>
+      <span class="brand-badge">v1.95</span>
     </div>
     <div class="preset-bar">
-      <span style="font-size:11px;color:var(--text-muted)">推薦牌組：</span>
-      <button class="preset-btn wei" data-preset="wei">魏・神速號令</button>
-      <button class="preset-btn shu" data-preset="shu">蜀・五虎強攻</button>
-      <button class="preset-btn wu"  data-preset="wu">吳・赤壁弓陣</button>
-      <button class="preset-btn qun" data-preset="qun">群雄・無雙暴虐</button>
+      <button class="preset-btn wei" data-preset="wei">魏・神速</button>
+      <button class="preset-btn shu" data-preset="shu">蜀・五虎</button>
+      <button class="preset-btn wu"  data-preset="wu">吳・赤壁</button>
+      <button class="preset-btn qun" data-preset="qun">群・無雙</button>
       <button class="top-btn" id="btn-fullscreen-deck" style="border-color:var(--gold);color:var(--gold-bright)">⛶ 全螢幕</button>
     </div>
   </div>
@@ -1390,7 +1395,7 @@
           <button class="ftab" data-faction="wu">吳 (5)</button>
           <button class="ftab" data-faction="qun">群雄 (5)</button>
         </div>
-        <span style="font-size:11px;color:var(--text-muted)">點擊卡片加入／移出牌組，點「詳」檢視大圖與台詞</span>
+        <span style="font-size:11px;color:var(--text-muted)">點卡編隊・點「詳」檢視</span>
       </div>
       <div class="roster-grid" id="roster-grid"></div>
     </div>
@@ -1399,53 +1404,49 @@
       <div class="deck-box">
         <h3>
           <span>出陣牌組</span>
-          <span id="cost-readout">0.0 / 8.0 Cost</span>
+          <span id="cost-readout">0.0 / 8.0</span>
         </h3>
         <div class="cost-bar-wrap"><div class="cost-bar-fill" id="cost-bar-fill" style="width:0%"></div></div>
         <div class="deck-meta">
           <span id="morale-cap-readout">士氣上限：14</span>
-          <span id="start-morale-readout">開局士氣：2.0</span>
+          <span id="start-morale-readout">開局：2.0</span>
         </div>
         <div class="deck-slots" id="deck-slots"></div>
       </div>
 
       <div class="deck-box">
         <h3><span>對戰設定</span></h3>
-        <label class="cfg-label" for="map-select">戰場地形場景</label>
+        <label class="cfg-label" for="map-select">戰場</label>
         <select class="cfg-select" id="map-select">
-          <option value="grassland" selected>草原河川（江東白晝・青草蜿蜒河岸）</option>
-          <option value="desert">荒漠峽谷（西涼暮色・漫天黃沙岩壁）</option>
+          <option value="grassland" selected>草原河川（白晝）</option>
+          <option value="desert">荒漠峽谷（暮色）</option>
         </select>
 
-        <label class="cfg-label" for="aow-select">我方兵法（每場限解放一次）</label>
+        <label class="cfg-label" for="aow-select">兵法</label>
         <select class="cfg-select" id="aow-select">
-          <option value="saiki">再起之法 — 立即復活撤退武將並回復兵力</option>
-          <option value="zouen">增援之法 — 我方全軍立即回復 45% 兵力</option>
-          <option value="renkan">連環之法 — 敵方全軍移速大降 12 秒</option>
-          <option value="shinsoku">神速之法 — 我方全軍武力+2、移速大增 12 秒</option>
+          <option value="saiki">再起之法（復活＋回血）</option>
+          <option value="zouen">增援之法（全軍回血 45%）</option>
+          <option value="renkan">連環之法（敵軍減速）</option>
+          <option value="shinsoku">神速之法（武力+2 加速）</option>
         </select>
 
-        <label class="cfg-label" for="ai-deck-select">電腦 AI 對手牌組</label>
+        <label class="cfg-label" for="ai-deck-select">對手牌組</label>
         <select class="cfg-select" id="ai-deck-select">
-          <option value="wei">魏・神速號令（曹操/張遼/郭嘉/樂進）</option>
-          <option value="shu">蜀・五虎強攻（關羽/趙雲/張飛）</option>
-          <option value="wu" selected>吳・赤壁弓陣（周瑜/太史慈/周泰/大喬）</option>
-          <option value="qun">群雄・無雙暴虐（呂布/董卓/張角/貂蟬）</option>
+          <option value="wei">魏・神速號令</option>
+          <option value="shu">蜀・五虎強攻</option>
+          <option value="wu" selected>吳・赤壁弓陣</option>
+          <option value="qun">群雄・無雙暴虐</option>
         </select>
 
-        <label class="cfg-label" for="ai-diff-select">AI 強度</label>
+        <label class="cfg-label" for="ai-diff-select">AI 難度</label>
         <select class="cfg-select" id="ai-diff-select">
-          <option value="easy">入門（從容練習拉扯與相剋）</option>
-          <option value="normal" selected>標準（主動迎擊與開計略）</option>
-          <option value="hard">頂上對決（高頻微操與抓時機）</option>
+          <option value="easy">入門</option>
+          <option value="normal" selected>標準</option>
+          <option value="hard">頂上對決</option>
         </select>
-
-        <div style="margin-top:8px;padding:5px 7px;border-radius:5px;background:#171320;border:1px dashed #4e3f28;font-size:10px;color:#cbbba0;line-height:1.45">
-          連線架構：已內建 <strong style="color:var(--gold-bright)">Firebase Realtime PvP</strong> 同步介面（確定性亂數＋狀態快照＋指令管線），未來可直接串接 Firebase 房間雙人對戰。
-        </div>
       </div>
 
-      <button class="start-battle-btn" id="start-battle-btn">開 戰 出 陣</button>
+      <button class="start-battle-btn" id="start-battle-btn">開 戰</button>
     </div>
   </div>
 </div>
@@ -1454,16 +1455,17 @@
 <div id="battle-view">
   <div class="battle-topbar">
     <div class="mode-switch" id="mode-switch">
-      <button class="mode-btn active" data-mode="2">模式2：右側卡盤（推薦）</button>
-      <button class="mode-btn" data-mode="1">模式1：直接拉線</button>
-      <button class="mode-btn" data-mode="3">模式3：點卡點地</button>
+      <button class="mode-btn active" data-mode="2">卡盤</button>
+      <button class="mode-btn" data-mode="1">拉線</button>
+      <button class="mode-btn" data-mode="3">點控</button>
     </div>
     <div class="top-actions">
+      <button class="top-btn" id="btn-quality" style="border-color:#68b6ff;color:#bfe4ff">畫質：高</button>
       <button class="top-btn" id="btn-fullscreen" style="border-color:var(--gold);color:var(--gold-bright)">⛶ 全螢幕</button>
       <button class="top-btn" id="btn-pause">暫停</button>
       <button class="top-btn" id="btn-speed">1.0x</button>
       <button class="top-btn" id="btn-mute">音效：開</button>
-      <button class="top-btn" id="btn-exit">返回編隊</button>
+      <button class="top-btn" id="btn-exit">編隊</button>
     </div>
   </div>
 
@@ -1472,7 +1474,7 @@
     <div class="col-left">
       <div class="morale-box">
         <div class="morale-head">
-          <span>士氣寶玉</span>
+          <span>士氣</span>
           <span id="morale-txt">2.5 / 14</span>
         </div>
         <div class="morale-gems" id="morale-gems"></div>
@@ -1481,20 +1483,16 @@
       <button class="aow-btn" id="btn-aow">
         <div>
           <span id="aow-name-lbl">再起之法</span>
-          <span class="aow-sub" id="aow-sub-lbl">立即復活撤退武將</span>
+          <span class="aow-sub" id="aow-sub-lbl">復活撤退武將</span>
         </div>
-        <span class="aow-badge">金龍解放</span>
+        <span class="aow-badge">兵法</span>
       </button>
 
-      <div class="left-section-title">
-        <span>當前操控武將計略</span>
-        <span style="font-size:10px;color:var(--text-muted)">快捷鍵 Q 發動</span>
-      </div>
       <div id="active-skill-panel"></div>
 
       <div class="left-section-title">
-        <span>我軍兵力監控（點擊切換）</span>
-        <span style="font-size:10px;color:var(--text-muted)">鍵盤 1~5</span>
+        <span>我軍部隊</span>
+        <span style="font-size:10px;color:var(--text-muted)">1~5</span>
       </div>
       <div id="left-hp-list"></div>
     </div>
@@ -1507,7 +1505,7 @@
       <!-- Authentic SEGA Arch Top Bar: Player Castle | 99 Count | Enemy Castle -->
       <div class="arcade-top-hud">
         <div class="arcade-gauge-wrap left-arch" id="player-gauge-wrap">
-          <div class="ag-head"><span style="color:#69f2a0">我軍城耐力</span><span id="player-hp-txt">100%</span></div>
+          <div class="ag-head"><span style="color:#69f2a0">我城</span><span id="player-hp-txt">100%</span></div>
           <div class="ag-track"><div class="ag-fill-player" id="player-hp-bar" style="width:100%"></div></div>
         </div>
         <div class="arcade-timer-badge" id="timer-badge">
@@ -1515,20 +1513,20 @@
           <span class="tv" id="timer-val">99</span>
         </div>
         <div class="arcade-gauge-wrap right-arch" id="enemy-gauge-wrap">
-          <div class="ag-head"><span id="enemy-hp-txt">100%</span><span style="color:#ff7b73">敵軍城耐力</span></div>
+          <div class="ag-head"><span id="enemy-hp-txt">100%</span><span style="color:#ff7b73">敵城</span></div>
           <div class="ag-track"><div class="ag-fill-enemy" id="enemy-hp-bar" style="width:100%"></div></div>
         </div>
       </div>
 
       <!-- Enemy Approach Red Warning & Ally Revival Green Banner -->
-      <div id="approach-warning">敵將 接近中！</div>
-      <div id="revive-banner">武將 復活！</div>
+      <div id="approach-warning">敵將接近！</div>
+      <div id="revive-banner">武將復活！</div>
 
       <div class="minimap-float">
         <canvas id="minimap-canvas" width="144" height="100"></canvas>
       </div>
 
-      <div class="mode-tip" id="mode-tip">模式2（雙手街機感）：右手拖動右側卡盤控兵（支援多指）、左手隨時按左側計略！</div>
+      <div class="mode-tip" id="mode-tip" style="display:none"></div>
 
       <!-- 1. Opening Dual-Banner Clash + Deck Lineup + 出陣 + 開戰 -->
       <div id="intro-overlay">
@@ -1614,10 +1612,10 @@
           </div>
         </div>
         <div id="ult-cg-stage">
-          <img id="ult-cg-img" src="" alt="必殺技過場場面圖">
+          <img id="ult-cg-img" src="" alt="">
           <div class="ult-vignette"></div>
         </div>
-        <div id="ult-3d-hero-echo"><img id="ult-3d-hero-img" src="" alt="武將特寫"></div>
+        <div id="ult-3d-hero-echo"><img id="ult-3d-hero-img" src="" alt=""></div>
         <div class="ult-caption-wrap">
           <div class="ult-cap-top">
             <span class="ult-faction-pill" id="ult-faction-pill">吳・周瑜</span>
@@ -1678,26 +1676,25 @@
     <!-- RIGHT COLUMN: Right-Hand Virtual Arcade Card Pad -->
     <div class="col-right">
       <div class="quick-cmd-bar">
-        <button class="qcmd-btn" id="qcmd-advance">全軍前進</button>
-        <button class="qcmd-btn" id="qcmd-retreat">全軍回城</button>
-        <button class="qcmd-btn" id="qcmd-stop">全員停步</button>
+        <button class="qcmd-btn" id="qcmd-advance">前進</button>
+        <button class="qcmd-btn" id="qcmd-retreat">回城</button>
+        <button class="qcmd-btn" id="qcmd-stop">停步</button>
       </div>
 
       <div id="virtual-pad-wrap">
         <div class="vpad-header">
-          <span>右手感應卡盤（盤面）</span>
-          <span id="vpad-live-badge">多指即時控卡</span>
+          <span>感應卡盤</span>
+          <span id="vpad-live-badge">多指控卡</span>
         </div>
         <div id="vpad-surface"></div>
       </div>
 
       <div id="alt-right-panel">
-        <h4>兵種物理相剋速查</h4>
-        <div><strong style="color:#ff9e44">騎兵</strong>：長距移動集出<strong>白色突擊鬥氣</strong>，撞擊爆發並減免弓傷；撞上槍頭會遭<strong>迎擊</strong>重創。</div>
-        <div><strong style="color:#52f2a0">槍兵</strong>：前方展開<strong>發光槍頭扇區</strong>，專剋突擊騎兵，移動甩槍可觸發<strong>槍擊</strong>。</div>
-        <div><strong style="color:#5cb8ff">弓兵</strong>：停步自動齊射，剛起步短時間可<strong>走射</strong>，壓制慢速槍兵與無鬥氣敵軍。</div>
-        <h4 style="margin-top:6px">目前操作提示</h4>
-        <div id="alt-mode-guide">直接在中央 3D 戰場拖曳我軍拉出移動路徑，左手點左側計略鈕發動絕招！</div>
+        <h4>兵種相剋</h4>
+        <div><strong style="color:#ff9e44">騎</strong>：衝刺突擊・怕槍迎擊</div>
+        <div><strong style="color:#52f2a0">槍</strong>：槍頭迎擊・甩槍槍擊</div>
+        <div><strong style="color:#5cb8ff">弓</strong>：停步齊射・起步走射</div>
+        <div id="alt-mode-guide" style="margin-top:6px"></div>
       </div>
     </div>
   </div>
@@ -2999,13 +2996,16 @@ class BattleAI {
 }
 
 // ============================================================
-// 5. POLISHED THREE.JS 3D BATTLEFIELD RENDERER (v1.8 SEGA Ver.3 Upgrade)
+// 5. CINEMATIC PBR THREE.JS 3D BATTLEFIELD RENDERER (v1.95)
 // ============================================================
 class BattleRenderer3D {
-  constructor(container, sim, mapTheme = 'grassland') {
+  constructor(container, sim, mapTheme = 'grassland', qualityTier = null) {
     this.container = container;
     this.sim = sim;
     this.mapTheme = mapTheme || 'grassland';
+    const isCoarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    this.qualityTier = qualityTier || (isCoarse ? 'balanced' : 'high');
+
     this.unitMeshes = new Map();
     this.barMeshes = new Map();
     this.vfxList = [];
@@ -3019,16 +3019,20 @@ class BattleRenderer3D {
     this.camTarget = this.baseCamTarget.clone();
     this.camPosGoal = this.baseCamPos.clone();
     this.cutinFocus = null;
-    this.cinemaMode = null; // { kind, x, z, side, age, dur }
+    this.cinemaMode = null;
     this.siegeProps = null;
+    this.heroCinemaStage = null;
+    this.composer = null;
+    this.bloomPass = null;
+    this.waterMat = null;
 
     this.scene = new THREE.Scene();
     const isGrass = (this.mapTheme === 'grassland');
-    this.scene.background = new THREE.Color(isGrass ? 0x6b7d65 : 0x3b3024);
-    this.scene.fog = new THREE.FogExp2(isGrass ? 0x7e8f75 : 0x453728, isGrass ? 0.0095 : 0.013);
+    this.scene.background = new THREE.Color(isGrass ? 0x3b4f4a : 0x261b14);
+    this.scene.fog = new THREE.FogExp2(isGrass ? 0x485d56 : 0x322218, isGrass ? 0.0052 : 0.0072);
 
     const w = container.clientWidth || 800, h = container.clientHeight || 540;
-    this.camera = new THREE.PerspectiveCamera(42, w / h, 0.4, 150);
+    this.camera = new THREE.PerspectiveCamera(42, w / h, 0.4, 160);
     this.computeTacticalCamera(w, h);
     this.camPosGoal.copy(this.baseCamPos);
     this.camTarget.copy(this.baseCamTarget);
@@ -3037,32 +3041,43 @@ class BattleRenderer3D {
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.setSize(w, h);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.qualityTier === 'high' ? 2 : 1.35));
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = isGrass ? 0.94 : 0.98;
+    this.renderer.physicallyCorrectLights = true;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.innerHTML = '';
     container.appendChild(this.renderer.domElement);
 
-    // Shared geometries for high-FPS 12-soldier formations!
+    // 1. Procedural HDR-style Studio/Sky IBL Environment (PMREMGenerator — zero external HDR fetch!)
+    this.buildProceduralEnvironment();
+    // 2. Cached Procedural Micro-Surface Roughness / Bump / Masonry / Water / Contact Shadow Maps
+    this.initProceduralTextures();
+
+    // Shared higher-segment geometries for crisp soldier squads
     this.sharedGeo = {
-      horseBody: new THREE.BoxGeometry(0.24, 0.25, 0.50),
-      horseHead: new THREE.BoxGeometry(0.13, 0.20, 0.20),
-      riderBody: new THREE.CylinderGeometry(0.10, 0.14, 0.36, 6),
-      lance:     new THREE.CylinderGeometry(0.018, 0.026, 1.0, 5),
-      infBody:   new THREE.CylinderGeometry(0.11, 0.14, 0.46, 6),
-      helm:      new THREE.SphereGeometry(0.095, 6, 6),
-      spear:     new THREE.CylinderGeometry(0.018, 0.024, 1.48, 5),
-      bow:       new THREE.TorusGeometry(0.20, 0.024, 5, 8, Math.PI),
-      smoke:     new THREE.DodecahedronGeometry(0.55, 0)
+      horseBody: new THREE.CylinderGeometry(0.13, 0.145, 0.50, 12),
+      horseHead: new THREE.BoxGeometry(0.12, 0.16, 0.22),
+      riderBody: new THREE.CylinderGeometry(0.105, 0.14, 0.36, 12),
+      lance:     new THREE.CylinderGeometry(0.016, 0.024, 1.04, 8),
+      infBody:   new THREE.CylinderGeometry(0.11, 0.145, 0.46, 12),
+      helm:      new THREE.SphereGeometry(0.098, 12, 10),
+      spear:     new THREE.CylinderGeometry(0.016, 0.022, 1.50, 8),
+      bow:       new THREE.TorusGeometry(0.20, 0.024, 8, 14, Math.PI),
+      smoke:     new THREE.DodecahedronGeometry(0.55, 1)
     };
+    this.sharedGeo.horseBody.rotateX(Math.PI / 2);
 
     this.setupLights();
     this.buildEnvironment();
     this.buildEmbers();
     this.buildEntities();
+    this.setupPostProcessing(w, h);
 
     this.selRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.15, 1.42, 28),
+      new THREE.RingGeometry(1.15, 1.42, 36),
       new THREE.MeshBasicMaterial({ color: 0xffe599, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
     );
     this.selRing.rotation.x = -Math.PI / 2; this.selRing.position.y = 0.09; this.selRing.visible = false;
@@ -3094,10 +3109,9 @@ class BattleRenderer3D {
     this.rangeRect.rotation.x = -Math.PI / 2; this.rangeRect.position.y = 0.06; this.rangeRect.visible = false;
     this.scene.add(this.rangeRect);
 
-    // Dance / Hero Spotlight Cylinder (activated during dance or dramatic 3D cutscenes)
     this.spotBeam = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.6, 2.8, 15, 24, 1, true),
-      new THREE.MeshBasicMaterial({ color: 0xd088ff, transparent: true, opacity: 0.34, side: THREE.DoubleSide })
+      new THREE.CylinderGeometry(1.6, 2.9, 15, 32, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xd088ff, transparent: true, opacity: 0.10, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
     );
     this.spotBeam.visible = false;
     this.scene.add(this.spotBeam);
@@ -3106,14 +3120,186 @@ class BattleRenderer3D {
     this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   }
 
-  // Aspect-Ratio-Independent Camera Framing: guarantees IDENTICAL full-field visibility on PC, iPad (4:3), and iPhone (19.5:9)!
+  // High-Contrast Procedural Studio/Sky IBL Environment (dark sky/ground + crisp warm sun & rim speculars!)
+  buildProceduralEnvironment() {
+    const isGrass = (this.mapTheme === 'grassland');
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    pmrem.compileEquirectangularShader();
+
+    const envScene = new THREE.Scene();
+    envScene.background = new THREE.Color(isGrass ? 0x16222c : 0x1b120d);
+
+    const skyGeo = new THREE.SphereGeometry(28, 24, 16);
+    const skyCanvas = document.createElement('canvas');
+    skyCanvas.width = 256; skyCanvas.height = 128;
+    const sg = skyCanvas.getContext('2d');
+    const grd = sg.createLinearGradient(0, 0, 0, 128);
+    if (isGrass) {
+      grd.addColorStop(0.0, '#142947');
+      grd.addColorStop(0.42, '#3d637a');
+      grd.addColorStop(0.51, '#d8b982');
+      grd.addColorStop(0.60, '#2a381d');
+      grd.addColorStop(1.0, '#0c120a');
+    } else {
+      grd.addColorStop(0.0, '#151226');
+      grd.addColorStop(0.40, '#592c1a');
+      grd.addColorStop(0.51, '#eb9846');
+      grd.addColorStop(0.62, '#302012');
+      grd.addColorStop(1.0, '#0e0906');
+    }
+    sg.fillStyle = grd; sg.fillRect(0, 0, 256, 128);
+    const skyTex = new THREE.CanvasTexture(skyCanvas);
+    skyTex.encoding = THREE.sRGBEncoding;
+    envScene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide })));
+
+    // Crisp specular lightboxes so forged steel, gold armor & imperial lacquer show jewel-like reflections!
+    const sunPanel = new THREE.Mesh(
+      new THREE.PlaneGeometry(7.5, 7.5),
+      new THREE.MeshBasicMaterial({ color: isGrass ? 0xffe8ba : 0xffaa55, side: THREE.DoubleSide })
+    );
+    sunPanel.position.set(14, 18, 14); sunPanel.lookAt(0, 0, 0); envScene.add(sunPanel);
+
+    const coolPanel = new THREE.Mesh(
+      new THREE.PlaneGeometry(11, 5.5),
+      new THREE.MeshBasicMaterial({ color: isGrass ? 0x6ba6e8 : 0x726ca8, side: THREE.DoubleSide })
+    );
+    coolPanel.position.set(-16, 10, -6); coolPanel.lookAt(0, 0, 0); envScene.add(coolPanel);
+
+    const rimPanel = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 4.5),
+      new THREE.MeshBasicMaterial({ color: isGrass ? 0xffcb80 : 0xff8038, side: THREE.DoubleSide })
+    );
+    rimPanel.position.set(-8, 8, -18); rimPanel.lookAt(0, 0, 0); envScene.add(rimPanel);
+
+    this.envRT = pmrem.fromScene(envScene, 0.03);
+    this.scene.environment = this.envRT.texture;
+    pmrem.dispose();
+  }
+
+  // Procedural Micro-Surface Roughness / Bump / Masonry / Water / Contact Shadow Maps (zero external assets!)
+  initProceduralTextures() {
+    const mkCanvas = (w, h, drawFn, repeat = 1, isColor = false) => {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      drawFn(c.getContext('2d'), w, h);
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      if (repeat > 1) tex.repeat.set(repeat, repeat);
+      if (isColor) tex.encoding = THREE.sRGBEncoding;
+      return tex;
+    };
+
+    const metalRough = mkCanvas(256, 256, (g, w, h) => {
+      g.fillStyle = '#525252'; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 650; i++) {
+        const v = 55 + Math.floor(Math.random() * 80);
+        g.fillStyle = `rgb(${v},${v},${v})`;
+        g.beginPath(); g.arc(Math.random() * w, Math.random() * h, 1 + Math.random() * 5, 0, Math.PI * 2); g.fill();
+      }
+      g.strokeStyle = 'rgba(210,210,210,0.16)'; g.lineWidth = 1;
+      for (let i = 0; i < 120; i++) {
+        const y = Math.random() * h;
+        g.beginPath(); g.moveTo(0, y); g.lineTo(w, y + (Math.random() - 0.5) * 6); g.stroke();
+      }
+    }, 2);
+
+    const metalBump = mkCanvas(256, 256, (g, w, h) => {
+      g.fillStyle = '#808080'; g.fillRect(0, 0, w, h);
+      for (let row = 0; row < 16; row++) {
+        for (let col = 0; col < 16; col++) {
+          const x = col * 16 + (row % 2 ? 8 : 0), y = row * 16;
+          g.fillStyle = `rgb(${118 + (row * 7 + col * 13) % 24},${118 + (row * 7 + col * 13) % 24},${118 + (row * 7 + col * 13) % 24})`;
+          g.fillRect(x + 1, y + 1, 13, 13);
+          g.strokeStyle = '#484848'; g.lineWidth = 1.5; g.strokeRect(x + 1, y + 1, 14, 14);
+        }
+      }
+    }, 2);
+
+    const stoneDiffuse = mkCanvas(512, 256, (g, w, h) => {
+      g.fillStyle = '#5b5246'; g.fillRect(0, 0, w, h);
+      const rows = 8, bh = h / rows;
+      for (let r = 0; r < rows; r++) {
+        const offset = (r % 2) * 32;
+        for (let x = -32; x < w; x += 64) {
+          const shade = 88 + ((r * 31 + x * 17) & 31);
+          g.fillStyle = `rgb(${shade + 12}, ${shade + 4}, ${shade - 10})`;
+          g.fillRect(x + offset + 2, r * bh + 2, 60, bh - 4);
+          g.fillStyle = 'rgba(255,245,220,0.08)';
+          g.fillRect(x + offset + 2, r * bh + 2, 60, 4);
+          g.fillStyle = 'rgba(18,12,8,0.24)';
+          g.fillRect(x + offset + 2, (r + 1) * bh - 6, 60, 4);
+        }
+      }
+    }, 2, true);
+
+    const stoneBump = mkCanvas(512, 256, (g, w, h) => {
+      g.fillStyle = '#202020'; g.fillRect(0, 0, w, h);
+      const rows = 8, bh = h / rows;
+      for (let r = 0; r < rows; r++) {
+        const offset = (r % 2) * 32;
+        for (let x = -32; x < w; x += 64) {
+          const v = 165 + ((r * 19 + x * 7) & 31);
+          g.fillStyle = `rgb(${v},${v},${v})`;
+          g.fillRect(x + offset + 3, r * bh + 3, 58, bh - 6);
+        }
+      }
+      for (let i = 0; i < 900; i++) {
+        const v = 90 + Math.floor(Math.random() * 110);
+        g.fillStyle = `rgba(${v},${v},${v},0.22)`;
+        g.fillRect(Math.random() * w, Math.random() * h, 3, 3);
+      }
+    }, 2);
+
+    const woodBump = mkCanvas(256, 256, (g, w, h) => {
+      g.fillStyle = '#787878'; g.fillRect(0, 0, w, h);
+      for (let x = 0; x < w; x += 3) {
+        const v = 96 + Math.floor(Math.sin(x * 0.25) * 26 + Math.random() * 24);
+        g.fillStyle = `rgb(${v},${v},${v})`;
+        g.fillRect(x, 0, 2, h);
+      }
+    }, 2);
+
+    const waterBump = mkCanvas(256, 256, (g, w, h) => {
+      g.fillStyle = '#808080'; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 240; i++) {
+        const x = Math.random() * w, y = Math.random() * h;
+        const rad = 8 + Math.random() * 24;
+        const grd = g.createRadialGradient(x, y, 1, x, y, rad);
+        grd.addColorStop(0, 'rgba(235,235,235,0.45)');
+        grd.addColorStop(0.6, 'rgba(95,95,95,0.28)');
+        grd.addColorStop(1, 'rgba(128,128,128,0)');
+        g.fillStyle = grd;
+        g.beginPath(); g.ellipse(x, y, rad * 0.6, rad * 1.4, 0, 0, Math.PI * 2); g.fill();
+      }
+    }, 3);
+
+    const groundBump = mkCanvas(256, 256, (g, w, h) => {
+      g.fillStyle = '#808080'; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 2200; i++) {
+        const v = 70 + Math.floor(Math.random() * 120);
+        g.fillStyle = `rgba(${v},${v},${v},0.32)`;
+        g.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 4, 2 + Math.random() * 4);
+      }
+    }, 6);
+
+    const contactShadow = mkCanvas(128, 128, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      const grd = g.createRadialGradient(w / 2, h / 2, 8, w / 2, h / 2, w * 0.48);
+      grd.addColorStop(0, 'rgba(6, 8, 5, 0.64)');
+      grd.addColorStop(0.55, 'rgba(6, 8, 5, 0.30)');
+      grd.addColorStop(1, 'rgba(6, 8, 5, 0)');
+      g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    }, 1);
+
+    this.pbrTex = { metalRough, metalBump, stoneDiffuse, stoneBump, woodBump, waterBump, groundBump, contactShadow };
+  }
+
+  // Aspect-Ratio-Independent Camera Framing
   computeTacticalCamera(w, h) {
     const aspect = Math.max(0.65, w / Math.max(1, h));
     const vFovRad = (this.camera.fov * Math.PI) / 180;
     const tanHalfV = Math.tan(vFovRad / 2);
-    const pitchRad = (52 * Math.PI) / 180; // Authentic SEGA Ver.3 spacious wide俯角
+    const pitchRad = (52 * Math.PI) / 180;
 
-    // Bounding extents: full 24-wide battlefield + both Han castles (z from -10.8 to +10.8)
     const reqHalfW = FIELD_W * 0.5 + 1.6;
     const reqHalfDepthProj = (CASTLE_Z + 2.6) * Math.sin(pitchRad);
 
@@ -3124,7 +3310,6 @@ class BattleRenderer3D {
     this.baseCamPos.set(0, dist * Math.sin(pitchRad), dist * Math.cos(pitchRad) - 0.35);
     this.baseCamTarget.set(0, 0, -0.35);
 
-    // Sync --hud-scale proportionally so unit tags, gauges & callouts never crowd small screens!
     const colCenter = this.container.parentElement;
     if (colCenter) {
       const hudScale = Math.max(0.58, Math.min(1.04, Math.min(w / 760, h / 520)));
@@ -3143,6 +3328,7 @@ class BattleRenderer3D {
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(char, 64, 52);
     const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
     this.bannerTexCache.set(key, tex);
     return tex;
   }
@@ -3150,105 +3336,369 @@ class BattleRenderer3D {
   getPortraitTexture(imgSrc) {
     if (this.portraitTexCache.has(imgSrc)) return this.portraitTexCache.get(imgSrc);
     const tex = new THREE.TextureLoader().load(imgSrc);
+    tex.encoding = THREE.sRGBEncoding;
     this.portraitTexCache.set(imgSrc, tex);
     return tex;
   }
 
+  // Three-Point Cinematic Lighting + Subtle Hemisphere Base + High-Res Soft Shadows!
   setupLights() {
     const isGrass = (this.mapTheme === 'grassland');
-    this.scene.add(new THREE.HemisphereLight(isGrass ? 0xfff4d6 : 0xf5dfc0, isGrass ? 0x3b4d2a : 0x3a2a1c, isGrass ? 0.92 : 0.78));
-    const sun = new THREE.DirectionalLight(isGrass ? 0xfff5dc : 0xffd9a8, isGrass ? 1.25 : 1.15);
-    sun.position.set(14, 28, 16);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
-    sun.shadow.camera.left = -22; sun.shadow.camera.right = 22;
-    sun.shadow.camera.top = 18; sun.shadow.camera.bottom = -18;
-    this.scene.add(sun);
-    const rim = new THREE.DirectionalLight(isGrass ? 0x8cc2ff : 0xe09658, 0.42);
-    rim.position.set(-16, 14, -18);
-    this.scene.add(rim);
+
+    // Controlled Hemisphere ambient (low enough so soft directional shadows read deeply & sculpturally!)
+    this.hemiLight = new THREE.HemisphereLight(
+      isGrass ? 0xa6cef5 : 0xf2bf8c,
+      isGrass ? 0x1e2916 : 0x20150e,
+      isGrass ? 0.32 : 0.26
+    );
+    this.scene.add(this.hemiLight);
+
+    // 1. Warm Key Sun Light (~38° elevation, casts crisp 2048x2048 soft shadows!)
+    this.keyLight = new THREE.DirectionalLight(isGrass ? 0xffe8c0 : 0xffb86c, isGrass ? 1.85 : 1.95);
+    this.keyLight.position.set(16, 22, 16);
+    this.keyLight.castShadow = true;
+    const smSize = this.qualityTier === 'high' ? 2048 : 1024;
+    this.keyLight.shadow.mapSize.set(smSize, smSize);
+    this.keyLight.shadow.camera.near = 4;
+    this.keyLight.shadow.camera.far = 68;
+    this.keyLight.shadow.camera.left = -22;
+    this.keyLight.shadow.camera.right = 22;
+    this.keyLight.shadow.camera.top = 18;
+    this.keyLight.shadow.camera.bottom = -18;
+    this.keyLight.shadow.bias = -0.00045;
+    this.keyLight.shadow.normalBias = 0.035;
+    this.keyLight.shadow.radius = 2.6;
+    this.scene.add(this.keyLight);
+
+    // 2. Cool Sky Fill Light (~0.32x key, opposite angle for cinematic warm-vs-cool contrast!)
+    this.fillLight = new THREE.DirectionalLight(isGrass ? 0x5c9ce6 : 0x7080c4, isGrass ? 0.58 : 0.50);
+    this.fillLight.position.set(-18, 12, 10);
+    this.scene.add(this.fillLight);
+
+    // 3. Sculpting Rim / Backlight (bright golden edge separation on heroes, horses & Han roofs!)
+    this.rimLight = new THREE.DirectionalLight(isGrass ? 0xffcb7a : 0xff8c42, isGrass ? 0.92 : 1.15);
+    this.rimLight.position.set(-12, 11, -20);
+    this.scene.add(this.rimLight);
+  }
+
+  // Selective HDR UnrealBloomPass + r128 ACES Filmic Tone Mapping + Linear-to-sRGB Cinema Grade Pass!
+  setupPostProcessing(w, h) {
+    this.composer = null;
+    this.bloomPass = null;
+    if (this.qualityTier !== 'high') return;
+    if (typeof THREE.EffectComposer !== 'function' || typeof THREE.RenderPass !== 'function' || typeof THREE.UnrealBloomPass !== 'function' || typeof THREE.ShaderPass !== 'function') return;
+    try {
+      const isGrass = (this.mapTheme === 'grassland');
+      const dpr = this.renderer.getPixelRatio();
+      const rtW = Math.max(1, Math.floor(w * dpr)), rtH = Math.max(1, Math.floor(h * dpr));
+      let composerTarget = null;
+      if (this.renderer.capabilities && this.renderer.capabilities.isWebGL2) {
+        try {
+          composerTarget = new THREE.WebGLRenderTarget(rtW, rtH, {
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            format: THREE.RGBAFormat,
+            type: THREE.HalfFloatType,
+            encoding: THREE.LinearEncoding
+          });
+        } catch (rtErr) {
+          composerTarget = null;
+        }
+      }
+      this.composer = composerTarget
+        ? new THREE.EffectComposer(this.renderer, composerTarget)
+        : new THREE.EffectComposer(this.renderer);
+
+      const renderPass = new THREE.RenderPass(this.scene, this.camera);
+      this.composer.addPass(renderPass);
+
+      // Strictly selective HDR bloom (only emissive braziers, flames, spell bursts & metallic glints > threshold!)
+      const bloomThresh = composerTarget ? 1.08 : 0.88;
+      this.bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(w, h), 0.28, 0.44, bloomThresh);
+      this.composer.addPass(this.bloomPass);
+
+      // Final ACES Filmic Tone Mapping + Linear->sRGB Gamma + Warm/Cool Cinema Grade + Soft Vignette
+      const cinemaShader = {
+        uniforms: {
+          tDiffuse: { value: null },
+          exposure: { value: isGrass ? 1.06 : 1.12 },
+          contrast: { value: 1.05 },
+          saturation: { value: 1.09 },
+          vignette: { value: 0.16 }
+        },
+        vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+        fragmentShader: `
+          uniform sampler2D tDiffuse;
+          uniform float exposure;
+          uniform float contrast;
+          uniform float saturation;
+          uniform float vignette;
+          varying vec2 vUv;
+
+          // Narkowicz ACES Filmic Tone Mapping (matches Three.js ACESFilmicToneMapping)
+          vec3 ACESFilm(vec3 x) {
+            float a = 2.51;
+            float b = 0.03;
+            float c = 2.43;
+            float d = 0.59;
+            float e = 0.14;
+            return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+          }
+
+          void main() {
+            vec4 tex = texture2D(tDiffuse, vUv);
+            // 1. Exposure + ACES Filmic rolloff in linear HDR space
+            vec3 col = ACESFilm(max(tex.rgb, vec3(0.0)) * exposure);
+            // 2. Linear -> sRGB gamma encoding (required in Three.js r128 EffectComposer!)
+            col = pow(col, vec3(1.0 / 2.2));
+            // 3. Subtle filmic contrast & warm-highlight / cool-shadow split grade
+            col = clamp((col - 0.5) * contrast + 0.5, 0.0, 1.0);
+            float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
+            col = mix(vec3(luma), col, saturation);
+            col += mix(vec3(-0.012, 0.002, 0.018), vec3(0.018, 0.010, -0.008), smoothstep(0.18, 0.78, luma));
+            // 4. Gentle peripheral cinema vignette
+            vec2 d = vUv - 0.5;
+            col *= 1.0 - dot(d, d) * vignette * 1.35;
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), tex.a);
+          }`
+      };
+      this.cinemaPass = new THREE.ShaderPass(cinemaShader);
+      this.composer.addPass(this.cinemaPass);
+    } catch (e) {
+      this.composer = null;
+      this.bloomPass = null;
+    }
+  }
+
+  // Live Quality Tier Switcher (Desktop 60fps High PBR+Bloom <-> Mobile Balanced)
+  setQualityTier(tier) {
+    this.qualityTier = (tier === 'balanced') ? 'balanced' : 'high';
+    const w = this.container.clientWidth || 800, h = this.container.clientHeight || 540;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.qualityTier === 'high' ? 2 : 1.35));
+    if (this.keyLight) {
+      const sm = this.qualityTier === 'high' ? 2048 : 1024;
+      if (this.keyLight.shadow.mapSize.x !== sm) {
+        this.keyLight.shadow.mapSize.set(sm, sm);
+        if (this.keyLight.shadow.map) { this.keyLight.shadow.map.dispose(); this.keyLight.shadow.map = null; }
+      }
+    }
+    this.setupPostProcessing(w, h);
+    this.resize();
   }
 
   makeGroundTexture() {
-    const c = document.createElement('canvas'); c.width = 512; c.height = 512;
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
     const g = c.getContext('2d');
     const isGrass = (this.mapTheme === 'grassland');
 
     if (isGrass) {
-      const grad = g.createLinearGradient(0, 0, 0, 512);
-      grad.addColorStop(0, '#5d6e3a'); grad.addColorStop(0.5, '#728246'); grad.addColorStop(1, '#586935');
-      g.fillStyle = grad; g.fillRect(0, 0, 512, 512);
-      for (let i = 0; i < 80; i++) {
-        g.fillStyle = i % 3 === 0 ? 'rgba(135,148,74,0.22)' : 'rgba(64,84,38,0.22)';
-        g.beginPath(); g.arc(Math.random() * 512, Math.random() * 512, 16 + Math.random() * 48, 0, Math.PI * 2); g.fill();
+      const grad = g.createLinearGradient(0, 0, 0, 1024);
+      grad.addColorStop(0, '#3e5229'); grad.addColorStop(0.5, '#536834'); grad.addColorStop(1, '#3a4c25');
+      g.fillStyle = grad; g.fillRect(0, 0, 1024, 1024);
+      // Soft radial meadow/loam patches (feathered so zero harsh polka-dots!)
+      for (let i = 0; i < 180; i++) {
+        const px = Math.random() * 1024, py = Math.random() * 1024, rad = 36 + Math.random() * 96;
+        const rg = g.createRadialGradient(px, py, 2, px, py, rad);
+        const col = i % 3 === 0 ? '118,136,64' : i % 3 === 1 ? '38,56,22' : '126,108,68';
+        rg.addColorStop(0, `rgba(${col},0.20)`);
+        rg.addColorStop(1, `rgba(${col},0)`);
+        g.fillStyle = rg; g.beginPath(); g.arc(px, py, rad, 0, Math.PI * 2); g.fill();
       }
-      // Central dirt war road
-      g.fillStyle = 'rgba(165,146,102,0.34)';
-      g.fillRect(218, 0, 76, 512);
+      // Fine grass grain & trodden earth micro-streaks
+      for (let i = 0; i < 2400; i++) {
+        g.fillStyle = i % 2 === 0 ? 'rgba(148,164,88,0.12)' : 'rgba(28,42,18,0.14)';
+        g.fillRect(Math.random() * 1024, Math.random() * 1024, 2 + Math.random() * 5, 1.5);
+      }
+      // Weathered central dirt war-road with subtle chariot ruts
+      const rGrad = g.createLinearGradient(426, 0, 598, 0);
+      rGrad.addColorStop(0, 'rgba(138,116,78,0)');
+      rGrad.addColorStop(0.24, 'rgba(142,120,80,0.34)');
+      rGrad.addColorStop(0.5, 'rgba(154,132,88,0.42)');
+      rGrad.addColorStop(0.76, 'rgba(142,120,80,0.34)');
+      rGrad.addColorStop(1, 'rgba(138,116,78,0)');
+      g.fillStyle = rGrad; g.fillRect(426, 0, 172, 1024);
+      g.strokeStyle = 'rgba(72,56,34,0.16)'; g.lineWidth = 6;
+      [482, 542].forEach(rx => { g.beginPath(); g.moveTo(rx, 0); g.lineTo(rx, 1024); g.stroke(); });
     } else {
-      const grad = g.createLinearGradient(0, 0, 0, 512);
-      grad.addColorStop(0, '#6a553c'); grad.addColorStop(0.5, '#826b4d'); grad.addColorStop(1, '#634f38');
-      g.fillStyle = grad; g.fillRect(0, 0, 512, 512);
-      for (let i = 0; i < 75; i++) {
-        g.fillStyle = i % 2 === 0 ? 'rgba(155,128,90,0.2)' : 'rgba(72,56,38,0.22)';
-        g.beginPath(); g.arc(Math.random() * 512, Math.random() * 512, 18 + Math.random() * 46, 0, Math.PI * 2); g.fill();
+      const grad = g.createLinearGradient(0, 0, 0, 1024);
+      grad.addColorStop(0, '#5a432c'); grad.addColorStop(0.5, '#765c3e'); grad.addColorStop(1, '#503b26');
+      g.fillStyle = grad; g.fillRect(0, 0, 1024, 1024);
+      for (let i = 0; i < 180; i++) {
+        const px = Math.random() * 1024, py = Math.random() * 1024, rad = 40 + Math.random() * 100;
+        const rg = g.createRadialGradient(px, py, 2, px, py, rad);
+        const col = i % 2 === 0 ? '164,128,84' : '58,40,24';
+        rg.addColorStop(0, `rgba(${col},0.22)`);
+        rg.addColorStop(1, `rgba(${col},0)`);
+        g.fillStyle = rg; g.beginPath(); g.arc(px, py, rad, 0, Math.PI * 2); g.fill();
       }
-      g.fillStyle = 'rgba(175,145,105,0.26)';
-      g.fillRect(220, 0, 72, 512);
+      // Wind-swept sand ripples
+      g.strokeStyle = 'rgba(210,174,122,0.11)'; g.lineWidth = 2;
+      for (let y = 12; y < 1024; y += 22) {
+        g.beginPath(); g.moveTo(0, y);
+        for (let x = 0; x <= 1024; x += 64) g.lineTo(x, y + Math.sin(x * 0.015 + y * 0.04) * 5);
+        g.stroke();
+      }
+      const rGrad = g.createLinearGradient(426, 0, 598, 0);
+      rGrad.addColorStop(0, 'rgba(176,142,98,0)');
+      rGrad.addColorStop(0.5, 'rgba(176,142,98,0.30)');
+      rGrad.addColorStop(1, 'rgba(176,142,98,0)');
+      g.fillStyle = rGrad; g.fillRect(426, 0, 172, 1024);
     }
 
-    // Subtle tactical grid & center frontier line
-    g.strokeStyle = 'rgba(255,228,150,0.12)'; g.lineWidth = 1;
-    for (let i = 0; i <= 512; i += 64) {
-      g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 512); g.stroke();
-      g.beginPath(); g.moveTo(0, i); g.lineTo(512, i); g.stroke();
+    // Carved Sandstone Courtyard Flagstones before both Castle Gates
+    [210, 814].forEach(cy => {
+      const cGrad = g.createRadialGradient(512, cy, 18, 512, cy, 115);
+      cGrad.addColorStop(0, 'rgba(164,148,118,0.45)');
+      cGrad.addColorStop(0.65, 'rgba(140,124,96,0.24)');
+      cGrad.addColorStop(1, 'rgba(140,124,96,0)');
+      g.fillStyle = cGrad;
+      g.fillRect(390, cy - 80, 244, 160);
+      g.strokeStyle = 'rgba(65,54,40,0.18)'; g.lineWidth = 1.5;
+      for (let fx = 432; fx <= 592; fx += 32) {
+        for (let fy = cy - 48; fy <= cy + 48; fy += 24) {
+          g.strokeRect(fx, fy, 30, 22);
+        }
+      }
+    });
+
+    // Subtle tactical frontier line & faint grid
+    g.strokeStyle = 'rgba(255,228,150,0.06)'; g.lineWidth = 1;
+    for (let i = 0; i <= 1024; i += 128) {
+      g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 1024); g.stroke();
+      g.beginPath(); g.moveTo(0, i); g.lineTo(1024, i); g.stroke();
     }
-    g.strokeStyle = 'rgba(255,230,155,0.26)'; g.lineWidth = 2;
-    g.setLineDash([10, 8]);
-    g.beginPath(); g.moveTo(0, 256); g.lineTo(512, 256); g.stroke();
+    g.strokeStyle = 'rgba(255,232,165,0.20)'; g.lineWidth = 2.5;
+    g.setLineDash([16, 12]);
+    g.beginPath(); g.moveTo(0, 512); g.lineTo(1024, 512); g.stroke();
+
     const tex = new THREE.CanvasTexture(c);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.encoding = THREE.sRGBEncoding;
+    tex.anisotropy = 4;
     return tex;
   }
 
   buildEnvironment() {
     const isGrass = (this.mapTheme === 'grassland');
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(FIELD_W + 26, FIELD_H + 20),
-      new THREE.MeshStandardMaterial({ map: this.makeGroundTexture(), roughness: 0.92 })
-    );
-    ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+    const gw = FIELD_W + 28, gh = FIELD_H + 22;
+    const gGeo = new THREE.PlaneGeometry(gw, gh, 52, 38);
+    gGeo.rotateX(-Math.PI / 2);
+
+    // Subtle vertex relief on outer flanks (battlefield core stays flat y=0 for exact unit grounding!)
+    const pos = gGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const vx = pos.getX(i), vz = pos.getZ(i);
+      const absX = Math.abs(vx);
+      if (absX > FIELD_W * 0.5 + 0.8) {
+        const edge = Math.min(1, (absX - (FIELD_W * 0.5 + 0.8)) / 5.5);
+        if (isGrass && vx < 0) {
+          // Carved river basin along left flank
+          const riverCenter = -FIELD_W / 2 - 2.9 + Math.sin(vz * 0.24) * 1.15;
+          const distR = Math.abs(vx - riverCenter);
+          const dip = Math.max(0, 1 - distR / 2.6) * -0.42;
+          pos.setY(i, dip);
+        } else {
+          const mound = (Math.sin(vz * 0.42 + vx * 0.35) * 0.45 + 0.55) * edge * (isGrass ? 0.85 : 1.45);
+          pos.setY(i, mound);
+        }
+      }
+    }
+    gGeo.computeVertexNormals();
+
+    const groundMat = new THREE.MeshPhysicalMaterial({
+      map: this.makeGroundTexture(),
+      bumpMap: this.pbrTex.groundBump,
+      bumpScale: 0.085,
+      roughness: 0.90,
+      metalness: 0.02,
+      clearcoat: 0.04,
+      envMapIntensity: 0.55
+    });
+    const ground = new THREE.Mesh(gGeo, groundMat);
+    ground.receiveShadow = true;
     this.scene.add(ground);
 
     if (isGrass) {
-      // Winding Sparkling River along Left Flank (SEGA Video 2!)
-      const riverMat = new THREE.MeshStandardMaterial({ color: 0x5c8fa6, roughness: 0.18, metalness: 0.35 });
-      const bankMat = new THREE.MeshStandardMaterial({ color: 0x9c8c68, roughness: 0.95 });
-      for (let z = -15; z <= 15; z += 1.4) {
-        const rx = -FIELD_W / 2 - 2.9 + Math.sin(z * 0.24) * 1.15;
-        const bank = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 1.8), bankMat);
-        bank.rotation.x = -Math.PI / 2; bank.position.set(rx, 0.015, z); this.scene.add(bank);
-        const water = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 1.8), riverMat);
-        water.rotation.x = -Math.PI / 2; water.position.set(rx, 0.03, z); this.scene.add(water);
+      // Natural Pebble & Wet-Sand Riverbank Transition Strip
+      const bankGeo = new THREE.PlaneGeometry(4.4, 34, 8, 48);
+      bankGeo.rotateX(-Math.PI / 2);
+      const bPos = bankGeo.attributes.position;
+      for (let i = 0; i < bPos.count; i++) {
+        const lx = bPos.getX(i), lz = bPos.getZ(i);
+        const cx = -FIELD_W / 2 - 2.9 + Math.sin(lz * 0.24) * 1.15;
+        bPos.setX(i, cx + lx);
       }
-      // Rolling hills & pine clusters on right flank
-      const hillMat = new THREE.MeshStandardMaterial({ color: 0x546838, roughness: 0.95 });
-      const pineMat = new THREE.MeshStandardMaterial({ color: 0x2d4a26, roughness: 0.9 });
-      for (let z = -11; z <= 11; z += 3.2) {
-        const hill = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5, 1), hillMat);
-        hill.position.set(FIELD_W / 2 + 2.8, 0.35, z); hill.scale.set(1.7, 0.65, 1.8);
+      bankGeo.computeVertexNormals();
+      const bankMat = new THREE.MeshStandardMaterial({
+        color: 0x6f624c, roughness: 0.88, bumpMap: this.pbrTex.groundBump, bumpScale: 0.08
+      });
+      const bank = new THREE.Mesh(bankGeo, bankMat);
+      bank.position.y = -0.14;
+      bank.receiveShadow = true;
+      this.scene.add(bank);
+
+      // Continuous Physical Water Ribbon with Clearcoat Reflections & Animated Ripples!
+      const wGeo = new THREE.PlaneGeometry(3.2, 34, 8, 48);
+      wGeo.rotateX(-Math.PI / 2);
+      const wPos = wGeo.attributes.position;
+      for (let i = 0; i < wPos.count; i++) {
+        const lx = wPos.getX(i), lz = wPos.getZ(i);
+        const cx = -FIELD_W / 2 - 2.9 + Math.sin(lz * 0.24) * 1.15;
+        wPos.setX(i, cx + lx);
+      }
+      wGeo.computeVertexNormals();
+      this.waterMat = new THREE.MeshPhysicalMaterial({
+        color: 0x1d5b78,
+        roughness: 0.06,
+        metalness: 0.18,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        reflectivity: 0.96,
+        bumpMap: this.pbrTex.waterBump,
+        bumpScale: 0.06,
+        transparent: true,
+        opacity: 0.88,
+        envMapIntensity: 2.1
+      });
+      const river = new THREE.Mesh(wGeo, this.waterMat);
+      river.position.y = -0.06;
+      river.receiveShadow = true;
+      this.scene.add(river);
+
+      // Sculpted Rolling Hills & Multi-Tier Pine Trees on Right Flank
+      const hillMat = new THREE.MeshPhysicalMaterial({ color: 0x455b2c, roughness: 0.92, bumpMap: this.pbrTex.groundBump, bumpScale: 0.06 });
+      const pineMat = new THREE.MeshPhysicalMaterial({ color: 0x24421f, roughness: 0.82, clearcoat: 0.10 });
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a311e, roughness: 0.92, bumpMap: this.pbrTex.woodBump, bumpScale: 0.04 });
+      for (let z = -11; z <= 11; z += 3.0) {
+        const hill = new THREE.Mesh(new THREE.IcosahedronGeometry(1.55, 2), hillMat);
+        hill.position.set(FIELD_W / 2 + 3.2, 0.28, z);
+        hill.scale.set(1.8, 0.55, 1.85);
+        hill.receiveShadow = true;
         this.scene.add(hill);
-        const tree = new THREE.Mesh(new THREE.ConeGeometry(0.75, 2.3, 6), pineMat);
-        tree.position.set(FIELD_W / 2 + 1.8, 1.2, z + 1.0); tree.castShadow = true;
-        this.scene.add(tree);
+
+        // 3-tier sculpted cedar/pine tree
+        const treeGrp = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.13, 0.75, 8), trunkMat);
+        trunk.position.y = 0.36; trunk.castShadow = true; treeGrp.add(trunk);
+        [0, 1, 2].forEach(ti => {
+          const cone = new THREE.Mesh(new THREE.ConeGeometry(0.82 - ti * 0.2, 1.05 - ti * 0.12, 9), pineMat);
+          cone.position.y = 0.95 + ti * 0.52; cone.castShadow = true; cone.receiveShadow = true;
+          treeGrp.add(cone);
+        });
+        treeGrp.position.set(FIELD_W / 2 + 1.85 + (Math.abs(z) % 2) * 0.45, 0, z + 0.9);
+        this.scene.add(treeGrp);
       }
     } else {
-      // Towering Desert Canyon Cliffs flanking both sides (SEGA Video 1!)
-      const cliffMat = new THREE.MeshStandardMaterial({ color: 0x5a4836, roughness: 0.96 });
-      [-FIELD_W / 2 - 2.9, FIELD_W / 2 + 2.9].forEach(sideX => {
-        for (let z = -13; z <= 13; z += 2.8) {
-          const cliff = new THREE.Mesh(new THREE.DodecahedronGeometry(2.3 + (Math.abs(z) % 3) * 0.5, 0), cliffMat);
-          cliff.position.set(sideX, 1.6, z); cliff.scale.set(1.3, 1.7, 1.6); cliff.receiveShadow = true;
+      // Sculpted Stratified Desert Canyon Cliffs flanking both sides
+      const cliffMat = new THREE.MeshPhysicalMaterial({
+        color: 0x624934, roughness: 0.92, bumpMap: this.pbrTex.stoneBump, bumpScale: 0.09, envMapIntensity: 0.65
+      });
+      [-FIELD_W / 2 - 3.0, FIELD_W / 2 + 3.0].forEach(sideX => {
+        for (let z = -13; z <= 13; z += 2.7) {
+          const cliff = new THREE.Mesh(new THREE.DodecahedronGeometry(2.3 + (Math.abs(z) % 3) * 0.45, 1), cliffMat);
+          cliff.position.set(sideX, 1.5, z);
+          cliff.scale.set(1.3, 1.65, 1.55);
+          cliff.rotation.y = z * 0.7;
+          cliff.castShadow = true; cliff.receiveShadow = true;
           this.scene.add(cliff);
         }
       });
@@ -3259,123 +3709,164 @@ class BattleRenderer3D {
     this.playerCastle = this.createCastle(castleOffset, 0x2ea858, '我');
     this.scene.add(this.enemyCastle, this.playerCastle);
 
-    // Distant sumi-e mountain range spanning full ultrawide horizon
-    const mMat = new THREE.MeshStandardMaterial({ color: isGrass ? 0x536358 : 0x382e25, roughness: 1 });
+    // Dual-layer sumi-e distant mountain range fading softly into FogExp2 horizon
+    const mMatNear = new THREE.MeshStandardMaterial({ color: isGrass ? 0x3f544c : 0x3b2c22, roughness: 0.96 });
+    const mMatFar = new THREE.MeshStandardMaterial({ color: isGrass ? 0x4c625b : 0x2c2119, roughness: 0.99 });
     for (let i = -7; i <= 7; i++) {
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(4.6 + Math.abs(i) * 0.35, 6.8 + (Math.abs(i) % 2) * 3.4, 6), mMat);
-      cone.position.set(i * 4.8, 2.8, -CASTLE_Z - 11.5 - Math.abs(i) * 0.9);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(4.6 + Math.abs(i) * 0.3, 6.8 + (Math.abs(i) % 2) * 3.4, 9), mMatNear);
+      cone.position.set(i * 4.5, 2.6, -CASTLE_Z - 11.2 - Math.abs(i) * 0.75);
       this.scene.add(cone);
+      const farPeak = new THREE.Mesh(new THREE.ConeGeometry(6.8, 10.5 + ((Math.abs(i) + 1) % 3) * 2.5, 9), mMatFar);
+      farPeak.position.set(i * 5.2 + 2.4, 3.8, -CASTLE_Z - 17.5 - Math.abs(i) * 0.8);
+      this.scene.add(farPeak);
     }
   }
 
+  // High-Detail Physical-Material Han Dynasty Castle (Masonry + Glossy Imperial Lacquer + Glazed Ceramic Roofs + Gilded Bronze!)
   createCastle(zPos, bannerHex, flagChar) {
     const grp = new THREE.Group();
-    const stone = new THREE.MeshStandardMaterial({ color: 0x827562, roughness: 0.84 });
-    const darkStone = new THREE.MeshStandardMaterial({ color: 0x4d4338, roughness: 0.9 });
-    const lacquerRed = new THREE.MeshStandardMaterial({ color: 0x8c1f1a, roughness: 0.45, metalness: 0.12 });
-    const roof = new THREE.MeshStandardMaterial({ color: 0x262c36, roughness: 0.58, metalness: 0.18 });
-    const goldTrim = new THREE.MeshStandardMaterial({ color: 0xe6bf62, roughness: 0.28, metalness: 0.72 });
-    const gate = new THREE.MeshStandardMaterial({ color: 0x3b1c0e, roughness: 0.78 });
-    const banner = new THREE.MeshStandardMaterial({ color: bannerHex, emissive: bannerHex, emissiveIntensity: 0.25, side: THREE.DoubleSide });
+    const stone = new THREE.MeshPhysicalMaterial({
+      color: 0xa2947e, map: this.pbrTex.stoneDiffuse, bumpMap: this.pbrTex.stoneBump, bumpScale: 0.085,
+      roughness: 0.86, metalness: 0.04, envMapIntensity: 0.72
+    });
+    const darkStone = new THREE.MeshPhysicalMaterial({
+      color: 0x5d5245, map: this.pbrTex.stoneDiffuse, bumpMap: this.pbrTex.stoneBump, bumpScale: 0.095,
+      roughness: 0.90, metalness: 0.06, envMapIntensity: 0.65
+    });
+    const lacquerRed = new THREE.MeshPhysicalMaterial({
+      color: 0x961c16, roughness: 0.24, metalness: 0.08, clearcoat: 0.94, clearcoatRoughness: 0.10,
+      bumpMap: this.pbrTex.woodBump, bumpScale: 0.015, envMapIntensity: 1.4
+    });
+    const roof = new THREE.MeshPhysicalMaterial({
+      color: 0x26303d, roughness: 0.34, metalness: 0.24, clearcoat: 0.74, clearcoatRoughness: 0.20,
+      bumpMap: this.pbrTex.stoneBump, bumpScale: 0.035, envMapIntensity: 1.35
+    });
+    const goldTrim = new THREE.MeshPhysicalMaterial({
+      color: 0xf4cc66, roughness: 0.20, metalness: 0.92, roughnessMap: this.pbrTex.metalRough,
+      clearcoat: 0.76, clearcoatRoughness: 0.10, envMapIntensity: 1.85
+    });
+    const gate = new THREE.MeshPhysicalMaterial({
+      color: 0x3e1f10, roughness: 0.66, metalness: 0.12, bumpMap: this.pbrTex.woodBump, bumpScale: 0.055, clearcoat: 0.24
+    });
+    const banner = new THREE.MeshStandardMaterial({
+      color: bannerHex, emissive: bannerHex, emissiveIntensity: 0.22, roughness: 0.62, side: THREE.DoubleSide
+    });
     const fDir = zPos < 0 ? 1 : -1;
 
-    // Thick sloped stone rampart base + upper parapet wall
-    const baseWall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.6, 1.3, 2.3), darkStone);
-    baseWall.position.set(0, 0.65, 0); baseWall.receiveShadow = true; grp.add(baseWall);
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.2, 1.6, 1.75), stone);
-    wall.position.set(0, 1.9, 0); wall.castShadow = true; wall.receiveShadow = true; grp.add(wall);
+    // Grounded Stone Plinth + Beveled Cornice Course + Parapet Wall
+    const baseWall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.8, 1.32, 2.45), darkStone);
+    baseWall.position.set(0, 0.66, 0); baseWall.receiveShadow = true; baseWall.castShadow = true; grp.add(baseWall);
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.2, 1.62, 1.82), stone);
+    wall.position.set(0, 1.92, 0); wall.castShadow = true; wall.receiveShadow = true; grp.add(wall);
+    const cornice = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.45, 0.16, 2.02), darkStone);
+    cornice.position.set(0, 2.72, 0); cornice.castShadow = true; grp.add(cornice);
 
-    // Ornate battlements (crenellations) along full width
+    // Ornate Battlements with Capstones
     for (let x = -11.2; x <= 11.2; x += 1.4) {
-      const c = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.55, 1.85), darkStone);
-      c.position.set(x, 2.95, 0); grp.add(c);
+      const c = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.56, 1.88), darkStone);
+      c.position.set(x, 3.04, 0); c.castShadow = true; grp.add(c);
     }
 
-    // Grand Two-Tier Han Dynasty Gatehouse with Crimson Lacquer Pillars & Curved Upturned Eaves
-    const tower1 = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3.6, 2.5), stone);
-    tower1.position.set(0, 1.8, 0); tower1.castShadow = true; grp.add(tower1);
-    // Crimson lacquer gallery & pillars
-    const gallery1 = new THREE.Mesh(new THREE.BoxGeometry(5.8, 1.15, 2.35), lacquerRed);
-    gallery1.position.set(0, 3.85, 0); grp.add(gallery1);
+    // Grand Two-Tier Han Dynasty Gatehouse
+    const tower1 = new THREE.Mesh(new THREE.BoxGeometry(6.3, 3.6, 2.55), stone);
+    tower1.position.set(0, 1.8, 0); tower1.castShadow = true; tower1.receiveShadow = true; grp.add(tower1);
+    const gallery1 = new THREE.Mesh(new THREE.BoxGeometry(5.85, 1.18, 2.38), lacquerRed);
+    gallery1.position.set(0, 3.88, 0); gallery1.castShadow = true; grp.add(gallery1);
     [-2.5, -1.25, 0, 1.25, 2.5].forEach(px => {
-      const pil = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 1.3, 6), lacquerRed);
-      pil.position.set(px, 3.85, fDir * 1.22); grp.add(pil);
+      const pil = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 1.32, 12), lacquerRed);
+      pil.position.set(px, 3.88, fDir * 1.24); pil.castShadow = true; grp.add(pil);
+      const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.14, 10), darkStone);
+      plinth.position.set(px, 3.28, fDir * 1.24); grp.add(plinth);
     });
-    // Upturned curved Han eave tier 1 + ridge beam
-    const eave1 = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.24, 3.6), roof);
-    eave1.position.set(0, 4.45, 0); grp.add(eave1);
-    const roof1 = new THREE.Mesh(new THREE.ConeGeometry(4.8, 1.15, 4), roof);
-    roof1.rotation.y = Math.PI / 4; roof1.position.set(0, 5.05, 0); grp.add(roof1);
-    const ridge1 = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.22, 0.24), goldTrim);
-    ridge1.position.set(0, 5.58, 0); grp.add(ridge1);
+    // Flared Glazed Han Eave Tier 1 + Golden Ridge + Chiwei Roof Ornaments!
+    const eave1 = new THREE.Mesh(new THREE.BoxGeometry(7.35, 0.24, 3.7), roof);
+    eave1.position.set(0, 4.48, 0); eave1.castShadow = true; grp.add(eave1);
+    const roof1 = new THREE.Mesh(new THREE.ConeGeometry(4.9, 1.18, 4), roof);
+    roof1.rotation.y = Math.PI / 4; roof1.position.set(0, 5.10, 0); roof1.castShadow = true; grp.add(roof1);
+    const ridge1 = new THREE.Mesh(new THREE.BoxGeometry(3.7, 0.22, 0.26), goldTrim);
+    ridge1.position.set(0, 5.64, 0); grp.add(ridge1);
+    [-1.85, 1.85].forEach(ox => {
+      const chiwei = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.42, 6), goldTrim);
+      chiwei.position.set(ox, 5.84, 0); grp.add(chiwei);
+    });
 
     // Upper Han Watchtower Tier 2
-    const tower2 = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.35, 1.8), lacquerRed);
-    tower2.position.set(0, 5.85, 0); grp.add(tower2);
-    const eave2 = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.2, 2.6), roof);
-    eave2.position.set(0, 6.5, 0); grp.add(eave2);
-    const roof2 = new THREE.Mesh(new THREE.ConeGeometry(2.8, 1.1, 4), roof);
-    roof2.rotation.y = Math.PI / 4; roof2.position.set(0, 7.05, 0); grp.add(roof2);
-    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.26, 8, 8), goldTrim);
-    finial.position.set(0, 7.68, 0); grp.add(finial);
+    const tower2 = new THREE.Mesh(new THREE.BoxGeometry(3.45, 1.35, 1.85), lacquerRed);
+    tower2.position.set(0, 5.90, 0); tower2.castShadow = true; grp.add(tower2);
+    const eave2 = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.22, 2.7), roof);
+    eave2.position.set(0, 6.55, 0); eave2.castShadow = true; grp.add(eave2);
+    const roof2 = new THREE.Mesh(new THREE.ConeGeometry(2.85, 1.12, 4), roof);
+    roof2.rotation.y = Math.PI / 4; roof2.position.set(0, 7.12, 0); roof2.castShadow = true; grp.add(roof2);
+    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), goldTrim);
+    finial.position.set(0, 7.75, 0); grp.add(finial);
 
-    // Arched Bronze-Studded Double Castle Gate with Golden Lion-Ring Knockers!
-    const gateFrame = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.35, 2.58), darkStone);
-    gateFrame.position.set(0, 1.18, 0); grp.add(gateFrame);
-    const door = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.1, 2.65), gate);
-    door.position.set(0, 1.05, 0); grp.add(door);
+    // Bronze-Studded Double Castle Gate with Golden Lion-Ring Knockers!
+    const gateFrame = new THREE.Mesh(new THREE.BoxGeometry(3.55, 2.38, 2.62), darkStone);
+    gateFrame.position.set(0, 1.19, 0); grp.add(gateFrame);
+    const door = new THREE.Mesh(new THREE.BoxGeometry(3.02, 2.12, 2.68), gate);
+    door.position.set(0, 1.06, 0); grp.add(door);
     [-0.65, 0.65].forEach(dx => {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.045, 6, 10), goldTrim);
-      ring.position.set(dx, 1.1, fDir * 1.36); grp.add(ring);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.048, 10, 18), goldTrim);
+      ring.position.set(dx, 1.12, fDir * 1.38); grp.add(ring);
     });
+    // Bronze gate studs
+    for (let sx = -1.1; sx <= 1.1; sx += 0.55) {
+      for (let sy = 0.45; sy <= 1.75; sy += 0.45) {
+        const stud = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), goldTrim);
+        stud.position.set(sx, sy, fDir * 1.35); grp.add(stud);
+      }
+    }
 
     // Twin Flanking Corner Watchtowers with Vertical War Banners
     [-9.2, 9.2].forEach(x => {
-      const t = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.4, 2.2), stone);
-      t.position.set(x, 1.7, 0); t.castShadow = true; grp.add(t);
-      const tTop = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.9, 1.9), lacquerRed);
-      tTop.position.set(x, 3.7, 0); grp.add(tTop);
-      const tr = new THREE.Mesh(new THREE.ConeGeometry(2.4, 1.1, 4), roof);
-      tr.rotation.y = Math.PI / 4; tr.position.set(x, 4.55, 0); grp.add(tr);
-      const bPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.6, 5), goldTrim);
+      const t = new THREE.Mesh(new THREE.BoxGeometry(2.85, 3.4, 2.25), stone);
+      t.position.set(x, 1.7, 0); t.castShadow = true; t.receiveShadow = true; grp.add(t);
+      const tTop = new THREE.Mesh(new THREE.BoxGeometry(2.55, 0.92, 1.95), lacquerRed);
+      tTop.position.set(x, 3.72, 0); tTop.castShadow = true; grp.add(tTop);
+      const tr = new THREE.Mesh(new THREE.ConeGeometry(2.48, 1.15, 4), roof);
+      tr.rotation.y = Math.PI / 4; tr.position.set(x, 4.58, 0); tr.castShadow = true; grp.add(tr);
+      const bPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.65, 8), goldTrim);
       bPole.position.set(x, 5.5, 0); grp.add(bPole);
       const b = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 2.2), banner);
       b.position.set(x + 0.6, 5.4, 0); grp.add(b);
     });
 
-    // Glowing Bronze Braziers Flanking Gate
+    // Glowing Bronze Braziers Flanking Gate (HDR emissive triggers subtle UnrealBloomPass fire halo!)
+    const flameMat = new THREE.MeshStandardMaterial({
+      color: 0xffd275, emissive: 0xff8a22, emissiveIntensity: 3.1, roughness: 0.25, metalness: 0.0
+    });
     [-2.8, 2.8].forEach(x => {
-      const brazier = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.16, 0.45, 6), darkStone);
-      brazier.position.set(x, 2.35, fDir * 1.25); grp.add(brazier);
-      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.58, 5), new THREE.MeshBasicMaterial({ color: 0xffaa33 }));
-      flame.position.set(x, 2.75, fDir * 1.25);
+      const brazier = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.16, 0.46, 12), darkStone);
+      brazier.position.set(x, 2.35, fDir * 1.26); grp.add(brazier);
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.60, 8), flameMat);
+      flame.position.set(x, 2.76, fDir * 1.26);
       grp.add(flame);
-      const pl = new THREE.PointLight(0xff8822, 0.95, 7);
+      const pl = new THREE.PointLight(0xff8e2b, 4.2, 9.5, 2);
       pl.position.copy(flame.position);
       grp.add(pl);
-      this.torchLights.push({ light: pl, flame, base: 0.95 });
+      this.torchLights.push({ light: pl, flame, base: 4.2 });
     });
 
-    // Castle Battle-Damage Fire & Black Smoke Group (Ignites below 70% HP, Rages below 40%!)
+    // Castle Battle-Damage Fire & Black Smoke Group
     const dmgFireGrp = new THREE.Group();
     const fireCones = [];
     const smokePuffs = [];
     [[-0.9, 3.2, 0.4], [0, 4.1, 0.5], [1.1, 3.1, 0.4], [-3.2, 2.7, 0.3], [3.2, 2.7, 0.3]].forEach(([fx, fy, fz], idx) => {
       const fc = new THREE.Mesh(
-        new THREE.ConeGeometry(0.55 + (idx % 2) * 0.25, 2.2 + (idx % 3) * 0.6, 6),
-        new THREE.MeshBasicMaterial({ color: idx % 2 === 0 ? 0xff4500 : 0xffaa22, transparent: true, opacity: 0.88 })
+        new THREE.ConeGeometry(0.55 + (idx % 2) * 0.25, 2.2 + (idx % 3) * 0.6, 8),
+        new THREE.MeshBasicMaterial({ color: idx % 2 === 0 ? 0xff5211 : 0xffbe33, transparent: true, opacity: 0.90 })
       );
       fc.position.set(fx, fy, fz * (zPos < 0 ? 1 : -1));
       dmgFireGrp.add(fc); fireCones.push(fc);
 
       const sm = new THREE.Mesh(
         this.sharedGeo.smoke,
-        new THREE.MeshBasicMaterial({ color: 0x1a1718, transparent: true, opacity: 0.58 })
+        new THREE.MeshBasicMaterial({ color: 0x1a1718, transparent: true, opacity: 0.56 })
       );
       sm.position.set(fx, fy + 1.4, fz * (zPos < 0 ? 1 : -1));
       dmgFireGrp.add(sm); smokePuffs.push({ mesh: sm, baseY: fy + 1.2, phase: idx * 1.3 });
     });
-    const fireLight = new THREE.PointLight(0xff5500, 0, 12);
+    const fireLight = new THREE.PointLight(0xff5500, 0, 14, 2);
     fireLight.position.set(0, 4.6, zPos < 0 ? 1.5 : -1.5);
     dmgFireGrp.add(fireLight);
     dmgFireGrp.visible = false;
@@ -3387,11 +3878,11 @@ class BattleRenderer3D {
   }
 
   buildEmbers() {
-    const count = 95;
+    const count = this.qualityTier === 'high' ? 115 : 65;
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 22;
-      pos[i * 3 + 1] = 0.4 + Math.random() * 8;
+      pos[i * 3] = (Math.random() - 0.5) * 24;
+      pos[i * 3 + 1] = 0.4 + Math.random() * 8.5;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 24;
     }
     const geo = new THREE.BufferGeometry();
@@ -3399,25 +3890,29 @@ class BattleRenderer3D {
     const isGrass = (this.mapTheme === 'grassland');
     this.embers = new THREE.Points(
       geo,
-      new THREE.PointsMaterial({ color: isGrass ? 0xfff0c8 : 0xffb85c, size: 0.14, transparent: true, opacity: isGrass ? 0.35 : 0.58 })
+      new THREE.PointsMaterial({ color: isGrass ? 0xfff0c8 : 0xffbe66, size: 0.14, transparent: true, opacity: isGrass ? 0.38 : 0.62 })
     );
     this.scene.add(this.embers);
   }
 
   buildEntities() {
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x825427, roughness: 0.88 });
+    const woodMat = new THREE.MeshPhysicalMaterial({
+      color: 0x7a4d22, roughness: 0.82, metalness: 0.05, bumpMap: this.pbrTex.woodBump, bumpScale: 0.04, clearcoat: 0.12
+    });
     for (const bar of this.sim.barricades) {
       const grp = new THREE.Group();
       const barCol = bar.side === 'player' ? 0x267848 : 0x2258a8;
-      const paintMat = new THREE.MeshStandardMaterial({ color: barCol, roughness: 0.78 });
+      const paintMat = new THREE.MeshPhysicalMaterial({
+        color: barCol, roughness: 0.64, metalness: 0.12, clearcoat: 0.28, bumpMap: this.pbrTex.woodBump, bumpScale: 0.03
+      });
       for (let k = -3; k <= 3; k++) {
-        const stake = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.10, 1.3, 6), k % 2 === 0 ? paintMat : woodMat);
+        const stake = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.10, 1.32, 8), k % 2 === 0 ? paintMat : woodMat);
         stake.position.set(k * 0.40, 0.50, 0);
         stake.rotation.x = bar.side === 'player' ? -0.38 : 0.38;
         stake.castShadow = true; grp.add(stake);
       }
       const beam = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.18, 0.18), paintMat);
-      beam.position.set(0, 0.48, 0); grp.add(beam);
+      beam.position.set(0, 0.48, 0); beam.castShadow = true; grp.add(beam);
       grp.position.set(bar.x, 0, bar.z);
       this.scene.add(grp);
       this.barMeshes.set(bar.id, grp);
@@ -3457,14 +3952,24 @@ class BattleRenderer3D {
     return map[gid] || { weapon: type === 'arc' ? 'bow' : 'spear', crest: 'plume', cape: fHex, armor: fHex, horse: 0x5c3622 };
   }
 
-  // High-Detail Articulated 3D Hero Commander (Used BOTH in-battle & in Live 3D Stratagem Cutscenes!)
+  // High-Detail Physical-Material Articulated 3D Hero Commander (MeshPhysicalMaterial + Sculpted Segments!)
   buildArticulatedHero(u, mats) {
     const prof = this.getHeroProfile(u.general.id, u.general.type, FACTIONS[u.general.faction].hex);
     const isCav = (u.general.type === 'cav');
-    const heroArmorMat = new THREE.MeshStandardMaterial({ color: prof.armor, roughness: 0.34, metalness: 0.48 });
-    const capeMat = new THREE.MeshStandardMaterial({ color: prof.cape, roughness: 0.65, side: THREE.DoubleSide });
-    const skinMat = new THREE.MeshStandardMaterial({ color: 0xf2caa8, roughness: 0.6 });
-    const plumeMat = new THREE.MeshStandardMaterial({ color: prof.crest === 'pheasant' ? 0xff4422 : 0xf2c968, roughness: 0.45 });
+    const heroArmorMat = new THREE.MeshPhysicalMaterial({
+      color: prof.armor, metalness: 0.68, roughness: 0.32,
+      roughnessMap: this.pbrTex.metalRough, bumpMap: this.pbrTex.metalBump, bumpScale: 0.018,
+      clearcoat: 0.58, clearcoatRoughness: 0.20, reflectivity: 0.9, envMapIntensity: 1.45
+    });
+    const capeMat = new THREE.MeshPhysicalMaterial({
+      color: prof.cape, roughness: 0.56, metalness: 0.06, clearcoat: 0.22, clearcoatRoughness: 0.45,
+      side: THREE.DoubleSide, envMapIntensity: 0.85
+    });
+    const skinMat = new THREE.MeshPhysicalMaterial({ color: 0xf2c8a4, roughness: 0.52, metalness: 0.02, clearcoat: 0.08 });
+    const plumeMat = new THREE.MeshPhysicalMaterial({
+      color: prof.crest === 'pheasant' ? 0xff3c1a : 0xf5cc68, roughness: 0.36, metalness: 0.15,
+      clearcoat: 0.45, clearcoatRoughness: 0.25, envMapIntensity: 1.2
+    });
 
     const root = new THREE.Group();
     const horsePivot = new THREE.Group();
@@ -3473,113 +3978,130 @@ class BattleRenderer3D {
 
     let riderY = 0;
     if (isCav) {
-      // Sculpted Armored Warhorse with Arched Neck, Ears, Mane, Saddlecloth, Tail & 4 Articulated Legs!
-      const hMat = new THREE.MeshStandardMaterial({ color: prof.horse, roughness: 0.52 });
-      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.21, 0.72, 8), hMat);
-      barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.44, 0); barrel.castShadow = true; horsePivot.add(barrel);
-      // Armored chest barding & embroidered faction saddlecloth
-      const barding = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.34), mats.goldMat);
-      barding.position.set(0, 0.46, 0.2); horsePivot.add(barding);
-      const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.22, 0.36), capeMat);
-      saddle.position.set(0, 0.49, -0.04); horsePivot.add(saddle);
-      // Arched neck + sculpted head + snout + ears + flowing mane
-      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.15, 0.36, 7), hMat);
-      neck.position.set(0, 0.64, 0.34); neck.rotation.x = 0.58; horsePivot.add(neck);
-      const hHead = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.16, 0.32), hMat);
-      hHead.position.set(0, 0.78, 0.48); hHead.rotation.x = 0.32; horsePivot.add(hHead);
-      const chamfron = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.24), mats.goldMat);
-      chamfron.position.set(0, 0.85, 0.49); chamfron.rotation.x = 0.32; horsePivot.add(chamfron);
-      [-0.055, 0.055].forEach(ex => {
-        const ear = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1, 4), hMat);
-        ear.position.set(ex, 0.89, 0.39); horsePivot.add(ear);
+      // High-Segment Sculpted Armored Warhorse with Glossy Coat, Golden Barding & 4 Articulated Legs!
+      const hMat = new THREE.MeshPhysicalMaterial({
+        color: prof.horse, roughness: 0.42, metalness: 0.08, clearcoat: 0.38, clearcoatRoughness: 0.30,
+        bumpMap: this.pbrTex.woodBump, bumpScale: 0.01, envMapIntensity: 1.15
       });
-      const mane = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.32, 0.12), mats.darkMat);
-      mane.position.set(0, 0.69, 0.26); mane.rotation.x = 0.58; horsePivot.add(mane);
-      const tail = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.38, 5), mats.darkMat);
-      tail.position.set(0, 0.38, -0.44); tail.rotation.x = -0.55; horsePivot.add(tail);
+      const barrel = new THREE.Mesh(new THREE.SphereGeometry(0.23, 16, 12), hMat);
+      barrel.scale.set(0.88, 0.92, 1.72); barrel.position.set(0, 0.45, 0); barrel.castShadow = true; horsePivot.add(barrel);
+      const barding = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.23, 0.34, 14), mats.goldMat);
+      barding.rotation.x = Math.PI / 2; barding.position.set(0, 0.46, 0.22); barding.castShadow = true; horsePivot.add(barding);
+      const saddle = new THREE.Mesh(new THREE.CylinderGeometry(0.225, 0.24, 0.36, 14), capeMat);
+      saddle.rotation.x = Math.PI / 2; saddle.position.set(0, 0.48, -0.04); horsePivot.add(saddle);
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.16, 0.38, 12), hMat);
+      neck.position.set(0, 0.65, 0.34); neck.rotation.x = 0.56; neck.castShadow = true; horsePivot.add(neck);
+      const hHead = new THREE.Mesh(new THREE.SphereGeometry(0.115, 12, 10), hMat);
+      hHead.scale.set(0.75, 0.85, 1.48); hHead.position.set(0, 0.79, 0.48); hHead.rotation.x = 0.32; horsePivot.add(hHead);
+      const chamfron = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.082, 0.25, 10), mats.goldMat);
+      chamfron.rotation.x = Math.PI / 2 + 0.32; chamfron.position.set(0, 0.84, 0.50); horsePivot.add(chamfron);
+      [-0.055, 0.055].forEach(ex => {
+        const ear = new THREE.Mesh(new THREE.ConeGeometry(0.028, 0.11, 6), hMat);
+        ear.position.set(ex, 0.90, 0.39); horsePivot.add(ear);
+      });
+      const mane = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.34, 0.12), mats.darkMat);
+      mane.position.set(0, 0.70, 0.26); mane.rotation.x = 0.56; horsePivot.add(mane);
+      const tail = new THREE.Mesh(new THREE.ConeGeometry(0.065, 0.42, 8), mats.darkMat);
+      tail.position.set(0, 0.38, -0.46); tail.rotation.x = -0.58; horsePivot.add(tail);
 
-      // 4 Articulated Legs (for genuine galloping stride & rearing animation!)
+      // 4 Sculpted Articulated Legs with Hooves
       [[-0.12, 0.26], [0.12, 0.26], [-0.12, -0.26], [0.12, -0.26]].forEach(([lx, lz]) => {
         const legPiv = new THREE.Group();
         legPiv.position.set(lx, 0.36, lz);
-        const legMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.036, 0.38, 5), hMat);
-        legMesh.position.y = -0.18; legPiv.add(legMesh);
+        const legMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.036, 0.34, 10), hMat);
+        legMesh.position.y = -0.16; legMesh.castShadow = true; legPiv.add(legMesh);
+        const hoof = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.046, 0.06, 10), mats.darkMat);
+        hoof.position.y = -0.34; legPiv.add(hoof);
         horsePivot.add(legPiv);
         horseLegs.push(legPiv);
       });
       riderY = 0.52;
     }
 
-    // Articulated Hero Upper Body + Layered Han Lamellar Armor
+    // Articulated Hero Upper Body + High-Segment Layered Han Lamellar Armor
     const torsoPivot = new THREE.Group();
     torsoPivot.position.set(0, riderY, isCav ? -0.02 : 0);
     horsePivot.add(torsoPivot);
 
     if (!isCav) {
-      // Infantry armored greaves & war skirt
-      const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 0.34, 8), heroArmorMat);
+      const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.25, 0.36, 16), heroArmorMat);
       skirt.position.y = 0.18; skirt.castShadow = true; torsoPivot.add(skirt);
     }
-    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.14, 0.34, 8), heroArmorMat);
+    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.145, 0.35, 16), heroArmorMat);
     chest.position.y = isCav ? 0.22 : 0.44; chest.castShadow = true; torsoPivot.add(chest);
-    const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.165, 0.08, 8), mats.goldMat);
+    // Gilded chest mirror plate (護心鏡!) + lamellar waist belt
+    const mirrorPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.03, 14), mats.goldMat);
+    mirrorPlate.rotation.x = Math.PI / 2; mirrorPlate.position.set(0, isCav ? 0.25 : 0.47, 0.165); torsoPivot.add(mirrorPlate);
+    const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.17, 0.085, 16), mats.goldMat);
     belt.position.y = isCav ? 0.08 : 0.30; torsoPivot.add(belt);
-    // Sculpted Han Beast-Mask Shoulder Pauldrons (獸面肩甲!)
+
+    // Sculpted Han Beast-Mask Shoulder Pauldrons (14-segment!)
     const shoulderY = isCav ? 0.35 : 0.57;
     [-0.21, 0.21].forEach(sx => {
-      const pauldron = new THREE.Mesh(new THREE.SphereGeometry(0.105, 7, 6), mats.goldMat);
-      pauldron.scale.set(1.05, 0.78, 1.15);
+      const pauldron = new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10), mats.goldMat);
+      pauldron.scale.set(1.08, 0.78, 1.18);
       pauldron.position.set(sx, shoulderY, 0);
+      pauldron.castShadow = true;
       torsoPivot.add(pauldron);
     });
 
-    // Head + Iconic Han Dynasty Headgear / Plumes / Crown / Beard!
+    // Smooth High-Segment Head + Iconic Han Dynasty Headgear
     const headY = shoulderY + 0.18;
-    const face = new THREE.Mesh(new THREE.SphereGeometry(0.115, 8, 8), skinMat);
-    face.position.y = headY; torsoPivot.add(face);
+    const face = new THREE.Mesh(new THREE.SphereGeometry(0.118, 16, 14), skinMat);
+    face.position.y = headY; face.castShadow = true; torsoPivot.add(face);
     if (prof.beard) {
-      const beard = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.26, 5), mats.darkMat);
-      beard.rotation.x = Math.PI; beard.position.set(0, headY - 0.14, 0.08); torsoPivot.add(beard);
+      const beard = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.28, 8), mats.darkMat);
+      beard.rotation.x = Math.PI; beard.position.set(0, headY - 0.15, 0.08); torsoPivot.add(beard);
     }
     if (prof.crest === 'scholar') {
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.125, 0.18, 8), capeMat);
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.128, 0.18, 14), capeMat);
       cap.position.y = headY + 0.10; torsoPivot.add(cap);
     } else if (prof.crest === 'diadem') {
-      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.125, 8, 8), mats.darkMat);
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.128, 14, 12), mats.darkMat);
       hair.position.set(0, headY + 0.03, -0.02); torsoPivot.add(hair);
-      const pin = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.022, 5, 10), mats.goldMat);
+      const pin = new THREE.Mesh(new THREE.TorusGeometry(0.092, 0.022, 8, 18), mats.goldMat);
       pin.rotation.x = Math.PI / 2.2; pin.position.y = headY + 0.11; torsoPivot.add(pin);
     } else {
-      const helm = new THREE.Mesh(new THREE.SphereGeometry(0.128, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.62), prof.crest === 'guanyu' ? capeMat : mats.goldMat);
-      helm.position.y = headY + 0.02; torsoPivot.add(helm);
+      const helm = new THREE.Mesh(new THREE.SphereGeometry(0.132, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), prof.crest === 'guanyu' ? capeMat : mats.goldMat);
+      helm.position.y = headY + 0.02; helm.castShadow = true; torsoPivot.add(helm);
+      const brim = new THREE.Mesh(new THREE.TorusGeometry(0.125, 0.018, 8, 18), mats.goldMat);
+      brim.rotation.x = Math.PI / 2; brim.position.y = headY + 0.02; torsoPivot.add(brim);
       if (prof.crest === 'pheasant') {
-        // Lu Bu's iconic Twin Sweeping Long Pheasant Tail Feathers (雙雉尾)!
         [-1, 1].forEach(side => {
-          const f1 = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.022, 0.82, 5), plumeMat);
-          f1.position.set(side * 0.18, headY + 0.42, -0.18);
+          const f1 = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.024, 0.86, 8), plumeMat);
+          f1.position.set(side * 0.19, headY + 0.43, -0.18);
           f1.rotation.set(-0.55, 0, side * -0.45);
           torsoPivot.add(f1);
         });
       } else if (prof.crest === 'crown') {
-        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.07, 0.14, 6), mats.goldMat);
+        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.072, 0.15, 10), mats.goldMat);
         crown.position.y = headY + 0.14; torsoPivot.add(crown);
       } else if (prof.crest === 'plume' || prof.crest === 'wild') {
-        const plume = new THREE.Mesh(new THREE.ConeGeometry(0.065, 0.34, 6), plumeMat);
+        const plume = new THREE.Mesh(new THREE.ConeGeometry(0.068, 0.36, 10), plumeMat);
         plume.position.set(0, headY + 0.22, -0.08); plume.rotation.x = -0.55; torsoPivot.add(plume);
       }
     }
 
-    // Flowing Billowing Hero Cape (披風)
-    const capeMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.72), capeMat);
+    // Curved Multi-Segment Billowing Silk Cape (natural cloth fold displacement!)
+    const capeGeo = new THREE.PlaneGeometry(0.48, 0.74, 4, 6);
+    const cPos = capeGeo.attributes.position;
+    for (let i = 0; i < cPos.count; i++) {
+      const cx = cPos.getX(i), cy = cPos.getY(i);
+      const bend = Math.sin((cx / 0.24) * Math.PI * 0.85) * 0.035 + ((0.37 - cy) * (0.37 - cy)) * 0.14;
+      cPos.setZ(i, -bend);
+    }
+    capeGeo.computeVertexNormals();
+    const capeMesh = new THREE.Mesh(capeGeo, capeMat);
     capeMesh.position.set(0, shoulderY - 0.26, -0.22);
     capeMesh.rotation.x = 0.38;
+    capeMesh.castShadow = true;
     torsoPivot.add(capeMesh);
 
-    // Articulated Right Arm + Iconic Three Kingdoms Weapon!
+    // Articulated Right Arm + Tempered Steel & Gilded Weapons
     const rightArmPivot = new THREE.Group();
     rightArmPivot.position.set(0.22, shoulderY - 0.04, 0.04);
     torsoPivot.add(rightArmPivot);
-    const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.28, 6), heroArmorMat);
+    const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.28, 10), heroArmorMat);
     rArm.rotation.x = Math.PI / 2.2; rArm.position.set(0, -0.03, 0.12); rightArmPivot.add(rArm);
 
     const weaponGrp = new THREE.Group();
@@ -3587,56 +4109,56 @@ class BattleRenderer3D {
     rightArmPivot.add(weaponGrp);
 
     if (prof.weapon === 'halberd') {
-      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 1.85, 6), mats.goldMat);
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 1.88, 10), mats.goldMat);
       shaft.rotation.x = Math.PI / 2.3; shaft.position.set(0, 0.08, 0.25); weaponGrp.add(shaft);
-      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.34, 4), mats.metalMat);
-      tip.rotation.x = Math.PI / 2.3; tip.position.set(0, 0.32, 1.15); weaponGrp.add(tip);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.052, 0.36, 6), mats.metalMat);
+      tip.rotation.x = Math.PI / 2.3; tip.position.set(0, 0.32, 1.16); weaponGrp.add(tip);
       [-0.12, 0.12].forEach(cx => {
-        const cres = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.024, 5, 8, Math.PI), mats.metalMat);
+        const cres = new THREE.Mesh(new THREE.TorusGeometry(0.145, 0.024, 8, 16, Math.PI), mats.metalMat);
         cres.position.set(cx, 0.25, 0.96); cres.rotation.y = cx > 0 ? 0 : Math.PI; weaponGrp.add(cres);
       });
     } else if (prof.weapon === 'guandao') {
-      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 1.75, 6), mats.darkMat);
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 1.76, 10), mats.darkMat);
       shaft.rotation.x = Math.PI / 2.3; shaft.position.set(0, 0.06, 0.22); weaponGrp.add(shaft);
-      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.19, 0.56), mats.metalMat);
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.20, 0.58), mats.metalMat);
       blade.position.set(0, 0.25, 1.02); blade.rotation.x = -0.18; weaponGrp.add(blade);
     } else if (prof.weapon === 'sword') {
-      const hilt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.05), mats.goldMat);
+      const hilt = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.042, 0.052), mats.goldMat);
       weaponGrp.add(hilt);
-      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.08, 0.92), mats.metalMat);
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.08, 0.94), mats.metalMat);
       blade.position.set(0, 0.02, 0.48); weaponGrp.add(blade);
     } else if (prof.weapon === 'fan') {
       const fan = new THREE.Mesh(
-        new THREE.CircleGeometry(0.32, 8, -0.7, 1.4),
-        new THREE.MeshBasicMaterial({ color: u.general.id === 'zhouyu' ? 0xffe08a : 0xffffff, side: THREE.DoubleSide })
+        new THREE.CircleGeometry(0.33, 14, -0.7, 1.4),
+        new THREE.MeshPhysicalMaterial({ color: u.general.id === 'zhouyu' ? 0xffe08a : 0xfbf8f0, roughness: 0.45, clearcoat: 0.25, side: THREE.DoubleSide })
       );
       fan.position.set(0, 0.08, 0.18); fan.rotation.y = Math.PI / 3; weaponGrp.add(fan);
     } else if (prof.weapon === 'bow') {
-      const bow = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.028, 6, 10, Math.PI), mats.goldMat);
+      const bow = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.028, 8, 16, Math.PI), mats.goldMat);
       bow.rotation.y = Math.PI / 2; bow.position.set(0, 0.06, 0.16); weaponGrp.add(bow);
     } else if (prof.weapon === 'ribbons') {
       const rib = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.18, 1.05),
-        new THREE.MeshBasicMaterial({ color: prof.cape, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+        new THREE.PlaneGeometry(0.18, 1.08, 2, 6),
+        new THREE.MeshPhysicalMaterial({ color: prof.cape, roughness: 0.35, clearcoat: 0.4, transparent: true, opacity: 0.88, side: THREE.DoubleSide })
       );
       rib.position.set(0, -0.1, 0.42); rib.rotation.x = Math.PI / 2.4; weaponGrp.add(rib);
     } else {
-      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.024, 1.78, 6), mats.darkMat);
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.024, 1.80, 10), mats.darkMat);
       shaft.rotation.x = Math.PI / 2.25; shaft.position.set(0, 0.06, 0.25); weaponGrp.add(shaft);
-      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.048, 0.32, 4), mats.metalMat);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.34, 6), mats.metalMat);
       tip.rotation.x = Math.PI / 2.25; tip.position.set(0, 0.24, 1.12); weaponGrp.add(tip);
     }
 
-    // Articulated Left Arm (Shield / Silk Ribbon / Reins)
+    // Articulated Left Arm
     const leftArmPivot = new THREE.Group();
     leftArmPivot.position.set(-0.22, shoulderY - 0.04, 0.04);
     torsoPivot.add(leftArmPivot);
-    const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.26, 6), heroArmorMat);
+    const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.26, 10), heroArmorMat);
     lArm.rotation.x = Math.PI / 2.5; lArm.position.set(0, -0.04, 0.11); leftArmPivot.add(lArm);
     if (prof.weapon === 'ribbons') {
       const ribL = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.18, 1.05),
-        new THREE.MeshBasicMaterial({ color: prof.cape, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+        new THREE.PlaneGeometry(0.18, 1.08, 2, 6),
+        new THREE.MeshPhysicalMaterial({ color: prof.cape, roughness: 0.35, clearcoat: 0.4, transparent: true, opacity: 0.88, side: THREE.DoubleSide })
       );
       ribL.position.set(0, -0.1, 0.42); ribL.rotation.x = Math.PI / 2.4; leftArmPivot.add(ribL);
     } else if (!isCav && u.general.type === 'spr') {
@@ -3651,17 +4173,41 @@ class BattleRenderer3D {
     const grp = new THREE.Group();
     const fObj = FACTIONS[u.general.faction];
     const fHex = fObj.hex;
-    const armorMat = new THREE.MeshStandardMaterial({ color: fHex, roughness: 0.42, metalness: 0.34 });
-    const darkMat = new THREE.MeshStandardMaterial({ color: 0x2a2320, roughness: 0.78 });
-    const horseMat = new THREE.MeshStandardMaterial({ color: 0x5c3622, roughness: 0.68 });
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xf2c968, roughness: 0.28, metalness: 0.68 });
-    const metalMat = new THREE.MeshStandardMaterial({ color: 0xe8f0f8, roughness: 0.18, metalness: 0.88 });
+    // Hero-grade Physical PBR Materials (used on Articulated Hero Commander & signature weapons!)
+    const armorMat = new THREE.MeshPhysicalMaterial({
+      color: fHex, roughness: 0.36, metalness: 0.50, roughnessMap: this.pbrTex.metalRough,
+      clearcoat: 0.42, clearcoatRoughness: 0.24, envMapIntensity: 1.3
+    });
+    const darkMat = new THREE.MeshPhysicalMaterial({ color: 0x26201e, roughness: 0.60, metalness: 0.24, envMapIntensity: 0.9 });
+    const horseMat = new THREE.MeshPhysicalMaterial({ color: 0x5c3622, roughness: 0.48, metalness: 0.06, clearcoat: 0.30, clearcoatRoughness: 0.32 });
+    const goldMat = new THREE.MeshPhysicalMaterial({
+      color: 0xf4cc68, roughness: 0.18, metalness: 0.94, roughnessMap: this.pbrTex.metalRough,
+      clearcoat: 0.80, clearcoatRoughness: 0.10, envMapIntensity: 1.85
+    });
+    const metalMat = new THREE.MeshPhysicalMaterial({
+      color: 0xeaf2fa, roughness: 0.14, metalness: 0.96, roughnessMap: this.pbrTex.metalRough,
+      clearcoat: 0.88, clearcoatRoughness: 0.08, envMapIntensity: 1.95
+    });
     const mats = { armorMat, darkMat, horseMat, goldMat, metalMat };
+
+    // Fast PBR Standard Materials for rank-and-file troops (matches Hero palette & IBL at ~4x lower fragment cost!)
+    const sArmorMat = new THREE.MeshStandardMaterial({ color: fHex, roughness: 0.42, metalness: 0.46, roughnessMap: this.pbrTex.metalRough, envMapIntensity: 1.1 });
+    const sDarkMat  = new THREE.MeshStandardMaterial({ color: 0x2a2320, roughness: 0.64, metalness: 0.20, envMapIntensity: 0.8 });
+    const sHorseMat = new THREE.MeshStandardMaterial({ color: 0x5c3622, roughness: 0.54, metalness: 0.06, envMapIntensity: 0.85 });
+    const sGoldMat  = new THREE.MeshStandardMaterial({ color: 0xf0c662, roughness: 0.26, metalness: 0.88, envMapIntensity: 1.45 });
+    const sMetalMat = new THREE.MeshStandardMaterial({ color: 0xe4eef7, roughness: 0.22, metalness: 0.92, envMapIntensity: 1.55 });
+
+    // Soft Ground Contact Shadow beneath formation (grounds troops onto terrain!)
+    const contactShadow = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.65, 2.65),
+      new THREE.MeshBasicMaterial({ map: this.pbrTex.contactShadow, transparent: true, opacity: 0.78, depthWrite: false })
+    );
+    contactShadow.rotation.x = -Math.PI / 2; contactShadow.position.y = 0.022; grp.add(contactShadow);
 
     // Formation base ring + forward direction chevron
     const baseRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.92, 1.12, 24),
-      new THREE.MeshBasicMaterial({ color: u.side === 'player' ? 0x52ee90 : 0xff5e5e, side: THREE.DoubleSide, transparent: true, opacity: 0.72 })
+      new THREE.RingGeometry(0.92, 1.12, 32),
+      new THREE.MeshBasicMaterial({ color: u.side === 'player' ? 0x52ee90 : 0xff5e5e, side: THREE.DoubleSide, transparent: true, opacity: 0.74 })
     );
     baseRing.rotation.x = -Math.PI / 2; baseRing.position.y = 0.04; grp.add(baseRing);
 
@@ -3675,21 +4221,21 @@ class BattleRenderer3D {
     let offsets;
     if (u.general.type === 'cav') {
       offsets = [
-        [0, 0.50, 1.18], // Articulated Hero Commander at front tip!
+        [0, 0.50, 1.18],
         [-0.48, 0.12, 0.84], [0.48, 0.12, 0.84],
         [-0.88, -0.24, 0.80], [0, -0.20, 0.82], [0.88, -0.24, 0.80],
         [-0.66, -0.64, 0.78], [-0.22, -0.60, 0.78], [0.22, -0.60, 0.78], [0.66, -0.64, 0.78]
       ];
     } else if (u.general.type === 'spr') {
       offsets = [
-        [0, -0.18, 1.24], // Articulated Hero Commander center-rear!
+        [0, -0.18, 1.24],
         [-0.84, 0.44, 0.84], [-0.42, 0.48, 0.84], [0, 0.50, 0.84], [0.42, 0.48, 0.84], [0.84, 0.44, 0.84],
         [-0.68, 0.04, 0.82], [-0.22, 0.06, 0.82], [0.22, 0.06, 0.82], [0.68, 0.04, 0.82],
         [-0.46, -0.44, 0.80], [0.46, -0.44, 0.80]
       ];
     } else {
       offsets = [
-        [0, -0.24, 1.24], // Articulated Hero Commander!
+        [0, -0.24, 1.24],
         [-0.84, 0.36, 0.82], [-0.42, 0.40, 0.82], [0, 0.42, 0.82], [0.42, 0.40, 0.82], [0.84, 0.36, 0.82],
         [-0.78, -0.02, 0.80], [-0.36, -0.02, 0.80], [0.36, -0.02, 0.80], [0.78, -0.02, 0.80],
         [-0.46, -0.42, 0.78], [0.46, -0.42, 0.78]
@@ -3714,33 +4260,33 @@ class BattleRenderer3D {
       }
       const s = new THREE.Group();
       if (u.general.type === 'cav') {
-        const horse = new THREE.Mesh(this.sharedGeo.horseBody, horseMat);
+        const horse = new THREE.Mesh(this.sharedGeo.horseBody, sHorseMat);
         horse.position.set(0, 0.30, 0); horse.castShadow = true; s.add(horse);
-        const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.24), armorMat);
+        const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.24), sArmorMat);
         saddle.position.set(0, 0.44, -0.02); s.add(saddle);
-        const head = new THREE.Mesh(this.sharedGeo.horseHead, darkMat);
+        const head = new THREE.Mesh(this.sharedGeo.horseHead, sDarkMat);
         head.position.set(0, 0.48, 0.26); s.add(head);
-        const rider = new THREE.Mesh(this.sharedGeo.riderBody, armorMat);
+        const rider = new THREE.Mesh(this.sharedGeo.riderBody, sArmorMat);
         rider.position.set(0, 0.62, -0.02); rider.castShadow = true; s.add(rider);
-        const helm = new THREE.Mesh(this.sharedGeo.helm, darkMat);
+        const helm = new THREE.Mesh(this.sharedGeo.helm, sDarkMat);
         helm.position.set(0, 0.84, -0.02); s.add(helm);
-        const lance = new THREE.Mesh(this.sharedGeo.lance, metalMat);
+        const lance = new THREE.Mesh(this.sharedGeo.lance, sMetalMat);
         lance.rotation.x = Math.PI / 2.25; lance.position.set(0.14, 0.62, 0.38); s.add(lance);
       } else if (u.general.type === 'spr') {
-        const body = new THREE.Mesh(this.sharedGeo.infBody, armorMat);
+        const body = new THREE.Mesh(this.sharedGeo.infBody, sArmorMat);
         body.position.set(0, 0.25, 0); body.castShadow = true; s.add(body);
-        const helm = new THREE.Mesh(this.sharedGeo.helm, darkMat);
+        const helm = new THREE.Mesh(this.sharedGeo.helm, sDarkMat);
         helm.position.set(0, 0.54, 0); s.add(helm);
-        const shield = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.28, 0.22), darkMat);
+        const shield = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.28, 0.22), sDarkMat);
         shield.position.set(-0.14, 0.30, 0.10); s.add(shield);
-        const spear = new THREE.Mesh(this.sharedGeo.spear, metalMat);
+        const spear = new THREE.Mesh(this.sharedGeo.spear, sMetalMat);
         spear.rotation.x = Math.PI / 2.15; spear.position.set(0.13, 0.40, 0.50); s.add(spear);
       } else {
-        const body = new THREE.Mesh(this.sharedGeo.infBody, armorMat);
+        const body = new THREE.Mesh(this.sharedGeo.infBody, sArmorMat);
         body.position.set(0, 0.25, 0); body.castShadow = true; s.add(body);
-        const helm = new THREE.Mesh(this.sharedGeo.helm, darkMat);
+        const helm = new THREE.Mesh(this.sharedGeo.helm, sDarkMat);
         helm.position.set(0, 0.53, 0); s.add(helm);
-        const bow = new THREE.Mesh(this.sharedGeo.bow, goldMat);
+        const bow = new THREE.Mesh(this.sharedGeo.bow, sGoldMat);
         bow.rotation.y = Math.PI / 2; bow.position.set(0, 0.40, 0.24); s.add(bow);
       }
       s.scale.setScalar(scale); s.position.set(ox, 0, oz);
@@ -3749,7 +4295,7 @@ class BattleRenderer3D {
     });
 
     // High-Visibility Chinese War Banner with Faction Character!
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.030, 2.15, 5), darkMat);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.030, 2.15, 8), darkMat);
     pole.position.set(-0.34, 1.08, -0.34); grp.add(pole);
     const flagTex = this.getBannerTexture(fObj.name.charAt(0), fObj.color);
     const flag = new THREE.Mesh(
@@ -3758,15 +4304,15 @@ class BattleRenderer3D {
     );
     flag.position.set(0.04, 1.88, -0.34); grp.add(flag);
 
-    // SEGA Ver.3 Cavalry Charge Cyan Gale + Frameless Ground Portrait Ghost!!
+    // Cavalry Charge Cyan Gale + Ground Portrait Ghost
     const chargeAura = new THREE.Group();
     const cRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.05, 1.82, 28),
+      new THREE.RingGeometry(1.05, 1.82, 32),
       new THREE.MeshBasicMaterial({ color: 0x8ef2ff, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
     );
     cRing.rotation.x = -Math.PI / 2; cRing.position.y = 0.12; chargeAura.add(cRing);
     const cCone = new THREE.Mesh(
-      new THREE.ConeGeometry(1.25, 3.2, 14, 1, true),
+      new THREE.ConeGeometry(1.25, 3.2, 16, 1, true),
       new THREE.MeshBasicMaterial({ color: 0x7ae8ff, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
     );
     cCone.rotation.x = Math.PI / 2; cCone.position.set(0, 0.55, 1.1); chargeAura.add(cCone);
@@ -3788,18 +4334,18 @@ class BattleRenderer3D {
     chargeAura.visible = false;
     grp.add(chargeAura);
 
-    // Upgraded Spearman 5-Blade Glowing Array + Fan Zone!
+    // Spearman 5-Blade Glowing Array + Fan Zone
     const spearFan = new THREE.Group();
     const sfCol = u.side === 'player' ? 0x4dffcc : 0xff7755;
     const sfArc = new THREE.Mesh(
-      new THREE.CircleGeometry(2.35, 22, -0.7, 1.4),
+      new THREE.CircleGeometry(2.35, 24, -0.7, 1.4),
       new THREE.MeshBasicMaterial({ color: sfCol, side: THREE.DoubleSide, transparent: true, opacity: 0.24 })
     );
     sfArc.rotation.x = -Math.PI / 2; sfArc.rotation.z = -Math.PI / 2; sfArc.position.y = 0.07;
     spearFan.add(sfArc);
     [-0.72, -0.36, 0, 0.36, 0.72].forEach(ox => {
       const blade = new THREE.Mesh(
-        new THREE.ConeGeometry(0.11, 1.75, 4),
+        new THREE.ConeGeometry(0.11, 1.75, 6),
         new THREE.MeshBasicMaterial({ color: 0xf0fffb, transparent: true, opacity: 0.92 })
       );
       blade.rotation.x = Math.PI / 2;
@@ -3810,7 +4356,7 @@ class BattleRenderer3D {
     grp.add(spearFan);
 
     const walkShootAura = new THREE.Mesh(
-      new THREE.RingGeometry(0.95, 1.42, 24),
+      new THREE.RingGeometry(0.95, 1.42, 28),
       new THREE.MeshBasicMaterial({ color: 0x4ee8ff, side: THREE.DoubleSide, transparent: true, opacity: 0.78 })
     );
     walkShootAura.rotation.x = -Math.PI / 2; walkShootAura.position.y = 0.1; walkShootAura.visible = false;
@@ -3889,13 +4435,13 @@ class BattleRenderer3D {
         fxNodes.push({ kind: 'petal', mesh: pet, phase: (i / 24) * Math.PI * 2, h: 0.5 + (i % 6) * 0.55 });
       }
     } else {
-      // Heroic Aura Slash Arcs + Rising Golden Light Columns (Rally / Self / Speed / Debuff / Taunt)
+      // Heroic Aura Slash Arcs + Ethereal Additive Golden Light Shafts (zero milky camera haze!)
       for (let r = 0; r < 3; r++) {
         const ring = new THREE.Mesh(
-          new THREE.TorusGeometry(1.55 + r * 0.32, 0.055, 6, 28, Math.PI * 1.45),
-          new THREE.MeshBasicMaterial({ color: r === 0 ? 0xffffff : sealCol, transparent: true, opacity: 0.92 })
+          new THREE.TorusGeometry(1.65 + r * 0.34, 0.042, 8, 32, Math.PI * 1.45),
+          new THREE.MeshBasicMaterial({ color: r === 0 ? 0xfff4d0 : sealCol, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending, depthWrite: false })
         );
-        ring.position.y = 1.0 + r * 0.35;
+        ring.position.y = 0.85 + r * 0.32;
         ring.rotation.set(0.35 * r, r * 1.2, 0.25 * r);
         grp.add(ring);
         fxNodes.push({ kind: 'slash_ring', mesh: ring, idx: r });
@@ -3903,14 +4449,19 @@ class BattleRenderer3D {
       for (let c = 0; c < 6; c++) {
         const a = (c / 6) * Math.PI * 2;
         const beam = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.14, 0.24, 6.5, 6, 1, true),
-          new THREE.MeshBasicMaterial({ color: sealCol, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+          new THREE.CylinderGeometry(0.10, 0.18, 6.2, 8, 1, true),
+          new THREE.MeshBasicMaterial({ color: sealCol, transparent: true, opacity: 0.22, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
         );
-        beam.position.set(Math.cos(a) * 2.4, 3.2, Math.sin(a) * 2.4);
+        beam.position.set(Math.cos(a) * 2.55, 3.1, Math.sin(a) * 2.55);
         grp.add(beam);
         fxNodes.push({ kind: 'beam', mesh: beam, baseA: a });
       }
     }
+
+    // Dedicated Close-Up Hero Drama Light (carves crisp golden speculars on armor & weapons during 3D cutscene!)
+    const heroSpot = new THREE.PointLight(sealCol, 6.5, 9.0, 2);
+    heroSpot.position.set(1.3, 2.8, 1.8);
+    grp.add(heroSpot);
 
     grp.position.set(cx, 0, cz);
     this.scene.add(grp);
@@ -4014,14 +4565,14 @@ class BattleRenderer3D {
       const grp = new THREE.Group();
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(0.4, ev.radius, 36),
-        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.78 })
+        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.56, blending: THREE.AdditiveBlending, depthWrite: false })
       );
-      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.16; grp.add(ring);
+      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.16; ring.userData.baseOpacity = 0.56; grp.add(ring);
       const pillar = new THREE.Mesh(
         new THREE.CylinderGeometry(ev.radius * 0.42, ev.radius * 0.55, 9.5, 20, 1, true),
-        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.42 })
+        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false })
       );
-      pillar.position.y = 4.75; grp.add(pillar);
+      pillar.position.y = 4.75; pillar.userData.baseOpacity = 0.12; grp.add(pillar);
       grp.position.set(ev.x, 0, ev.z);
       this.scene.add(grp);
       this.vfxList.push({ mesh: grp, age: 0, dur: 1.25, kind: 'pillar' });
@@ -4142,6 +4693,16 @@ class BattleRenderer3D {
     this.camera.updateProjectionMatrix();
     this.computeTacticalCamera(w, h);
     this.renderer.setSize(w, h);
+    if (this.composer) this.composer.setSize(w, h);
+    if (this.bloomPass) this.bloomPass.setSize(w, h);
+  }
+
+  renderFrame() {
+    if (this.composer && this.qualityTier === 'high') {
+      this.composer.render();
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 
   updateCastleDamageVisuals(castleGrp, hpPct, t) {
@@ -4152,7 +4713,7 @@ class BattleRenderer3D {
     if (!damaged) return;
     const severe = hpPct < 40;
     const scaleBase = severe ? 1.35 : 0.72;
-    ud.fireLight.intensity = severe ? (1.8 + Math.sin(t * 16) * 0.5) : 0.85;
+    ud.fireLight.intensity = severe ? (8.5 + Math.sin(t * 16) * 2.2) : 3.8;
     ud.fireCones.forEach((fc, idx) => {
       fc.visible = severe || idx < 3;
       fc.scale.set(scaleBase, scaleBase * (0.85 + Math.sin(t * 15 + idx * 2) * 0.28), scaleBase);
@@ -4169,8 +4730,13 @@ class BattleRenderer3D {
   render(dt, realDt, selectedUid, dragState) {
     const t = performance.now() * 0.001;
 
+    if (this.waterMat && this.pbrTex && this.pbrTex.waterBump) {
+      this.pbrTex.waterBump.offset.y -= realDt * 0.14;
+      this.pbrTex.waterBump.offset.x = Math.sin(t * 0.45) * 0.04;
+    }
+
     for (const tl of this.torchLights) {
-      tl.light.intensity = tl.base + Math.sin(t * 11 + tl.flame.position.x) * 0.22;
+      tl.light.intensity = tl.base + Math.sin(t * 11 + tl.flame.position.x) * 0.85;
       tl.flame.scale.y = 0.85 + Math.sin(t * 14 + tl.flame.position.x) * 0.25;
     }
     this.updateCastleDamageVisuals(this.enemyCastle, this.sim.castleHp.enemy, t);
@@ -4439,7 +5005,7 @@ class BattleRenderer3D {
         v.mesh.scale.y = 0.8 + Math.sin(p * Math.PI) * 0.75;
         v.mesh.children.forEach(c => { c.material.opacity = (1 - p) * 0.9; });
       } else {
-        v.mesh.children.forEach(c => { c.material.opacity = (1 - p) * 0.9; });
+        v.mesh.children.forEach(c => { c.material.opacity = (1 - p) * (c.userData.baseOpacity != null ? c.userData.baseOpacity : 0.9); });
       }
       if (p >= 1) { this.scene.remove(v.mesh); this.vfxList.splice(i, 1); }
     }
@@ -4474,32 +5040,25 @@ class BattleRenderer3D {
         this.camera.lookAt(cm.x, 1.9 + p * 0.8, cm.z);
       } else if (cm.kind === 'dance_heal' || cm.kind === 'dance_curse') {
         // 360° Spotlight Stage Framing around 3D Dancing Hero!
-        this.spotBeam.visible = true;
-        this.spotBeam.position.set(cm.x, 7.5, cm.z);
-        this.spotBeam.material.color.setHex(cm.kind === 'dance_heal' ? 0x66ffdd : 0xd066ff);
+        this.rangeCircle.visible = false; this.rangeFill.visible = false; this.rangeRect.visible = false;
         const ang = 0.25 + p * Math.PI * 1.5;
         this.camera.position.set(cm.x + Math.sin(ang) * 4.5, 2.35 + Math.sin(p * Math.PI) * 0.4, cm.z + Math.cos(ang) * 4.5);
         this.camera.lookAt(cm.x, 1.25, cm.z);
       } else if (cm.kind === 'rally' || cm.kind === 'heal_aoe') {
         // Dramatic low-angle heroic arc framing the enlarged 3D Hero raising weapon skyward!
-        this.spotBeam.visible = true;
-        this.spotBeam.position.set(cm.x, 7.5, cm.z);
-        this.spotBeam.material.color.setHex(cm.kind === 'heal_aoe' ? 0x66ffaa : 0xffd266);
+        this.rangeCircle.visible = false; this.rangeFill.visible = false; this.rangeRect.visible = false;
         const ang = -0.65 + p * 1.35;
         const rad = 4.95 - p * 0.55;
         this.camera.position.set(cm.x + Math.sin(ang) * rad, 2.25 + p * 0.65, cm.z + Math.cos(ang) * rad);
         this.camera.lookAt(cm.x, 1.32, cm.z);
       } else if (cm.kind === 'victory_pose') {
+        this.rangeCircle.visible = false; this.rangeFill.visible = false; this.rangeRect.visible = false;
         const ang = -0.6 + p * 1.2;
         this.camera.position.set(cm.x + Math.sin(ang) * 4.8, 2.2, cm.z + Math.cos(ang) * 4.8);
         this.camera.lookAt(cm.x, 1.2, cm.z);
       } else {
         // Dramatic 3D Hero Action Framing (self / speed / debuff / taunt / fire / water / lightning)
-        this.spotBeam.visible = true;
-        this.spotBeam.position.set(cm.x, 7.5, cm.z);
-        const sCol = cm.kind === 'fire' ? 0xff5511 : cm.kind === 'water' ? 0x22aaff : cm.kind === 'lightning' ? 0xffee55
-          : (cm.kind === 'debuff' || cm.kind === 'taunt') ? 0xcc55ff : 0xffd255;
-        this.spotBeam.material.color.setHex(sCol);
+        this.rangeCircle.visible = false; this.rangeFill.visible = false; this.rangeRect.visible = false;
         const ang = -0.55 + p * Math.PI * 0.95;
         const rad = 4.65 + (1 - p) * 0.95;
         this.camera.position.set(cm.x + Math.sin(ang) * rad, 2.25 + p * 0.72, cm.z + Math.cos(ang) * rad);
@@ -4510,7 +5069,7 @@ class BattleRenderer3D {
         this.camera.position.x += (Math.random() - 0.5) * 0.42;
         this.camera.position.y += (Math.random() - 0.5) * 0.28;
       }
-      this.renderer.render(this.scene, this.camera);
+      this.renderFrame();
       return;
     }
 
@@ -4538,7 +5097,7 @@ class BattleRenderer3D {
       this.camera.position.y += (Math.random() - 0.5) * 0.25;
     }
     this.camera.lookAt(this.camTarget);
-    this.renderer.render(this.scene, this.camera);
+    this.renderFrame();
   }
 }
 
@@ -5320,15 +5879,18 @@ const App = {
     document.getElementById('aow-sub-lbl').textContent = aowDef.desc;
     document.getElementById('btn-aow').disabled = false;
 
-    this.ren = new BattleRenderer3D(document.getElementById('three-container'), this.sim, mapTheme);
+    this.ren = new BattleRenderer3D(document.getElementById('three-container'), this.sim, mapTheme, this.qualityTier || null);
+    this.qualityTier = this.ren.qualityTier;
+    const qBtn = document.getElementById('btn-quality');
+    if (qBtn) qBtn.textContent = this.qualityTier === 'high' ? '畫質：高' : '畫質：流暢';
     this.cutscenePlayer = new SpellCutscenePlayer(document.getElementById('cutscene-canvas'));
 
-    // Populate Opening Dual-Banner Clash & Deck Lineup (SEGA 00:06 - 00:42!)
-    const aiNameMap = { wei: '魏・神速號令', shu: '蜀・五虎強攻', wu: '吳・赤壁弓陣', qun: '群雄・無雙暴虐' };
-    document.getElementById('ic-player-title').textContent = '我軍主帥陣營';
-    document.getElementById('ic-player-sub').textContent = `兵法：${aowDef.name} ｜ 士氣上限 ${this.sim.moraleCap.player}`;
-    document.getElementById('ic-enemy-title').textContent = aiNameMap[aiDeckKey] || '敵軍陣營';
-    document.getElementById('ic-enemy-sub').textContent = `AI 強度：${aiDiff === 'hard' ? '頂上對決' : aiDiff === 'easy' ? '入門' : '標準'}`;
+    // Populate Opening Dual-Banner Clash & Deck Lineup
+    const aiNameMap = { wei: '魏・神速', shu: '蜀・五虎', wu: '吳・赤壁', qun: '群・無雙' };
+    document.getElementById('ic-player-title').textContent = '我軍';
+    document.getElementById('ic-player-sub').textContent = `${aowDef.name} ｜ 士氣 ${this.sim.moraleCap.player}`;
+    document.getElementById('ic-enemy-title').textContent = aiNameMap[aiDeckKey] || '敵軍';
+    document.getElementById('ic-enemy-sub').textContent = aiDiff === 'hard' ? '頂上對決' : aiDiff === 'easy' ? '入門' : '標準';
     const mkMini = ids => ids.map(id => {
       const g = GENERAL_MAP[id];
       return `<div class="ic-mini-card" style="border-color:${FACTIONS[g.faction].color}"><img src="${g.img}" alt="${g.name}"><div class="im-lbl">${g.name}</div></div>`;
@@ -5381,6 +5943,15 @@ const App = {
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       this.applyControlModeUI();
+    });
+
+    document.getElementById('btn-quality').addEventListener('click', () => {
+      if (!this.ren) return;
+      const next = this.ren.qualityTier === 'high' ? 'balanced' : 'high';
+      this.qualityTier = next;
+      this.ren.setQualityTier(next);
+      document.getElementById('btn-quality').textContent = next === 'high' ? '畫質：高' : '畫質：流暢';
+      this.toast(next === 'high' ? '高畫質（PBR＋柔光泛光＋2K陰影）' : '流暢模式（省電降級）');
     });
 
     document.getElementById('btn-fullscreen').addEventListener('click', () => this.enterFullscreenLandscape(true));
@@ -5441,25 +6012,21 @@ const App = {
   },
 
   applyControlModeUI() {
-    const tip = document.getElementById('mode-tip');
     const vpadWrap = document.getElementById('virtual-pad-wrap');
     const altRight = document.getElementById('alt-right-panel');
     const altGuide = document.getElementById('alt-mode-guide');
 
     if (this.controlMode === 2) {
-      tip.textContent = '模式2（多點實體卡盤）：支援雙指以上同時拖曳！虛影＝目前部隊位置，實體卡＝即時指令點，計略演出中仍可自由下令！';
       vpadWrap.style.display = 'flex';
       altRight.classList.remove('show');
     } else if (this.controlMode === 1) {
-      tip.textContent = '模式1（直接拉線）：按住中央 3D 我軍拖曳路徑，左手按左側計略發動絕招！';
       vpadWrap.style.display = 'none';
       altRight.classList.add('show');
-      altGuide.textContent = '在中央 3D 戰場直接按住我軍拖曳路徑；騎兵長距衝刺會蓄出青藍突擊鬥氣與武將殘影。';
+      if (altGuide) altGuide.textContent = '在戰場拖曳我軍拉線移動';
     } else {
-      tip.textContent = '模式3（點卡點地）：點左側卡片（或按鍵 1~5）再點戰場指定移動目標！';
       vpadWrap.style.display = 'none';
       altRight.classList.add('show');
-      altGuide.textContent = '點擊左側武將卡（或鍵盤 1~5）選取軍團，再點擊 3D 戰場目的地即可行軍。';
+      if (altGuide) altGuide.textContent = '點左卡選將，再點戰場移動';
     }
   },
 
@@ -5510,20 +6077,20 @@ const App = {
             <span>${g.name}</span>
             <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${f.color}">${f.name}・${ut.icon}</span>
           </div>
-          <div class="asp-stats" id="asp-stats">武力 ${g.pow} ｜ 知力 ${g.intl}</div>
-          <div class="asp-status" id="asp-status">待機中</div>
+          <div class="asp-stats" id="asp-stats">武 ${g.pow} ｜ 知 ${g.intl}</div>
+          <div class="asp-status" id="asp-status">待機</div>
         </div>
       </div>
       <div class="asp-desc-box">
         <div class="asp-strat-title">
-          <span>${g.strat.name} <small style="color:#ff9e44">★3D武將演武過場</small></span>
-          <span>消耗士氣 ${g.strat.cost}</span>
+          <span>${g.strat.name}</span>
+          <span>士氣 ${g.strat.cost}</span>
         </div>
         <div>${g.strat.desc}</div>
       </div>
       <button class="cast-btn-big" id="asp-cast-btn">
-        <span>發動計略：${g.strat.name}</span>
-        <span>士氣 ${g.strat.cost}</span>
+        <span>${g.strat.name}</span>
+        <span>${g.strat.cost}</span>
       </button>`;
     document.getElementById('asp-cast-btn').addEventListener('click', () => {
       if (this.isCutsceneBlocking() || this.isPortraitBlocked()) return;
@@ -5610,19 +6177,17 @@ const App = {
     const surface = document.getElementById('vpad-surface');
     surface.innerHTML = `
       <div class="vpad-enemy-wall" id="vpad-enemy-wall">
-        <span class="vpad-wall-side-lbl">◀ 城壁攻城</span>
-        <span class="vpad-wall-side-lbl">城壁攻城 ▶</span>
+        <span class="vpad-wall-side-lbl">◀ 城壁</span>
+        <span class="vpad-wall-side-lbl">城壁 ▶</span>
         <div class="vpad-gate-notch" id="vpad-gate-notch">
           <strong>城 門</strong>
-          <span>1.5x 強攻</span>
         </div>
       </div>
-      <div class="vpad-attack-lbl"><span>▲ 推入城壁＝攻城</span><span>推入城門凹槽＝攻城門 ▲</span></div>
       <div class="vpad-watermark enemy-wm">敵 陣</div>
       <div class="vpad-frontier"></div>
       <div class="vpad-watermark ally-wm">自 陣</div>
-      <div class="vpad-own-wall"><span>▼ 越過我方城牆線始下令歸城 ▼</span></div>
-      <div class="vpad-castle-zone" id="vpad-castle-zone"><span>自城內・歸城回復／預置復活</span></div>
+      <div class="vpad-own-wall"><span>我方城壁</span></div>
+      <div class="vpad-castle-zone" id="vpad-castle-zone"><span>自城內</span></div>
       <canvas id="vpad-cmd-canvas"></canvas>`;
     this.enemyPadDots.clear();
     this.vpadGhosts.clear();
@@ -5813,13 +6378,6 @@ const App = {
       age: 0,
       dur
     };
-    this.ren.spawnVFX({
-      type: 'VFX_PILLAR_RING',
-      x: ev.focusX || 0,
-      z: ev.focusZ || 0,
-      radius: ev.isMajor ? 4.2 : 3.2,
-      color: ev.side === 'player' ? 0xffe08a : 0xff5555
-    });
     sfx.bannerClash();
   },
 
@@ -6053,7 +6611,7 @@ const App = {
     if (liveBadge) {
       const inCut = this.isCutsceneBlocking();
       liveBadge.classList.toggle('cutscene-free', inCut);
-      liveBadge.textContent = inCut ? '演出中・可自由控卡' : '多指即時控卡';
+      liveBadge.textContent = inCut ? '演出控卡' : '多指控卡';
     }
 
     // Update Semi-Transparent Enemy General Cards on Right Virtual Pad (independent anti-overlap so opposing cards CAN overlap!)
@@ -6086,16 +6644,16 @@ const App = {
       const st = sim.getEffectiveStats(u);
       const hpPct = (u.hp / u.maxHp) * 100;
       let status = '待機';
-      if (!u.alive) status = `復活中 (${Math.ceil(u.respawnTimer)}s)`;
-      else if (u.inCastle) status = `城內回血 (${Math.round(hpPct)}%)`;
-      else if (u.dancing) status = '舞踏發動中';
-      else if (u.isSieging && u.inMelee) status = '攻城受阻（亂戰中）';
-      else if (u.isSieging) status = (u.siegeZone === 'gate' ? '城門攻城中！' : '城牆攻城中！');
-      else if (u.isCharging) status = '突擊鬥氣滿載！';
-      else if (u.stealth) status = '伏兵潛行中';
-      else if (u.inMelee) status = '接戰混戰中';
-      else if (u.general.type === 'arc' && u.standTimer > 0.28) status = '弓箭齊射中';
-      else if (Math.hypot(u.vx, u.vz) > 0.15) status = '行軍移動中';
+      if (!u.alive) status = `復活 ${Math.ceil(u.respawnTimer)}s`;
+      else if (u.inCastle) status = `城內 ${Math.round(hpPct)}%`;
+      else if (u.dancing) status = '舞踏';
+      else if (u.isSieging && u.inMelee) status = '亂戰';
+      else if (u.isSieging) status = (u.siegeZone === 'gate' ? '攻城門' : '攻城壁');
+      else if (u.isCharging) status = '突擊！';
+      else if (u.stealth) status = '伏兵';
+      else if (u.inMelee) status = '混戰';
+      else if (u.general.type === 'arc' && u.standTimer > 0.28) status = '齊射';
+      else if (Math.hypot(u.vx, u.vz) > 0.15) status = '行軍';
 
       if (card) {
         card.classList.toggle('active-sel', u.uid === this.selectedUid);
@@ -6112,7 +6670,7 @@ const App = {
         const aspStats = document.getElementById('asp-stats');
         const aspStat = document.getElementById('asp-status');
         const aspBtn = document.getElementById('asp-cast-btn');
-        if (aspStats) aspStats.textContent = `武力 ${st.pow} ｜ 知力 ${u.general.intl} ｜ 兵力 ${Math.round(hpPct)}%`;
+        if (aspStats) aspStats.textContent = `武 ${st.pow} ｜ 知 ${u.general.intl} ｜ ${Math.round(hpPct)}%`;
         if (aspStat) aspStat.textContent = status;
         if (aspBtn) {
           const ready = u.alive && !u.inCastle && sim.morale.player >= u.general.strat.cost && !u.dancing;
