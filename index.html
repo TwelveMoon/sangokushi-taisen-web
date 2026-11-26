@@ -9,7 +9,7 @@
 <meta name="screen-orientation" content="landscape">
 <meta name="x5-orientation" content="landscape">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰 網頁版 v1.82 — 街機黃金寬幅戰場・全裝置等比視野・強制滿版橫屏</title>
+<title>三國志大戰 網頁版 v1.9 — 街機多指羊皮紙卡盤・虛影即時下令・全3D角色計略動畫・高精細3D軍團</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root {
@@ -251,10 +251,10 @@
 
   /* LEFT COLUMN: Left-Hand Stratagems, Hex Morale Gems & Art of War */
   .col-left {
-    width: clamp(160px, 18.5vw, 228px); flex-shrink: 0;
+    width: clamp(148px, 16.5vw, 204px); flex-shrink: 0;
     background: linear-gradient(180deg, #18131d 0%, #110d15 100%);
     border-right: 2px solid var(--panel-border); display: flex; flex-direction: column;
-    padding: 7px; gap: 6px; overflow: hidden;
+    padding: 6px; gap: 5px; overflow: hidden;
   }
   .left-section-title {
     font-size: 11px; font-weight: 800; color: var(--gold); letter-spacing: 1px;
@@ -527,47 +527,47 @@
   #ult-theater.show .letterbox-bar.top,
   #ult-theater.show .letterbox-bar.bot { transform: translateY(0); }
 
-  /* Beat 1: Portrait + Faction War Banner High-Speed Clash (SEGA 02:06 / 07:09 Style!) */
+  /* Beat 1: Frameless Close-up Bust Cutout + Faction War Banner Clash (SEGA Style!) */
   #ult-clash-stage {
     position: absolute; inset: 0; z-index: 65; opacity: 0; pointer-events: none;
     display: flex; align-items: center; justify-content: space-between; overflow: hidden;
-    background: linear-gradient(90deg, rgba(8,6,12,0.58) 0%, rgba(16,12,20,0.22) 50%, rgba(8,6,12,0.58) 100%);
+    background: linear-gradient(90deg, rgba(8,6,12,0.52) 0%, rgba(16,12,20,0.12) 50%, rgba(8,6,12,0.52) 100%);
     transition: opacity 0.14s ease;
   }
   #ult-theater.stage1 #ult-clash-stage { opacity: 1; }
   .clash-portrait-box {
-    position: relative; width: 46%; height: 100%; overflow: hidden;
-    transform: translateX(-115%) skewX(-6deg);
+    position: relative; width: 48%; height: 100%; overflow: visible;
+    display: flex; align-items: center; justify-content: center;
+    transform: translateX(-115%);
     transition: transform 0.24s cubic-bezier(0.12, 0.96, 0.24, 1);
-    border-right: 4px solid var(--gold-bright);
-    box-shadow: 12px 0 40px rgba(0,0,0,0.88);
   }
   #ult-theater.enemy-cast #ult-clash-stage { flex-direction: row-reverse; }
-  #ult-theater.enemy-cast .clash-portrait-box {
-    transform: translateX(115%) skewX(6deg);
-    border-right: none; border-left: 4px solid #ff7a66;
-    box-shadow: -12px 0 40px rgba(0,0,0,0.88);
-  }
-  #ult-theater.stage1 .clash-portrait-box { transform: translateX(-4%) skewX(-6deg); }
-  #ult-theater.stage1.enemy-cast .clash-portrait-box { transform: translateX(4%) skewX(6deg); }
+  #ult-theater.enemy-cast .clash-portrait-box { transform: translateX(115%); }
+  #ult-theater.stage1 .clash-portrait-box { transform: translateX(0); }
+  #ult-theater.stage1.enemy-cast .clash-portrait-box { transform: translateX(0); }
   .clash-portrait-box img {
-    width: 112%; height: 100%; object-fit: cover; object-position: center 15%;
-    transform: skewX(6deg) scale(1.06);
+    width: 96%; height: 92%; object-fit: cover; object-position: center 14%;
+    -webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 54%, transparent 94%);
+    mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 54%, transparent 94%);
+    filter: drop-shadow(0 0 24px rgba(255,210,110,0.68)) contrast(1.06);
   }
-  #ult-theater.enemy-cast .clash-portrait-box img { transform: skewX(-6deg) scale(1.06); }
+  .clash-portrait-box img.is-alpha-cutout {
+    object-fit: contain; -webkit-mask-image: none; mask-image: none;
+    filter: drop-shadow(0 0 22px rgba(255,215,120,0.85));
+  }
   .clash-name-ribbon {
-    position: absolute; bottom: 15%; left: 10%; right: 10%;
+    position: absolute; bottom: 14%; left: 10%; right: 10%;
     padding: 6px 14px; text-align: center; border-radius: 6px;
-    background: linear-gradient(90deg, rgba(12,8,14,0.92), rgba(50,18,16,0.96), rgba(12,8,14,0.92));
-    border: 2px solid var(--gold-bright); box-shadow: 0 4px 18px rgba(0,0,0,0.95);
-    transform: skewX(6deg);
+    background: linear-gradient(90deg, rgba(12,8,14,0.12), rgba(50,18,16,0.92) 22%, rgba(50,18,16,0.92) 78%, rgba(12,8,14,0.12));
+    border-top: 2px solid var(--gold-bright); border-bottom: 2px solid var(--gold-bright);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.8);
   }
-  #ult-theater.enemy-cast .clash-name-ribbon { transform: skewX(-6deg); border-color: #88ccff; background: linear-gradient(90deg, rgba(8,14,28,0.92), rgba(18,46,96,0.96), rgba(8,14,28,0.92)); }
+  #ult-theater.enemy-cast .clash-name-ribbon { border-color: #88ccff; background: linear-gradient(90deg, rgba(8,14,28,0.12), rgba(18,46,96,0.92) 22%, rgba(18,46,96,0.92) 78%, rgba(8,14,28,0.12)); }
   .clash-name-ribbon .cn-main { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: 5px; text-shadow: 0 2px 8px #000; }
   .clash-name-ribbon .cn-sub { font-size: 11px; font-weight: 800; color: var(--gold-bright); letter-spacing: 3px; }
 
   .clash-flag-box {
-    width: 44%; height: 76%; margin-right: 3%; display: flex; flex-direction: column;
+    width: 42%; height: 74%; margin-right: 3%; display: flex; flex-direction: column;
     align-items: center; justify-content: center; position: relative;
     border: 3px solid var(--gold); border-radius: 8px;
     background: radial-gradient(circle at 50% 45%, rgba(160,34,24,0.88), rgba(28,10,12,0.94));
@@ -623,32 +623,25 @@
     text-shadow: 0 0 14px rgba(255,220,100,0.98), 0 4px 0 #3a0404;
   }
 
-  /* Beat 3: Full Widescreen CG Stage (when CG exists) OR Transparent 3D Real-Time Cinema Stage */
-  #ult-cg-stage {
-    position: absolute; inset: 0; z-index: 62; opacity: 0;
-    background: #07050a; overflow: hidden; transition: opacity 0.2s ease;
-  }
-  #ult-theater.stage2.has-cg #ult-cg-stage { opacity: 1; }
-  #ult-cg-img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-    transform: scale(1.2) translateX(-2.5%);
-    transition: transform 1.65s cubic-bezier(0.12, 0.72, 0.25, 1);
-  }
-  #ult-theater.stage2.has-cg #ult-cg-img { transform: scale(1.02) translateX(2%); }
-  .ult-vignette {
-    position: absolute; inset: 0; z-index: 63;
-    background: radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.82) 100%);
-  }
+  /* Beat 3: Pure Live 3D Character Animation Stage (No static poster covering 3D hero!) */
+  #ult-cg-stage { display: none; }
 
-  /* Floating Hero Portrait Echo for Pure-3D Real-Time Cutscenes (No static CG needed!) */
+  /* Frameless Close-up Hero Bust Cutout Echo alongside Live 3D Character Animation! */
   #ult-3d-hero-echo {
-    position: absolute; right: 4%; bottom: 18%; width: 195px; height: 270px; z-index: 65;
-    border-radius: 10px; overflow: hidden; opacity: 0; pointer-events: none;
-    border: 2.5px solid var(--gold-bright); box-shadow: 0 0 36px rgba(255,200,90,0.65), 0 12px 32px rgba(0,0,0,0.9);
-    transform: translateX(40px) scale(0.92); transition: all 0.34s cubic-bezier(0.14, 0.96, 0.24, 1);
+    position: absolute; right: 2%; bottom: 19%; width: 220px; height: 260px; z-index: 65;
+    overflow: visible; opacity: 0; pointer-events: none;
+    transform: translateX(48px) scale(0.9); transition: all 0.32s cubic-bezier(0.14, 0.96, 0.24, 1);
   }
-  #ult-theater.stage2.mode-3d #ult-3d-hero-echo { opacity: 0.94; transform: translateX(0) scale(1); }
-  #ult-3d-hero-echo img { width: 100%; height: 100%; object-fit: cover; }
+  #ult-theater.stage2 #ult-3d-hero-echo { opacity: 0.96; transform: translateX(0) scale(1); }
+  #ult-3d-hero-echo img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center 14%;
+    -webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 50%, transparent 94%);
+    mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 50%, transparent 94%);
+    filter: drop-shadow(0 0 22px rgba(255,215,120,0.75)) contrast(1.06);
+  }
+  #ult-3d-hero-echo img.is-alpha-cutout {
+    object-fit: contain; -webkit-mask-image: none; mask-image: none;
+  }
 
   /* Authentic SEGA Ver.3 Bottom Translucent Stratagem Info Strip */
   .ult-caption-wrap {
@@ -740,12 +733,18 @@
   }
   #intro-overlay.phase-parade #intro-shutsujin { opacity: 1; }
   .shutsujin-hero {
-    width: 40%; height: 100%; overflow: hidden; position: relative;
-    border-right: 4px solid var(--gold-bright); box-shadow: 12px 0 40px rgba(0,0,0,0.85);
+    width: 44%; height: 100%; overflow: visible; position: relative;
+    display: flex; align-items: center; justify-content: center;
     transform: translateX(-100%); transition: transform 0.34s cubic-bezier(0.14, 0.96, 0.24, 1);
   }
   #intro-overlay.phase-parade .shutsujin-hero { transform: translateX(0); }
-  .shutsujin-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; }
+  .shutsujin-hero img {
+    width: 96%; height: 92%; object-fit: cover; object-position: center 14%;
+    -webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 52%, transparent 94%);
+    mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 52%, transparent 94%);
+    filter: drop-shadow(0 0 24px rgba(255,215,120,0.72));
+  }
+  .shutsujin-hero img.is-alpha-cutout { object-fit: contain; -webkit-mask-image: none; mask-image: none; }
   .shutsujin-quote {
     position: absolute; bottom: 14%; left: 8%; right: 8%; padding: 8px 12px;
     background: rgba(12,8,14,0.88); border: 1.5px solid var(--gold); border-radius: 6px;
@@ -819,12 +818,17 @@
   }
   #ambush-overlay.show { display: flex; }
   .ambush-card {
-    width: 210px; height: 296px; border-radius: 10px; overflow: hidden; position: relative;
-    border: 3px solid #e6a8ff; box-shadow: 0 0 42px rgba(180,80,255,0.85);
+    width: 240px; height: 280px; overflow: visible; position: relative;
     transform: translateX(-30px) scale(0.9); transition: transform 0.2s ease;
   }
-  #ambush-overlay.show .ambush-card { transform: translateX(-18px) scale(1); }
-  .ambush-card img { width: 100%; height: 100%; object-fit: cover; }
+  #ambush-overlay.show .ambush-card { transform: translateX(-14px) scale(1); }
+  .ambush-card img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center 14%;
+    -webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 52%, transparent 94%);
+    mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 52%, transparent 94%);
+    filter: drop-shadow(0 0 26px rgba(190,90,255,0.85));
+  }
+  .ambush-card img.is-alpha-cutout { object-fit: contain; -webkit-mask-image: none; mask-image: none; }
   .ambush-seal {
     padding: 14px 20px; border-radius: 10px; text-align: center;
     background: linear-gradient(180deg, #b81d18, #5e0808); border: 4px solid #ffe494;
@@ -939,12 +943,18 @@
   }
   #finale-overlay.show { display: flex; }
   .finale-hero-left {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 42%; overflow: hidden;
-    border-right: 4px solid var(--gold-bright); box-shadow: 16px 0 46px rgba(0,0,0,0.92);
+    position: absolute; left: 0; top: 0; bottom: 0; width: 44%; overflow: visible;
+    display: flex; align-items: center; justify-content: center;
     transform: translateX(-110%); transition: transform 0.42s cubic-bezier(0.14, 0.96, 0.24, 1);
   }
   #finale-overlay.victory-pose .finale-hero-left { transform: translateX(0); }
-  .finale-hero-left img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; }
+  .finale-hero-left img {
+    width: 96%; height: 92%; object-fit: cover; object-position: center 14%;
+    -webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 54%, transparent 94%);
+    mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, #000 54%, transparent 94%);
+    filter: drop-shadow(0 0 28px rgba(255,215,120,0.8));
+  }
+  .finale-hero-left img.is-alpha-cutout { object-fit: contain; -webkit-mask-image: none; mask-image: none; }
   .finale-hero-caption {
     position: absolute; bottom: 8%; left: 6%; right: 6%; padding: 8px 12px;
     background: rgba(12,8,14,0.9); border: 1.5px solid var(--gold); border-radius: 6px;
@@ -974,57 +984,144 @@
     text-shadow: 0 0 14px #ff3300, 0 3px 0 #4a0606;
   }
 
-  /* RIGHT COLUMN: Right-Hand Virtual Arcade Card Pad (Primary!) */
+  /* RIGHT COLUMN: Wide Authentic SEGA Parchment Flat Card Reader Board (Primary!) */
   .col-right {
-    width: clamp(172px, 20.5vw, 254px); flex-shrink: 0;
-    background: linear-gradient(180deg, #18131d 0%, #110d15 100%);
+    width: clamp(220px, 29.5vw, 368px); flex-shrink: 0;
+    background: linear-gradient(180deg, #1b151e 0%, #110d14 100%);
     border-left: 2px solid var(--panel-border); display: flex; flex-direction: column;
-    padding: 7px; gap: 6px; overflow: hidden;
+    padding: 6px 7px; gap: 5px; overflow: hidden;
   }
   .quick-cmd-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
   .qcmd-btn {
-    padding: 5px 4px; border-radius: 5px; font-size: 10px; font-weight: 800;
+    padding: 4px 4px; border-radius: 5px; font-size: 10px; font-weight: 800;
     background: #241e2c; color: var(--gold-bright); border: 1px solid #483b28;
   }
   .qcmd-btn:hover { background: #332a3e; border-color: var(--gold); }
 
   #virtual-pad-wrap {
-    flex: 1; display: flex; flex-direction: column; gap: 5px; min-height: 0;
+    flex: 1; display: flex; flex-direction: column; gap: 4px; min-height: 0;
   }
   .vpad-header {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 11px; font-weight: 800; color: var(--gold-bright);
+    display: flex; justify-content: space-between; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 900; color: var(--gold-bright);
   }
+  #vpad-live-badge {
+    font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 10px;
+    background: rgba(48,160,92,0.22); border: 1px solid rgba(90,230,140,0.5); color: #8dffb5;
+    white-space: nowrap;
+  }
+  #vpad-live-badge.cutscene-free {
+    background: rgba(240,175,45,0.26); border-color: #ffe28a; color: #fff2b8;
+    animation: pulseGold 1.2s infinite;
+  }
+
+  /* Authentic SEGA Sangokushi Taisen Parchment Flat Card Board! */
   #vpad-surface {
     flex: 1; position: relative; border-radius: 8px; overflow: hidden; touch-action: none;
     background:
-      linear-gradient(180deg, rgba(196,42,42,0.28) 0%, rgba(196,42,42,0) 12%, rgba(42,156,82,0) 88%, rgba(42,156,82,0.28) 100%),
-      repeating-linear-gradient(0deg, rgba(217,177,95,0.09) 0 1px, transparent 1px 28px),
-      repeating-linear-gradient(90deg, rgba(217,177,95,0.09) 0 1px, transparent 1px 28px),
-      radial-gradient(circle at 50% 50%, #241d17 0%, #120f14 100%);
-    border: 2px solid #6b532e;
-    box-shadow: inset 0 0 24px rgba(0,0,0,0.75);
+      radial-gradient(ellipse at 50% 48%, rgba(235,204,148,0.28) 0%, rgba(125,84,38,0.22) 100%),
+      repeating-linear-gradient(0deg, rgba(95,62,28,0.08) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(95,62,28,0.08) 0 1px, transparent 1px 28px),
+      linear-gradient(180deg, #b89154 0%, #cfb076 22%, #d4b67c 50%, #c8a66a 82%, #9a7442 100%);
+    border: 3px solid #6b4b22;
+    box-shadow: inset 0 0 26px rgba(45,24,8,0.58), 0 4px 16px rgba(0,0,0,0.65);
   }
-  .vpad-castle-lbl {
-    position: absolute; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 800;
-    letter-spacing: 2px; pointer-events: none; padding: 1px 8px; border-radius: 3px;
+
+  /* Top Zone (0% - 13%): Enemy Brick Wall Siege Strip + Central Recessed Gate Notch! */
+  .vpad-enemy-wall {
+    position: absolute; top: 0; left: 0; right: 0; height: 13%; z-index: 1; pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg, rgba(45,18,10,0.38) 0 2px, transparent 2px 24px),
+      linear-gradient(180deg, #6e351e 0%, #8c4828 72%, #522514 100%);
+    border-bottom: 3px solid #3f1b0d;
+    display: flex; align-items: flex-end; justify-content: space-between; padding: 0 6px 2px;
+    transition: box-shadow 0.15s, filter 0.15s;
   }
-  .vpad-castle-lbl.top { top: 3px; background: rgba(168,32,32,0.75); color: #ffd4d4; }
-  .vpad-castle-lbl.bot { bottom: 3px; background: rgba(34,128,68,0.75); color: #d4ffe4; }
-  /* Semi-transparent Enemy Card on Virtual Pad (Instant Recognition, Zero Intent Leak) */
+  .vpad-enemy-wall.active-wall {
+    box-shadow: inset 0 0 20px rgba(255,140,40,0.95); filter: brightness(1.22);
+  }
+  .vpad-wall-side-lbl {
+    font-size: 9px; font-weight: 900; color: rgba(255,228,185,0.88); letter-spacing: 1px;
+    text-shadow: 0 1px 3px #000;
+  }
+  /* Central Recessed Metallic/Gold Enemy Gate Notch (城門凹槽!) */
+  .vpad-gate-notch {
+    position: absolute; top: 0; left: 36%; width: 28%; height: 100%; z-index: 2; pointer-events: none;
+    background: linear-gradient(180deg, #f3e0b5 0%, #c89d4e 52%, #7d4a1b 100%);
+    border-left: 3px solid #3d1d0c; border-right: 3px solid #3d1d0c; border-bottom: 3px solid #ffe494;
+    border-radius: 0 0 7px 7px;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.55);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .vpad-gate-notch.active-gate {
+    background: linear-gradient(180deg, #fff6cc 0%, #ff9922 65%, #c8240c 100%);
+    box-shadow: 0 0 22px rgba(255,130,30,1), inset 0 0 10px #fff;
+  }
+  .vpad-gate-notch strong { font-size: 12px; font-weight: 900; color: #4a1206; letter-spacing: 3px; line-height: 1; }
+  .vpad-gate-notch span { font-size: 8px; font-weight: 900; color: #7a1c0a; }
+  .vpad-gate-notch.active-gate strong, .vpad-gate-notch.active-gate span { color: #fff; text-shadow: 0 1px 4px #000; }
+
+  /* Parchment Battlefield Watermarks (敵陣 / 自陣) & Center Frontier Line */
+  .vpad-watermark {
+    position: absolute; left: 50%; transform: translateX(-50%); z-index: 1; pointer-events: none;
+    font-size: clamp(22px, 3vw, 34px); font-weight: 900; letter-spacing: 16px; padding-left: 16px;
+    color: rgba(112,72,28,0.32); white-space: nowrap;
+  }
+  .vpad-watermark.enemy-wm { top: 24%; }
+  .vpad-watermark.ally-wm  { top: 58%; }
+  .vpad-attack-lbl {
+    position: absolute; top: 14.5%; left: 8px; right: 8px; z-index: 1; pointer-events: none;
+    display: flex; justify-content: space-between; font-size: 8px; font-weight: 900;
+    letter-spacing: 1px; color: rgba(122,52,22,0.62);
+  }
+  .vpad-frontier {
+    position: absolute; left: 0; right: 0; top: 48.5%; height: 2px; z-index: 1; pointer-events: none;
+    background: linear-gradient(90deg, rgba(110,70,26,0.2), rgba(110,70,26,0.58) 50%, rgba(110,70,26,0.2));
+  }
+
+  /* Bottom Crenellated Own Wall Divider (84% - 88%) + Deep Own Castle Shelter Bay (88% - 100%) */
+  .vpad-own-wall {
+    position: absolute; left: 0; right: 0; top: 84%; height: 4%; z-index: 1; pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg, #5e391b 0 14px, #8f5c2e 14px 18px, #5e391b 18px 32px);
+    border-top: 2px solid #3c210e; border-bottom: 2px solid #3c210e;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vpad-own-wall span {
+    font-size: 8px; font-weight: 900; color: #ffe5b5; background: rgba(45,22,10,0.82);
+    padding: 0 7px; border-radius: 3px; letter-spacing: 1px;
+  }
+  .vpad-castle-zone {
+    position: absolute; left: 0; right: 0; top: 88%; bottom: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(180deg, rgba(24,84,48,0.62) 0%, rgba(14,54,32,0.88) 100%);
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 3px;
+    transition: box-shadow 0.15s, background 0.15s;
+  }
+  .vpad-castle-zone.active-retreat {
+    background: linear-gradient(180deg, rgba(44,168,94,0.82) 0%, rgba(22,108,58,0.94) 100%);
+    box-shadow: inset 0 0 22px rgba(120,255,175,0.9);
+  }
+  .vpad-castle-zone span {
+    font-size: 9px; font-weight: 900; color: #c8ffe0; letter-spacing: 1.5px;
+    text-shadow: 0 1px 4px #000;
+  }
+
+  /* Semi-transparent Enemy Card on Board (Can overlap with Player Cards!) */
   .vpad-enemy-card {
     position: absolute; width: 34px; height: 46px; transform: translate(-50%, -50%);
-    border-radius: 5px; overflow: hidden; pointer-events: none; z-index: 2;
-    opacity: 0.6;
-    border: 2px solid #ff3b3b;
-    box-shadow: 0 0 0 2px rgba(255,40,40,0.35), 0 0 12px rgba(255,50,50,0.85);
+    border-radius: 5px; overflow: hidden; pointer-events: none; z-index: 4;
+    opacity: 0.62;
+    border: 2px solid #d91c1c;
+    box-shadow: 0 0 0 2px rgba(255,40,40,0.35), 0 2px 10px rgba(160,10,10,0.75);
     animation: enemyCardPulse 1.8s infinite ease-in-out;
   }
   @keyframes enemyCardPulse {
     0%, 100% { box-shadow: 0 0 0 1px rgba(255,50,50,0.45), 0 0 10px rgba(255,45,45,0.75); }
     50% { box-shadow: 0 0 0 3px rgba(255,80,80,0.75), 0 0 18px rgba(255,45,45,1); }
   }
-  .vpad-enemy-card img { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.25) hue-rotate(-25deg) contrast(1.1); }
+  .vpad-enemy-card img { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.2) hue-rotate(-22deg) contrast(1.08); }
   .vpad-enemy-card .ve-badge {
     position: absolute; top: 0; left: 0; padding: 0 3px; font-size: 8px; font-weight: 900;
     background: #d91c1c; color: #fff; border-bottom-right-radius: 4px;
@@ -1041,42 +1138,63 @@
     position: absolute; bottom: 12px; left: 2px; right: 2px; height: 3px; background: rgba(0,0,0,0.8);
   }
   .vpad-enemy-card .ve-hp > div { height: 100%; background: #ff5555; }
-  .vpad-token {
+
+  /* Translucent Ghost Silhouette = Squad's Real-Time Current Position (虛影!) */
+  .vpad-ghost {
     position: absolute; width: 38px; height: 50px; transform: translate(-50%, -50%);
-    border-radius: 6px; overflow: hidden; border: 2px solid var(--gold);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.8); cursor: grab; touch-action: none; z-index: 4;
+    border-radius: 6px; overflow: hidden; pointer-events: none; z-index: 3;
+    opacity: 0.46; border: 1.5px dashed #fff3b0;
+    box-shadow: 0 0 10px rgba(255,235,140,0.55);
+    filter: saturate(0.75) brightness(1.12);
   }
-  .vpad-token:active, .vpad-token.dragging { cursor: grabbing; border-color: #fff; box-shadow: 0 0 16px rgba(255,229,153,0.9); z-index: 12; }
-  .vpad-token.charging { box-shadow: 0 0 16px #fff, 0 0 4px #fff; border-color: #fff; }
+  .vpad-ghost img { width: 100%; height: 100%; object-fit: cover; }
+  .vpad-ghost .vg-tag {
+    position: absolute; top: 1px; left: 0; right: 0; font-size: 7px; font-weight: 900;
+    text-align: center; color: #fff9d6; background: rgba(16,12,8,0.72);
+  }
+
+  /* Solid Physical Card = Instant Command Destination (實體指令卡!) */
+  .vpad-token {
+    position: absolute; width: 42px; height: 56px; transform: translate(-50%, -50%);
+    border-radius: 6px; overflow: hidden; border: 2px solid var(--gold-bright);
+    box-shadow: 0 5px 14px rgba(0,0,0,0.78); cursor: grab; touch-action: none; z-index: 6;
+  }
+  .vpad-token:active, .vpad-token.dragging {
+    cursor: grabbing; border-color: #fff; transform: translate(-50%, -50%) scale(1.09);
+    box-shadow: 0 0 20px rgba(255,240,160,0.98), 0 8px 18px rgba(0,0,0,0.85); z-index: 16;
+  }
+  .vpad-token.charging { box-shadow: 0 0 18px #8ef2ff, 0 0 5px #fff; border-color: #fff; }
+  .vpad-token.cmd-gate { border-color: #ff9922; box-shadow: 0 0 16px rgba(255,140,30,0.95); }
+  .vpad-token.cmd-wall { border-color: #ffd055; box-shadow: 0 0 14px rgba(255,190,60,0.88); }
   .vpad-token img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
   .vpad-token .vt-lbl {
     position: absolute; bottom: 0; left: 0; right: 0; font-size: 9px; font-weight: 900;
-    background: rgba(0,0,0,0.82); color: #fff; text-align: center; padding: 1px 0;
+    background: rgba(0,0,0,0.86); color: #fff; text-align: center; padding: 1px 0;
   }
   .vpad-token .vt-hp {
-    position: absolute; top: 0; left: 0; right: 0; height: 4px; background: rgba(0,0,0,0.8);
+    position: absolute; top: 0; left: 0; right: 0; height: 4px; background: rgba(0,0,0,0.82);
   }
   .vpad-token .vt-hp > div { height: 100%; background: #52ee90; }
-  .vpad-token.in-castle { border-color: #56f59a; box-shadow: 0 0 14px rgba(86,245,154,0.75); }
+  .vpad-token.in-castle { border-color: #56f59a; box-shadow: 0 0 14px rgba(86,245,154,0.85); }
   .vpad-token.in-castle::after {
     content: '城內回血'; position: absolute; top: 5px; left: 0; right: 0;
     font-size: 8px; font-weight: 900; text-align: center;
-    background: rgba(20,120,62,0.88); color: #eafff2; padding: 1px 0;
+    background: rgba(20,120,62,0.9); color: #eafff2; padding: 1px 0;
   }
   .vpad-token.dead {
-    opacity: 0.72; filter: grayscale(0.75) brightness(0.78);
+    opacity: 0.78; filter: grayscale(0.7) brightness(0.8);
     border-color: #ff6666; border-style: dashed;
   }
   .vpad-token .vt-revive {
     display: none; position: absolute; inset: 0; z-index: 5;
     background: rgba(18, 4, 8, 0.68); color: #ffe588;
-    font-size: 18px; font-weight: 900; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; align-items: center; justify-content: center;
     flex-direction: column; text-shadow: 0 2px 6px #000; pointer-events: none;
   }
   .vpad-token.dead .vt-revive { display: flex; }
   .vpad-token .vt-revive small { font-size: 8px; color: #ffadad; letter-spacing: 1px; }
   #vpad-cmd-canvas {
-    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none;
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none;
   }
   .hp-row-avatar { position: relative; width: 28px; height: 36px; flex-shrink: 0; }
   .hp-row-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #59472e; }
@@ -1125,11 +1243,6 @@
   .dmg-jcard-name { font-size: 12px; font-weight: 900; color: #fff; text-align: center; margin-bottom: 4px; }
   .dmg-jcard-hp { height: 7px; background: #2a1014; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.25); }
   .dmg-jcard-hp > div { height: 100%; background: linear-gradient(90deg, #ff3333, #ffaa44); transition: width 0.55s ease-out; }
-  .vpad-castle-zone {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 13%;
-    background: linear-gradient(180deg, rgba(42,168,90,0.12) 0%, rgba(42,168,90,0.42) 100%);
-    border-top: 1px dashed rgba(105,242,160,0.65); pointer-events: none;
-  }
 
   /* Mode 1/3 Tactical Guide Panel on Right when Virtual Pad is hidden */
   #alt-right-panel {
@@ -1188,8 +1301,8 @@
 
     .battle-topbar { height: 30px; min-height: 30px; padding: 0 6px; }
     .mode-btn, .top-btn { padding: 2px 6px; font-size: 10px; }
-    .col-left { width: clamp(148px, 20vw, 180px); padding: 4px 5px; gap: 4px; }
-    .col-right { width: clamp(154px, 21vw, 190px); padding: 4px 5px; gap: 4px; }
+    .col-left { width: clamp(134px, 16.5vw, 164px); padding: 4px 4px; gap: 3px; }
+    .col-right { width: clamp(204px, 31.5vw, 280px); padding: 4px 5px; gap: 4px; }
     .morale-box { padding: 4px 5px; }
     .morale-head { font-size: 10px; margin-bottom: 3px; }
     .m-gem { height: 11px; }
@@ -1211,13 +1324,16 @@
     .ag-track { height: 8px; }
     .arcade-timer-badge { width: 54px; height: 42px; }
     .arcade-timer-badge .tv { font-size: 20px; }
-    .minimap-float { width: 88px; height: 62px; left: 6px; bottom: 22px; }
-    .mode-tip { font-size: 9px; padding: 2px 8px; bottom: 4px; }
-    .vpad-token { width: 30px; height: 40px; }
+    .minimap-float { width: 82px; height: 58px; left: 6px; bottom: 8px; }
+    .mode-tip { display: none; }
+    .vpad-token { width: 32px; height: 42px; }
+    .vpad-ghost { width: 30px; height: 40px; }
     .vpad-enemy-card { width: 28px; height: 38px; }
+    .vpad-gate-notch strong { font-size: 10px; }
+    .vpad-gate-notch span { display: none; }
     .ult-title-big { font-size: 22px; }
     .ult-desc-line, .ult-quote-bar { font-size: 11px; }
-    #ult-3d-hero-echo { width: 132px; height: 184px; bottom: 22%; }
+    #ult-3d-hero-echo { width: 145px; height: 175px; bottom: 21%; }
     .intro-kaizen, .finale-big-text { font-size: 62px; }
     .defeat-stage { width: 176px; height: 250px; }
     .defeat-stamp-main { font-size: 44px; }
@@ -1252,7 +1368,7 @@
     <div class="brand-title">
       <div class="brand-seal">戰</div>
       <h1>三國志大戰 網頁版</h1>
-      <span class="brand-badge">v1.82 · SEGA 寬幅戰場比例・全裝置等比視野・強制滿版橫屏</span>
+      <span class="brand-badge">v1.9 · 多指羊皮紙卡盤・虛影即時下令・全3D角色動畫・高精細軍團</span>
     </div>
     <div class="preset-bar">
       <span style="font-size:11px;color:var(--text-muted)">推薦牌組：</span>
@@ -1569,13 +1685,10 @@
 
       <div id="virtual-pad-wrap">
         <div class="vpad-header">
-          <span>右手虛擬感應卡盤</span>
-          <span style="font-size:10px;color:var(--text-muted)">支援多指同時拖曳</span>
+          <span>右手感應卡盤（盤面）</span>
+          <span id="vpad-live-badge">多指即時控卡</span>
         </div>
-        <div id="vpad-surface">
-          <div class="vpad-castle-lbl top">敵 城 門</div>
-          <div class="vpad-castle-lbl bot">我 城 門</div>
-        </div>
+        <div id="vpad-surface"></div>
       </div>
 
       <div id="alt-right-panel">
@@ -2093,37 +2206,56 @@ class BattleSimulation {
     if (cmd.type === 'MOVE') {
       const u = this.units.find(x => x.uid === cmd.unitId);
       if (!u) return;
-      const cx = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, cmd.x));
-      const minZ = u.side === 'enemy' ? -(CASTLE_Z + 1.3) : -CASTLE_Z;
-      const maxZ = u.side === 'player' ? (CASTLE_Z + 1.3) : CASTLE_Z;
-      const cz = Math.max(minZ, Math.min(maxZ, cmd.z));
-      const wantsCastle = (u.side === 'player') ? (cz >= CASTLE_Z - 0.15) : (cz <= -CASTLE_Z + 0.15);
+      let cx = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, cmd.x));
+      let cz = cmd.z;
+      let wantsCastle = false;
+
+      if (cmd.zone === 'castle') {
+        wantsCastle = true;
+        cz = u.side === 'player' ? (CASTLE_Z + 1.3) : -(CASTLE_Z + 1.3);
+      } else if (cmd.zone === 'gate') {
+        wantsCastle = false;
+        cx = Math.max(-2.6, Math.min(2.6, cx));
+        cz = u.side === 'player' ? -CASTLE_Z : CASTLE_Z;
+      } else if (cmd.zone === 'wall') {
+        wantsCastle = false;
+        if (Math.abs(cx) < 3.15) cx = (cx < 0 ? -3.25 : 3.25);
+        cz = u.side === 'player' ? -CASTLE_Z : CASTLE_Z;
+      } else if (cmd.zone === 'field') {
+        wantsCastle = false;
+        cz = Math.max(-CASTLE_Z + 0.55, Math.min(CASTLE_Z - 0.55, cz));
+      } else {
+        const minZ = u.side === 'enemy' ? -(CASTLE_Z + 1.3) : -CASTLE_Z;
+        const maxZ = u.side === 'player' ? (CASTLE_Z + 1.3) : CASTLE_Z;
+        cz = Math.max(minZ, Math.min(maxZ, cz));
+        wantsCastle = (u.side === 'player') ? (cz >= CASTLE_Z + 0.35) : (cz <= -(CASTLE_Z + 0.35));
+      }
+
       // Allow moving dead unit's card to pre-assign revival destination or park inside castle!
       if (!u.alive) {
         const res = this.resolveSameSideTarget(u, cx, cz, wantsCastle);
         u.rallyX = res.x;
         u.rallyZ = wantsCastle ? cz : res.z;
         u.rallyInCastle = wantsCastle;
+        u.cmdZone = cmd.zone || (wantsCastle ? 'castle' : 'field');
         return;
       }
       if (u.dancing || u.tauntTargetId) return;
       const res = this.resolveSameSideTarget(u, cx, cz, wantsCastle);
       u.tx = res.x;
       u.tz = wantsCastle ? cz : res.z;
+      u.cmdZone = cmd.zone || (wantsCastle ? 'castle' : (Math.abs(u.tz - (u.side === 'player' ? -CASTLE_Z : CASTLE_Z)) < 0.35 ? (Math.abs(u.tx) <= 3.0 ? 'gate' : 'wall') : 'field'));
       // Sortie out of castle if commanded onto battlefield!
-      if (u.inCastle) {
-        const wantsOut = u.side === 'player' ? (u.tz < CASTLE_Z - 0.5) : (u.tz > -CASTLE_Z + 0.5);
-        if (wantsOut) {
-          u.inCastle = false;
-          u.z = u.side === 'player' ? CASTLE_Z - 0.65 : -CASTLE_Z + 0.65;
-          this.events.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '出城！', color: '#88ffc0' });
-          if (u.side === 'player') sfx.exitCastle();
-        }
+      if (u.inCastle && !wantsCastle) {
+        u.inCastle = false;
+        u.z = u.side === 'player' ? CASTLE_Z - 0.65 : -CASTLE_Z + 0.65;
+        this.events.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '出城！', color: '#88ffc0' });
+        if (u.side === 'player') sfx.exitCastle();
       }
     } else if (cmd.type === 'STOP') {
       const u = this.units.find(x => x.uid === cmd.unitId && x.alive);
       if (!u) return;
-      u.tx = u.x; u.tz = u.z;
+      u.tx = u.x; u.tz = u.z; u.cmdZone = 'field';
     } else if (cmd.type === 'ALL_ADVANCE') {
       const list = this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing)
         .sort((a, b) => a.x - b.x || a.uid - b.uid);
@@ -2135,7 +2267,8 @@ class BattleSimulation {
           u.z = cmd.side === 'player' ? CASTLE_Z - 0.65 : -CASTLE_Z + 0.65;
         }
         u.tx = n === 1 ? 0 : -span / 2 + (idx / (n - 1)) * span;
-        u.tz = cmd.side === 'player' ? -CASTLE_Z + 0.3 : CASTLE_Z - 0.3;
+        u.tz = cmd.side === 'player' ? -CASTLE_Z : CASTLE_Z;
+        u.cmdZone = Math.abs(u.tx) <= 3.0 ? 'gate' : 'wall';
       });
     } else if (cmd.type === 'ALL_RETREAT') {
       const list = this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing)
@@ -2144,10 +2277,11 @@ class BattleSimulation {
       const span = Math.min(17.6, Math.max(0, (n - 1) * 3.8));
       list.forEach((u, idx) => {
         u.tx = n === 1 ? 0 : -span / 2 + (idx / (n - 1)) * span;
-        u.tz = cmd.side === 'player' ? (CASTLE_Z + 1.2) : -(CASTLE_Z + 1.2);
+        u.tz = cmd.side === 'player' ? (CASTLE_Z + 1.3) : -(CASTLE_Z + 1.3);
+        u.cmdZone = 'castle';
       });
     } else if (cmd.type === 'ALL_STOP') {
-      this.units.filter(u => u.side === cmd.side && u.alive).forEach(u => { u.tx = u.x; u.tz = u.z; });
+      this.units.filter(u => u.side === cmd.side && u.alive).forEach(u => { u.tx = u.x; u.tz = u.z; u.cmdZone = 'field'; });
     } else if (cmd.type === 'CAST_STRATAGEM') {
       this.castStratagem(cmd.unitId);
     } else if (cmd.type === 'CAST_AOW') {
@@ -2391,9 +2525,9 @@ class BattleSimulation {
       }
 
       const ownCastleZ = u.side === 'player' ? CASTLE_Z : -CASTLE_Z;
-      // Enter own castle when commanded into castle zone and reaching gate!
-      const wantsIn = u.side === 'player' ? (u.tz >= CASTLE_Z - 0.15) : (u.tz <= -CASTLE_Z + 0.15);
-      const atGate = u.side === 'player' ? (u.z >= CASTLE_Z - 0.65) : (u.z <= -CASTLE_Z + 0.65);
+      // Enter own castle ONLY when explicitly dragged past the bottom castle wall line!
+      const wantsIn = (u.cmdZone === 'castle') || (u.side === 'player' ? (u.tz >= CASTLE_Z + 0.35) : (u.tz <= -(CASTLE_Z + 0.35)));
+      const atGate = u.side === 'player' ? (u.z >= CASTLE_Z - 0.85) : (u.z <= -CASTLE_Z + 0.85);
       if (!u.inCastle && wantsIn && atGate && !u.inMelee) {
         u.inCastle = true;
         u.isCharging = false; u.chargeTimer = 0; u.vx = 0; u.vz = 0;
@@ -2430,8 +2564,10 @@ class BattleSimulation {
 
       if (dist > 0.14) {
         const moveStep = Math.min(dist, st.spd * dt);
-        const nx = u.x + (dx / dist) * moveStep;
-        const nz = u.z + (dz / dist) * moveStep;
+        const stepX = (dx / dist) * moveStep;
+        const stepZ = (dz / dist) * moveStep;
+        const nx = u.x + stepX;
+        const nz = u.z + stepZ;
 
         let blocked = false;
         for (const bar of this.barricades) {
@@ -2444,6 +2580,33 @@ class BattleSimulation {
               this.events.push({ type: 'CALLOUT', x: bar.x, z: bar.z, text: '防柵破壞！', color: '#f5b041' });
             }
             break;
+          }
+        }
+
+        // First-arriving enemy holds ground: incoming unit stops at melee contact instead of pushing!
+        if (!blocked) {
+          for (const e of this.units) {
+            if (!e.alive || e.inCastle || e.side === u.side || e.stealth) continue;
+            const dNext = Math.hypot(nx - e.x, nz - e.z);
+            const movingToward = stepX * (e.x - u.x) + stepZ * (e.z - u.z) > 0;
+            if (dNext < 1.32 && movingToward) {
+              blocked = true;
+              u.facing = Math.atan2(e.z - u.z, e.x - u.x);
+              break;
+            }
+          }
+        }
+
+        // Stationary friendly squad holds its tile: incoming ally yields without pushing occupant!
+        if (!blocked) {
+          for (const p of this.units) {
+            if (!p.alive || p.inCastle || p.side !== u.side || p.uid === u.uid) continue;
+            const dNext = Math.hypot(nx - p.x, nz - p.z);
+            const movingToward = stepX * (p.x - u.x) + stepZ * (p.z - u.z) > 0;
+            if (dNext < 1.72 && movingToward) {
+              blocked = true;
+              break;
+            }
           }
         }
 
@@ -2492,7 +2655,7 @@ class BattleSimulation {
         this.checkSpearInteraction(a, b, dist);
         this.checkSpearInteraction(b, a, dist);
 
-        if (dist < 1.5) {
+        if (dist < 1.55) {
           if (a.isCharging && a.chargeCd <= 0 && !b.stealth) {
             const stA = this.getEffectiveStats(a), stB = this.getEffectiveStats(b);
             this.applyDamage(b, Math.max(12, 16 + (stA.pow - stB.pow) * 2.0 + stA.pow * 1.3), a);
@@ -2512,38 +2675,46 @@ class BattleSimulation {
           }
         }
 
-        if (dist < 1.25 && a.alive && b.alive) {
+        // Authentic Zero-Push Melee: first-arriving squad holds its exact position; incoming engages in melee!
+        if (dist < 1.42 && a.alive && b.alive) {
           a.inMelee = true; b.inMelee = true;
           a.isCharging = false; a.chargeTimer = 0;
           b.isCharging = false; b.chargeTimer = 0;
           const stA = this.getEffectiveStats(a), stB = this.getEffectiveStats(b);
           this.applyDamage(b, Math.max(3, 6.2 + (stA.pow - stB.pow) * 1.15) * dt, a);
           this.applyDamage(a, Math.max(3, 6.2 + (stB.pow - stA.pow) * 1.15) * dt, b);
-          const push = (1.25 - dist) * 0.22;
-          const nx = dist > 0.01 ? dx / dist : 1, nz = dist > 0.01 ? dz / dist : 0;
-          a.x -= nx * push; a.z -= nz * push;
-          b.x += nx * push; b.z += nz * push;
         }
       }
     }
 
-    // Same-side unit separation (prevents same-side squads & cards from overlapping!)
-    for (let iter = 0; iter < 3; iter++) {
+    // Same-side non-overlap WITHOUT pushing stationary occupants!
+    for (let iter = 0; iter < 2; iter++) {
       for (let i = 0; i < this.units.length; i++) {
         const a = this.units[i]; if (!a.alive || a.inCastle) continue;
         for (let j = i + 1; j < this.units.length; j++) {
           const b = this.units[j]; if (!b.alive || b.inCastle || a.side !== b.side) continue;
           const dx = b.x - a.x, dz = b.z - a.z;
           const dist = Math.hypot(dx, dz);
-          const minSep = 1.85;
+          const minSep = 1.65;
           if (dist < minSep) {
+            const aMoving = Math.hypot(a.tx - a.x, a.tz - a.z) > 0.28;
+            const bMoving = Math.hypot(b.tx - b.x, b.tz - b.z) > 0.28;
+            if (!aMoving && !bMoving) continue;
             const nx = dist > 0.01 ? dx / dist : (b.uid > a.uid ? 1 : -1);
             const nz = dist > 0.01 ? dz / dist : 0;
             const push = (minSep - dist) * 0.45;
-            a.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, a.x - nx * push));
-            a.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, a.z - nz * push));
-            b.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, b.x + nx * push));
-            b.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, b.z + nz * push));
+            if (aMoving && !bMoving) {
+              a.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, a.x - nx * push));
+              a.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, a.z - nz * push));
+            } else if (bMoving && !aMoving) {
+              b.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, b.x + nx * push));
+              b.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, b.z + nz * push));
+            } else {
+              a.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, a.x - nx * push * 0.5));
+              a.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, a.z - nz * push * 0.5));
+              b.x = Math.max(-FIELD_W / 2 + 0.85, Math.min(FIELD_W / 2 - 0.85, b.x + nx * push * 0.5));
+              b.z = Math.max(-CASTLE_Z, Math.min(CASTLE_Z, b.z + nz * push * 0.5));
+            }
           }
         }
       }
@@ -3099,53 +3270,90 @@ class BattleRenderer3D {
 
   createCastle(zPos, bannerHex, flagChar) {
     const grp = new THREE.Group();
-    const stone = new THREE.MeshStandardMaterial({ color: 0x7a6f5e, roughness: 0.85 });
-    const darkStone = new THREE.MeshStandardMaterial({ color: 0x4f463b, roughness: 0.9 });
-    const roof = new THREE.MeshStandardMaterial({ color: 0x262930, roughness: 0.65 });
-    const goldTrim = new THREE.MeshStandardMaterial({ color: 0xd9b15f, roughness: 0.35, metalness: 0.6 });
-    const gate = new THREE.MeshStandardMaterial({ color: 0x3b2012, roughness: 0.85 });
+    const stone = new THREE.MeshStandardMaterial({ color: 0x827562, roughness: 0.84 });
+    const darkStone = new THREE.MeshStandardMaterial({ color: 0x4d4338, roughness: 0.9 });
+    const lacquerRed = new THREE.MeshStandardMaterial({ color: 0x8c1f1a, roughness: 0.45, metalness: 0.12 });
+    const roof = new THREE.MeshStandardMaterial({ color: 0x262c36, roughness: 0.58, metalness: 0.18 });
+    const goldTrim = new THREE.MeshStandardMaterial({ color: 0xe6bf62, roughness: 0.28, metalness: 0.72 });
+    const gate = new THREE.MeshStandardMaterial({ color: 0x3b1c0e, roughness: 0.78 });
     const banner = new THREE.MeshStandardMaterial({ color: bannerHex, emissive: bannerHex, emissiveIntensity: 0.25, side: THREE.DoubleSide });
+    const fDir = zPos < 0 ? 1 : -1;
 
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.2, 2.5, 1.7), stone);
-    wall.position.set(0, 1.25, 0); wall.castShadow = true; wall.receiveShadow = true; grp.add(wall);
+    // Thick sloped stone rampart base + upper parapet wall
+    const baseWall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.6, 1.3, 2.3), darkStone);
+    baseWall.position.set(0, 0.65, 0); baseWall.receiveShadow = true; grp.add(baseWall);
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(FIELD_W + 1.2, 1.6, 1.75), stone);
+    wall.position.set(0, 1.9, 0); wall.castShadow = true; wall.receiveShadow = true; grp.add(wall);
 
-    for (let x = -11.2; x <= 11.2; x += 1.6) {
-      const c = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.55, 1.8), darkStone);
-      c.position.set(x, 2.75, 0); grp.add(c);
+    // Ornate battlements (crenellations) along full width
+    for (let x = -11.2; x <= 11.2; x += 1.4) {
+      const c = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.55, 1.85), darkStone);
+      c.position.set(x, 2.95, 0); grp.add(c);
     }
 
-    // Grand Two-tier Han Dynasty Gatehouse
-    const tower1 = new THREE.Mesh(new THREE.BoxGeometry(5.6, 3.4, 2.2), stone);
-    tower1.position.set(0, 1.7, 0); tower1.castShadow = true; grp.add(tower1);
-    const roof1 = new THREE.Mesh(new THREE.ConeGeometry(4.3, 1.15, 4), roof);
-    roof1.rotation.y = Math.PI / 4; roof1.position.set(0, 3.85, 0); grp.add(roof1);
-    const tower2 = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.6, 1.6), darkStone);
-    tower2.position.set(0, 4.55, 0); grp.add(tower2);
-    const roof2 = new THREE.Mesh(new THREE.ConeGeometry(2.9, 1.15, 4), roof);
-    roof2.rotation.y = Math.PI / 4; roof2.position.set(0, 5.8, 0); grp.add(roof2);
-    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), goldTrim);
-    finial.position.set(0, 6.45, 0); grp.add(finial);
+    // Grand Two-Tier Han Dynasty Gatehouse with Crimson Lacquer Pillars & Curved Upturned Eaves
+    const tower1 = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3.6, 2.5), stone);
+    tower1.position.set(0, 1.8, 0); tower1.castShadow = true; grp.add(tower1);
+    // Crimson lacquer gallery & pillars
+    const gallery1 = new THREE.Mesh(new THREE.BoxGeometry(5.8, 1.15, 2.35), lacquerRed);
+    gallery1.position.set(0, 3.85, 0); grp.add(gallery1);
+    [-2.5, -1.25, 0, 1.25, 2.5].forEach(px => {
+      const pil = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 1.3, 6), lacquerRed);
+      pil.position.set(px, 3.85, fDir * 1.22); grp.add(pil);
+    });
+    // Upturned curved Han eave tier 1 + ridge beam
+    const eave1 = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.24, 3.6), roof);
+    eave1.position.set(0, 4.45, 0); grp.add(eave1);
+    const roof1 = new THREE.Mesh(new THREE.ConeGeometry(4.8, 1.15, 4), roof);
+    roof1.rotation.y = Math.PI / 4; roof1.position.set(0, 5.05, 0); grp.add(roof1);
+    const ridge1 = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.22, 0.24), goldTrim);
+    ridge1.position.set(0, 5.58, 0); grp.add(ridge1);
 
-    const door = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.05, 2.3), gate);
-    door.position.set(0, 1.02, 0); grp.add(door);
+    // Upper Han Watchtower Tier 2
+    const tower2 = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.35, 1.8), lacquerRed);
+    tower2.position.set(0, 5.85, 0); grp.add(tower2);
+    const eave2 = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.2, 2.6), roof);
+    eave2.position.set(0, 6.5, 0); grp.add(eave2);
+    const roof2 = new THREE.Mesh(new THREE.ConeGeometry(2.8, 1.1, 4), roof);
+    roof2.rotation.y = Math.PI / 4; roof2.position.set(0, 7.05, 0); grp.add(roof2);
+    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.26, 8, 8), goldTrim);
+    finial.position.set(0, 7.68, 0); grp.add(finial);
 
-    [-9.2, 9.2].forEach(x => {
-      const t = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.2, 2.1), stone);
-      t.position.set(x, 1.6, 0); t.castShadow = true; grp.add(t);
-      const tr = new THREE.Mesh(new THREE.ConeGeometry(2.2, 1.05, 4), roof);
-      tr.rotation.y = Math.PI / 4; tr.position.set(x, 3.65, 0); grp.add(tr);
-      const b = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 2.3), banner);
-      b.position.set(x, 4.7, 0); grp.add(b);
+    // Arched Bronze-Studded Double Castle Gate with Golden Lion-Ring Knockers!
+    const gateFrame = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.35, 2.58), darkStone);
+    gateFrame.position.set(0, 1.18, 0); grp.add(gateFrame);
+    const door = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.1, 2.65), gate);
+    door.position.set(0, 1.05, 0); grp.add(door);
+    [-0.65, 0.65].forEach(dx => {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.045, 6, 10), goldTrim);
+      ring.position.set(dx, 1.1, fDir * 1.36); grp.add(ring);
     });
 
-    [-2.6, 2.6].forEach(x => {
-      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.45, 5), new THREE.MeshBasicMaterial({ color: 0xffaa33 }));
-      flame.position.set(x, 2.5, zPos < 0 ? 1.2 : -1.2);
+    // Twin Flanking Corner Watchtowers with Vertical War Banners
+    [-9.2, 9.2].forEach(x => {
+      const t = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.4, 2.2), stone);
+      t.position.set(x, 1.7, 0); t.castShadow = true; grp.add(t);
+      const tTop = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.9, 1.9), lacquerRed);
+      tTop.position.set(x, 3.7, 0); grp.add(tTop);
+      const tr = new THREE.Mesh(new THREE.ConeGeometry(2.4, 1.1, 4), roof);
+      tr.rotation.y = Math.PI / 4; tr.position.set(x, 4.55, 0); grp.add(tr);
+      const bPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.6, 5), goldTrim);
+      bPole.position.set(x, 5.5, 0); grp.add(bPole);
+      const b = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 2.2), banner);
+      b.position.set(x + 0.6, 5.4, 0); grp.add(b);
+    });
+
+    // Glowing Bronze Braziers Flanking Gate
+    [-2.8, 2.8].forEach(x => {
+      const brazier = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.16, 0.45, 6), darkStone);
+      brazier.position.set(x, 2.35, fDir * 1.25); grp.add(brazier);
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.58, 5), new THREE.MeshBasicMaterial({ color: 0xffaa33 }));
+      flame.position.set(x, 2.75, fDir * 1.25);
       grp.add(flame);
-      const pl = new THREE.PointLight(0xff8822, 0.85, 6);
+      const pl = new THREE.PointLight(0xff8822, 0.95, 7);
       pl.position.copy(flame.position);
       grp.add(pl);
-      this.torchLights.push({ light: pl, flame, base: 0.85 });
+      this.torchLights.push({ light: pl, flame, base: 0.95 });
     });
 
     // Castle Battle-Damage Fire & Black Smoke Group (Ignites below 70% HP, Rages below 40%!)
@@ -3222,20 +3430,237 @@ class BattleRenderer3D {
     }
   }
 
+  // Custom 3D visual profile for all 20 Three Kingdoms Heroes!
+  getHeroProfile(gid, type, fHex) {
+    const map = {
+      caocao:     { weapon: 'sword',    crest: 'crown',    cape: 0xa81818, armor: 0x3b1214, horse: 0x1d1a1e },
+      zhangliao:  { weapon: 'guandao',  crest: 'plume',    cape: 0xc22828, armor: 0x542222, horse: 0x231d1a },
+      xiahoudun:  { weapon: 'spear',    crest: 'plume',    cape: 0x8f1a1a, armor: 0x2b242c, horse: 0x3b261c },
+      guojia:     { weapon: 'fan',      crest: 'scholar',  cape: 0x283654, armor: 0x26324c, horse: 0x5c3622 },
+      yuejin:     { weapon: 'spear',    crest: 'helm',     cape: 0xb83028, armor: 0x6b2824, horse: 0x5c3622 },
+      liubei:     { weapon: 'sword',    crest: 'crown',    cape: 0x227a44, armor: 0x2a663c, horse: 0xede6d8 },
+      guanyu:     { weapon: 'guandao',  crest: 'guanyu',   cape: 0x1c7a3e, armor: 0x1e6638, horse: 0x8f1d14, beard: true },
+      zhaoyun:    { weapon: 'spear',    crest: 'plume',    cape: 0xeaf2f8, armor: 0xb8ccd8, horse: 0xf4f2ee },
+      zhugeliang: { weapon: 'fan',      crest: 'scholar',  cape: 0xf2efe6, armor: 0xd8d2c0, horse: 0xede6d8 },
+      zhangfei:   { weapon: 'spear',    crest: 'wild',     cape: 0x1e4a2a, armor: 0x242126, horse: 0x1d1a1e },
+      zhouyu:     { weapon: 'fan',      crest: 'plume',    cape: 0x1d68c2, armor: 0x1c4a8c, horse: 0xede6d8 },
+      sunce:      { weapon: 'spear',    crest: 'plume',    cape: 0xc22828, armor: 0x1e5aa8, horse: 0x6b3a22 },
+      taishici:   { weapon: 'bow',      crest: 'plume',    cape: 0x225a9c, armor: 0x244675, horse: 0x5c3622 },
+      daqiao:     { weapon: 'ribbons',  crest: 'diadem',   cape: 0x5ce6d0, armor: 0x2e829c, horse: 0xede6d8, female: true },
+      zhoutai:    { weapon: 'sword',    crest: 'helm',     cape: 0x1c3a66, armor: 0x23334a, horse: 0x2b2420 },
+      lubu:       { weapon: 'halberd',  crest: 'pheasant', cape: 0xa81212, armor: 0x261f24, horse: 0xa61d14 },
+      dongzhuo:   { weapon: 'sword',    crest: 'crown',    cape: 0x521828, armor: 0x3b2c26, horse: 0x2a1c18 },
+      diaochan:   { weapon: 'ribbons',  crest: 'diadem',   cape: 0xd46eff, armor: 0x7c2e8a, horse: 0xede6d8, female: true },
+      zhangjiao:  { weapon: 'fan',      crest: 'scholar',  cape: 0xd9a828, armor: 0x8f6b1e, horse: 0x5c3622 },
+      huaxiong:   { weapon: 'guandao',  crest: 'wild',     cape: 0x6b2218, armor: 0x382824, horse: 0x2b1d18 }
+    };
+    return map[gid] || { weapon: type === 'arc' ? 'bow' : 'spear', crest: 'plume', cape: fHex, armor: fHex, horse: 0x5c3622 };
+  }
+
+  // High-Detail Articulated 3D Hero Commander (Used BOTH in-battle & in Live 3D Stratagem Cutscenes!)
+  buildArticulatedHero(u, mats) {
+    const prof = this.getHeroProfile(u.general.id, u.general.type, FACTIONS[u.general.faction].hex);
+    const isCav = (u.general.type === 'cav');
+    const heroArmorMat = new THREE.MeshStandardMaterial({ color: prof.armor, roughness: 0.34, metalness: 0.48 });
+    const capeMat = new THREE.MeshStandardMaterial({ color: prof.cape, roughness: 0.65, side: THREE.DoubleSide });
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xf2caa8, roughness: 0.6 });
+    const plumeMat = new THREE.MeshStandardMaterial({ color: prof.crest === 'pheasant' ? 0xff4422 : 0xf2c968, roughness: 0.45 });
+
+    const root = new THREE.Group();
+    const horsePivot = new THREE.Group();
+    const horseLegs = [];
+    root.add(horsePivot);
+
+    let riderY = 0;
+    if (isCav) {
+      // Sculpted Armored Warhorse with Arched Neck, Ears, Mane, Saddlecloth, Tail & 4 Articulated Legs!
+      const hMat = new THREE.MeshStandardMaterial({ color: prof.horse, roughness: 0.52 });
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.21, 0.72, 8), hMat);
+      barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.44, 0); barrel.castShadow = true; horsePivot.add(barrel);
+      // Armored chest barding & embroidered faction saddlecloth
+      const barding = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.34), mats.goldMat);
+      barding.position.set(0, 0.46, 0.2); horsePivot.add(barding);
+      const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.22, 0.36), capeMat);
+      saddle.position.set(0, 0.49, -0.04); horsePivot.add(saddle);
+      // Arched neck + sculpted head + snout + ears + flowing mane
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.15, 0.36, 7), hMat);
+      neck.position.set(0, 0.64, 0.34); neck.rotation.x = 0.58; horsePivot.add(neck);
+      const hHead = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.16, 0.32), hMat);
+      hHead.position.set(0, 0.78, 0.48); hHead.rotation.x = 0.32; horsePivot.add(hHead);
+      const chamfron = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.24), mats.goldMat);
+      chamfron.position.set(0, 0.85, 0.49); chamfron.rotation.x = 0.32; horsePivot.add(chamfron);
+      [-0.055, 0.055].forEach(ex => {
+        const ear = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1, 4), hMat);
+        ear.position.set(ex, 0.89, 0.39); horsePivot.add(ear);
+      });
+      const mane = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.32, 0.12), mats.darkMat);
+      mane.position.set(0, 0.69, 0.26); mane.rotation.x = 0.58; horsePivot.add(mane);
+      const tail = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.38, 5), mats.darkMat);
+      tail.position.set(0, 0.38, -0.44); tail.rotation.x = -0.55; horsePivot.add(tail);
+
+      // 4 Articulated Legs (for genuine galloping stride & rearing animation!)
+      [[-0.12, 0.26], [0.12, 0.26], [-0.12, -0.26], [0.12, -0.26]].forEach(([lx, lz]) => {
+        const legPiv = new THREE.Group();
+        legPiv.position.set(lx, 0.36, lz);
+        const legMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.036, 0.38, 5), hMat);
+        legMesh.position.y = -0.18; legPiv.add(legMesh);
+        horsePivot.add(legPiv);
+        horseLegs.push(legPiv);
+      });
+      riderY = 0.52;
+    }
+
+    // Articulated Hero Upper Body + Layered Han Lamellar Armor
+    const torsoPivot = new THREE.Group();
+    torsoPivot.position.set(0, riderY, isCav ? -0.02 : 0);
+    horsePivot.add(torsoPivot);
+
+    if (!isCav) {
+      // Infantry armored greaves & war skirt
+      const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 0.34, 8), heroArmorMat);
+      skirt.position.y = 0.18; skirt.castShadow = true; torsoPivot.add(skirt);
+    }
+    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.14, 0.34, 8), heroArmorMat);
+    chest.position.y = isCav ? 0.22 : 0.44; chest.castShadow = true; torsoPivot.add(chest);
+    const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.165, 0.08, 8), mats.goldMat);
+    belt.position.y = isCav ? 0.08 : 0.30; torsoPivot.add(belt);
+    // Sculpted Han Beast-Mask Shoulder Pauldrons (獸面肩甲!)
+    const shoulderY = isCav ? 0.35 : 0.57;
+    [-0.21, 0.21].forEach(sx => {
+      const pauldron = new THREE.Mesh(new THREE.SphereGeometry(0.105, 7, 6), mats.goldMat);
+      pauldron.scale.set(1.05, 0.78, 1.15);
+      pauldron.position.set(sx, shoulderY, 0);
+      torsoPivot.add(pauldron);
+    });
+
+    // Head + Iconic Han Dynasty Headgear / Plumes / Crown / Beard!
+    const headY = shoulderY + 0.18;
+    const face = new THREE.Mesh(new THREE.SphereGeometry(0.115, 8, 8), skinMat);
+    face.position.y = headY; torsoPivot.add(face);
+    if (prof.beard) {
+      const beard = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.26, 5), mats.darkMat);
+      beard.rotation.x = Math.PI; beard.position.set(0, headY - 0.14, 0.08); torsoPivot.add(beard);
+    }
+    if (prof.crest === 'scholar') {
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.125, 0.18, 8), capeMat);
+      cap.position.y = headY + 0.10; torsoPivot.add(cap);
+    } else if (prof.crest === 'diadem') {
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.125, 8, 8), mats.darkMat);
+      hair.position.set(0, headY + 0.03, -0.02); torsoPivot.add(hair);
+      const pin = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.022, 5, 10), mats.goldMat);
+      pin.rotation.x = Math.PI / 2.2; pin.position.y = headY + 0.11; torsoPivot.add(pin);
+    } else {
+      const helm = new THREE.Mesh(new THREE.SphereGeometry(0.128, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.62), prof.crest === 'guanyu' ? capeMat : mats.goldMat);
+      helm.position.y = headY + 0.02; torsoPivot.add(helm);
+      if (prof.crest === 'pheasant') {
+        // Lu Bu's iconic Twin Sweeping Long Pheasant Tail Feathers (雙雉尾)!
+        [-1, 1].forEach(side => {
+          const f1 = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.022, 0.82, 5), plumeMat);
+          f1.position.set(side * 0.18, headY + 0.42, -0.18);
+          f1.rotation.set(-0.55, 0, side * -0.45);
+          torsoPivot.add(f1);
+        });
+      } else if (prof.crest === 'crown') {
+        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.07, 0.14, 6), mats.goldMat);
+        crown.position.y = headY + 0.14; torsoPivot.add(crown);
+      } else if (prof.crest === 'plume' || prof.crest === 'wild') {
+        const plume = new THREE.Mesh(new THREE.ConeGeometry(0.065, 0.34, 6), plumeMat);
+        plume.position.set(0, headY + 0.22, -0.08); plume.rotation.x = -0.55; torsoPivot.add(plume);
+      }
+    }
+
+    // Flowing Billowing Hero Cape (披風)
+    const capeMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.72), capeMat);
+    capeMesh.position.set(0, shoulderY - 0.26, -0.22);
+    capeMesh.rotation.x = 0.38;
+    torsoPivot.add(capeMesh);
+
+    // Articulated Right Arm + Iconic Three Kingdoms Weapon!
+    const rightArmPivot = new THREE.Group();
+    rightArmPivot.position.set(0.22, shoulderY - 0.04, 0.04);
+    torsoPivot.add(rightArmPivot);
+    const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.28, 6), heroArmorMat);
+    rArm.rotation.x = Math.PI / 2.2; rArm.position.set(0, -0.03, 0.12); rightArmPivot.add(rArm);
+
+    const weaponGrp = new THREE.Group();
+    weaponGrp.position.set(0.02, -0.02, 0.26);
+    rightArmPivot.add(weaponGrp);
+
+    if (prof.weapon === 'halberd') {
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 1.85, 6), mats.goldMat);
+      shaft.rotation.x = Math.PI / 2.3; shaft.position.set(0, 0.08, 0.25); weaponGrp.add(shaft);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.34, 4), mats.metalMat);
+      tip.rotation.x = Math.PI / 2.3; tip.position.set(0, 0.32, 1.15); weaponGrp.add(tip);
+      [-0.12, 0.12].forEach(cx => {
+        const cres = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.024, 5, 8, Math.PI), mats.metalMat);
+        cres.position.set(cx, 0.25, 0.96); cres.rotation.y = cx > 0 ? 0 : Math.PI; weaponGrp.add(cres);
+      });
+    } else if (prof.weapon === 'guandao') {
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 1.75, 6), mats.darkMat);
+      shaft.rotation.x = Math.PI / 2.3; shaft.position.set(0, 0.06, 0.22); weaponGrp.add(shaft);
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.19, 0.56), mats.metalMat);
+      blade.position.set(0, 0.25, 1.02); blade.rotation.x = -0.18; weaponGrp.add(blade);
+    } else if (prof.weapon === 'sword') {
+      const hilt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.05), mats.goldMat);
+      weaponGrp.add(hilt);
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.08, 0.92), mats.metalMat);
+      blade.position.set(0, 0.02, 0.48); weaponGrp.add(blade);
+    } else if (prof.weapon === 'fan') {
+      const fan = new THREE.Mesh(
+        new THREE.CircleGeometry(0.32, 8, -0.7, 1.4),
+        new THREE.MeshBasicMaterial({ color: u.general.id === 'zhouyu' ? 0xffe08a : 0xffffff, side: THREE.DoubleSide })
+      );
+      fan.position.set(0, 0.08, 0.18); fan.rotation.y = Math.PI / 3; weaponGrp.add(fan);
+    } else if (prof.weapon === 'bow') {
+      const bow = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.028, 6, 10, Math.PI), mats.goldMat);
+      bow.rotation.y = Math.PI / 2; bow.position.set(0, 0.06, 0.16); weaponGrp.add(bow);
+    } else if (prof.weapon === 'ribbons') {
+      const rib = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.18, 1.05),
+        new THREE.MeshBasicMaterial({ color: prof.cape, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+      );
+      rib.position.set(0, -0.1, 0.42); rib.rotation.x = Math.PI / 2.4; weaponGrp.add(rib);
+    } else {
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.024, 1.78, 6), mats.darkMat);
+      shaft.rotation.x = Math.PI / 2.25; shaft.position.set(0, 0.06, 0.25); weaponGrp.add(shaft);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.048, 0.32, 4), mats.metalMat);
+      tip.rotation.x = Math.PI / 2.25; tip.position.set(0, 0.24, 1.12); weaponGrp.add(tip);
+    }
+
+    // Articulated Left Arm (Shield / Silk Ribbon / Reins)
+    const leftArmPivot = new THREE.Group();
+    leftArmPivot.position.set(-0.22, shoulderY - 0.04, 0.04);
+    torsoPivot.add(leftArmPivot);
+    const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.26, 6), heroArmorMat);
+    lArm.rotation.x = Math.PI / 2.5; lArm.position.set(0, -0.04, 0.11); leftArmPivot.add(lArm);
+    if (prof.weapon === 'ribbons') {
+      const ribL = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.18, 1.05),
+        new THREE.MeshBasicMaterial({ color: prof.cape, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+      );
+      ribL.position.set(0, -0.1, 0.42); ribL.rotation.x = Math.PI / 2.4; leftArmPivot.add(ribL);
+    } else if (!isCav && u.general.type === 'spr') {
+      const shield = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.38, 0.26), mats.goldMat);
+      shield.position.set(-0.04, -0.02, 0.16); leftArmPivot.add(shield);
+    }
+
+    return { root, horsePivot, horseLegs, torsoPivot, rightArmPivot, leftArmPivot, capeMesh, prof, basePos: new THREE.Vector3() };
+  }
+
   createSquadMesh(u) {
     const grp = new THREE.Group();
     const fObj = FACTIONS[u.general.faction];
     const fHex = fObj.hex;
-    const armorMat = new THREE.MeshStandardMaterial({ color: fHex, roughness: 0.42, metalness: 0.28 });
+    const armorMat = new THREE.MeshStandardMaterial({ color: fHex, roughness: 0.42, metalness: 0.34 });
     const darkMat = new THREE.MeshStandardMaterial({ color: 0x2a2320, roughness: 0.78 });
-    const horseMat = new THREE.MeshStandardMaterial({ color: 0x5c3622, roughness: 0.72 });
-    const heroHorseMat = new THREE.MeshStandardMaterial({ color: u.general.id === 'lubu' ? 0x8f1d14 : 0xede6d8, roughness: 0.55 });
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xf2c968, roughness: 0.28, metalness: 0.65 });
-    const metalMat = new THREE.MeshStandardMaterial({ color: 0xe3ecf5, roughness: 0.2, metalness: 0.85 });
+    const horseMat = new THREE.MeshStandardMaterial({ color: 0x5c3622, roughness: 0.68 });
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xf2c968, roughness: 0.28, metalness: 0.68 });
+    const metalMat = new THREE.MeshStandardMaterial({ color: 0xe8f0f8, roughness: 0.18, metalness: 0.88 });
+    const mats = { armorMat, darkMat, horseMat, goldMat, metalMat };
 
     // Formation base ring + forward direction chevron
     const baseRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.88, 1.06, 24),
+      new THREE.RingGeometry(0.92, 1.12, 24),
       new THREE.MeshBasicMaterial({ color: u.side === 'player' ? 0x52ee90 : 0xff5e5e, side: THREE.DoubleSide, transparent: true, opacity: 0.72 })
     );
     baseRing.rotation.x = -Math.PI / 2; baseRing.position.y = 0.04; grp.add(baseRing);
@@ -3244,28 +3669,28 @@ class BattleRenderer3D {
       new THREE.ConeGeometry(0.22, 0.42, 3),
       new THREE.MeshBasicMaterial({ color: u.side === 'player' ? 0x9bffc0 : 0xff9a9a })
     );
-    arrowDir.rotation.x = Math.PI / 2; arrowDir.position.set(0, 0.06, 1.24); grp.add(arrowDir);
+    arrowDir.rotation.x = Math.PI / 2; arrowDir.position.set(0, 0.06, 1.32); grp.add(arrowDir);
 
-    // 10~12 Soldier Tight Arcade Phalanx / Wedge Formations!
+    // 10~12 Soldier Tight Arcade Phalanx / Wedge Formations with Articulated Hero Commander!
     let offsets;
     if (u.general.type === 'cav') {
       offsets = [
-        [0, 0.45, 1.18], // Commander at front tip
-        [-0.45, 0.12, 0.86], [0.45, 0.12, 0.86],
-        [-0.86, -0.22, 0.82], [0, -0.18, 0.84], [0.86, -0.22, 0.82],
-        [-0.65, -0.62, 0.80], [-0.22, -0.58, 0.80], [0.22, -0.58, 0.80], [0.65, -0.62, 0.80]
+        [0, 0.50, 1.18], // Articulated Hero Commander at front tip!
+        [-0.48, 0.12, 0.84], [0.48, 0.12, 0.84],
+        [-0.88, -0.24, 0.80], [0, -0.20, 0.82], [0.88, -0.24, 0.80],
+        [-0.66, -0.64, 0.78], [-0.22, -0.60, 0.78], [0.22, -0.60, 0.78], [0.66, -0.64, 0.78]
       ];
     } else if (u.general.type === 'spr') {
       offsets = [
-        [0, -0.15, 1.18], // Commander center-rear
-        [-0.82, 0.42, 0.84], [-0.41, 0.45, 0.84], [0, 0.48, 0.84], [0.41, 0.45, 0.84], [0.82, 0.42, 0.84],
-        [-0.66, 0.02, 0.82], [-0.22, 0.04, 0.82], [0.22, 0.04, 0.82], [0.66, 0.02, 0.82],
-        [-0.45, -0.42, 0.80], [0.45, -0.42, 0.80]
+        [0, -0.18, 1.24], // Articulated Hero Commander center-rear!
+        [-0.84, 0.44, 0.84], [-0.42, 0.48, 0.84], [0, 0.50, 0.84], [0.42, 0.48, 0.84], [0.84, 0.44, 0.84],
+        [-0.68, 0.04, 0.82], [-0.22, 0.06, 0.82], [0.22, 0.06, 0.82], [0.68, 0.04, 0.82],
+        [-0.46, -0.44, 0.80], [0.46, -0.44, 0.80]
       ];
     } else {
       offsets = [
-        [0, -0.22, 1.18], // Commander
-        [-0.84, 0.36, 0.82], [-0.42, 0.38, 0.82], [0, 0.40, 0.82], [0.42, 0.38, 0.82], [0.84, 0.36, 0.82],
+        [0, -0.24, 1.24], // Articulated Hero Commander!
+        [-0.84, 0.36, 0.82], [-0.42, 0.40, 0.82], [0, 0.42, 0.82], [0.42, 0.40, 0.82], [0.84, 0.36, 0.82],
         [-0.78, -0.02, 0.80], [-0.36, -0.02, 0.80], [0.36, -0.02, 0.80], [0.78, -0.02, 0.80],
         [-0.46, -0.42, 0.78], [0.46, -0.42, 0.78]
       ];
@@ -3275,35 +3700,48 @@ class BattleRenderer3D {
     const soldierNodes = [];
     grp.add(soldiersGrp);
 
+    let heroRig = null;
     offsets.forEach(([ox, oz, scale], idx) => {
+      if (idx === 0) {
+        heroRig = this.buildArticulatedHero(u, mats);
+        heroRig.root.scale.setScalar(scale);
+        heroRig.root.position.set(ox, 0, oz);
+        heroRig.basePos.set(ox, 0, oz);
+        heroRig.baseScale = scale;
+        soldiersGrp.add(heroRig.root);
+        soldierNodes.push(heroRig.root);
+        return;
+      }
       const s = new THREE.Group();
       if (u.general.type === 'cav') {
-        const horse = new THREE.Mesh(this.sharedGeo.horseBody, idx === 0 ? heroHorseMat : horseMat);
-        horse.position.set(0, 0.26, 0); horse.castShadow = true; s.add(horse);
-        const head = new THREE.Mesh(this.sharedGeo.horseHead, idx === 0 ? heroHorseMat : darkMat);
-        head.position.set(0, 0.44, 0.25); s.add(head);
-        const rider = new THREE.Mesh(this.sharedGeo.riderBody, idx === 0 ? goldMat : armorMat);
-        rider.position.set(0, 0.56, -0.02); rider.castShadow = true; s.add(rider);
-        if (idx === 0) {
-          const cape = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.52), new THREE.MeshBasicMaterial({ color: fHex, side: THREE.DoubleSide }));
-          cape.position.set(0, 0.56, -0.22); cape.rotation.x = 0.45; s.add(cape);
-        }
+        const horse = new THREE.Mesh(this.sharedGeo.horseBody, horseMat);
+        horse.position.set(0, 0.30, 0); horse.castShadow = true; s.add(horse);
+        const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.24), armorMat);
+        saddle.position.set(0, 0.44, -0.02); s.add(saddle);
+        const head = new THREE.Mesh(this.sharedGeo.horseHead, darkMat);
+        head.position.set(0, 0.48, 0.26); s.add(head);
+        const rider = new THREE.Mesh(this.sharedGeo.riderBody, armorMat);
+        rider.position.set(0, 0.62, -0.02); rider.castShadow = true; s.add(rider);
+        const helm = new THREE.Mesh(this.sharedGeo.helm, darkMat);
+        helm.position.set(0, 0.84, -0.02); s.add(helm);
         const lance = new THREE.Mesh(this.sharedGeo.lance, metalMat);
-        lance.rotation.x = Math.PI / 2.25; lance.position.set(0.14, 0.58, 0.35); s.add(lance);
+        lance.rotation.x = Math.PI / 2.25; lance.position.set(0.14, 0.62, 0.38); s.add(lance);
       } else if (u.general.type === 'spr') {
-        const body = new THREE.Mesh(this.sharedGeo.infBody, idx === 0 ? goldMat : armorMat);
-        body.position.set(0, 0.24, 0); body.castShadow = true; s.add(body);
+        const body = new THREE.Mesh(this.sharedGeo.infBody, armorMat);
+        body.position.set(0, 0.25, 0); body.castShadow = true; s.add(body);
+        const helm = new THREE.Mesh(this.sharedGeo.helm, darkMat);
+        helm.position.set(0, 0.54, 0); s.add(helm);
+        const shield = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.28, 0.22), darkMat);
+        shield.position.set(-0.14, 0.30, 0.10); s.add(shield);
+        const spear = new THREE.Mesh(this.sharedGeo.spear, metalMat);
+        spear.rotation.x = Math.PI / 2.15; spear.position.set(0.13, 0.40, 0.50); s.add(spear);
+      } else {
+        const body = new THREE.Mesh(this.sharedGeo.infBody, armorMat);
+        body.position.set(0, 0.25, 0); body.castShadow = true; s.add(body);
         const helm = new THREE.Mesh(this.sharedGeo.helm, darkMat);
         helm.position.set(0, 0.53, 0); s.add(helm);
-        const spear = new THREE.Mesh(this.sharedGeo.spear, metalMat);
-        spear.rotation.x = Math.PI / 2.15; spear.position.set(0.13, 0.38, 0.48); s.add(spear);
-      } else {
-        const body = new THREE.Mesh(this.sharedGeo.infBody, idx === 0 ? goldMat : armorMat);
-        body.position.set(0, 0.24, 0); body.castShadow = true; s.add(body);
-        const helm = new THREE.Mesh(this.sharedGeo.helm, darkMat);
-        helm.position.set(0, 0.52, 0); s.add(helm);
         const bow = new THREE.Mesh(this.sharedGeo.bow, goldMat);
-        bow.rotation.y = Math.PI / 2; bow.position.set(0, 0.38, 0.22); s.add(bow);
+        bow.rotation.y = Math.PI / 2; bow.position.set(0, 0.40, 0.24); s.add(bow);
       }
       s.scale.setScalar(scale); s.position.set(ox, 0, oz);
       soldiersGrp.add(s);
@@ -3311,19 +3749,19 @@ class BattleRenderer3D {
     });
 
     // High-Visibility Chinese War Banner with Faction Character!
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.028, 1.95, 5), darkMat);
-    pole.position.set(-0.28, 1.0, -0.28); grp.add(pole);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.030, 2.15, 5), darkMat);
+    pole.position.set(-0.34, 1.08, -0.34); grp.add(pole);
     const flagTex = this.getBannerTexture(fObj.name.charAt(0), fObj.color);
     const flag = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.72, 0.52),
+      new THREE.PlaneGeometry(0.76, 0.54),
       new THREE.MeshBasicMaterial({ map: flagTex, side: THREE.DoubleSide })
     );
-    flag.position.set(0.08, 1.72, -0.28); grp.add(flag);
+    flag.position.set(0.04, 1.88, -0.34); grp.add(flag);
 
-    // SEGA Ver.3 Cavalry Charge Cyan Gale + Ground Portrait Ghost!!
+    // SEGA Ver.3 Cavalry Charge Cyan Gale + Frameless Ground Portrait Ghost!!
     const chargeAura = new THREE.Group();
     const cRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.05, 1.78, 28),
+      new THREE.RingGeometry(1.05, 1.82, 28),
       new THREE.MeshBasicMaterial({ color: 0x8ef2ff, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
     );
     cRing.rotation.x = -Math.PI / 2; cRing.position.y = 0.12; chargeAura.add(cRing);
@@ -3339,11 +3777,10 @@ class BattleRenderer3D {
       );
       streak.position.set(ox, 0.48, -1.2); chargeAura.add(streak);
     });
-    // Glowing Ground Portrait Ghost trailing the charging general!
-    const pTex = this.getPortraitTexture(u.general.img);
+    const pTex = this.getPortraitTexture(u.general.cutoutImg || u.general.img);
     const ghostPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.55, 2.15),
-      new THREE.MeshBasicMaterial({ map: pTex, transparent: true, opacity: 0.82, side: THREE.DoubleSide })
+      new THREE.PlaneGeometry(1.45, 1.85),
+      new THREE.MeshBasicMaterial({ map: pTex, transparent: true, opacity: 0.78, side: THREE.DoubleSide })
     );
     ghostPlane.rotation.x = -Math.PI / 2.4;
     ghostPlane.position.set(0, 0.55, -1.35);
@@ -3379,8 +3816,122 @@ class BattleRenderer3D {
     walkShootAura.rotation.x = -Math.PI / 2; walkShootAura.position.y = 0.1; walkShootAura.visible = false;
     grp.add(walkShootAura);
 
-    grp.userData = { soldiersGrp, soldierNodes, chargeAura, spearFan, walkShootAura, flag };
+    grp.userData = { soldiersGrp, soldierNodes, heroRig, chargeAura, spearFan, walkShootAura, flag };
     return grp;
+  }
+
+  // ---- LIVE 3D ANIMATED CHARACTER STRATAGEM STAGE (ALL 20 GENERALS!) ----
+  startHeroStratagem3D(ev) {
+    this.stopHeroStratagem3D();
+    const grp = new THREE.Group();
+    const kind = ev.spellKind || 'rally';
+    const fxNodes = [];
+    const cx = ev.focusX || 0, cz = ev.focusZ || 0;
+
+    // Glowing Magic Ground Seal beneath the 3D Hero
+    const sealCol = kind === 'fire' ? 0xff5511 : kind === 'water' ? 0x22aaff : kind === 'lightning' ? 0xffee55
+      : kind === 'dance_heal' ? 0x55ffd8 : kind === 'dance_curse' || kind === 'debuff' ? 0xcc55ff : 0xffd255;
+    const floorSeal = new THREE.Mesh(
+      new THREE.RingGeometry(1.1, 2.9, 32),
+      new THREE.MeshBasicMaterial({ color: sealCol, side: THREE.DoubleSide, transparent: true, opacity: 0.82 })
+    );
+    floorSeal.rotation.x = -Math.PI / 2; floorSeal.position.y = 0.12; grp.add(floorSeal);
+    fxNodes.push({ kind: 'spin_seal', mesh: floorSeal });
+
+    if (kind === 'fire') {
+      for (let i = 0; i < 16; i++) {
+        const flame = new THREE.Mesh(
+          new THREE.ConeGeometry(0.45, 2.6 + (i % 3) * 0.8, 6),
+          new THREE.MeshBasicMaterial({ color: i % 2 ? 0xff4400 : 0xffcc33, transparent: true, opacity: 0.88 })
+        );
+        const a = (i / 16) * Math.PI * 2;
+        flame.position.set(Math.cos(a) * 2.3, 1.2, Math.sin(a) * 2.3);
+        grp.add(flame);
+        fxNodes.push({ kind: 'orbit_flame', mesh: flame, baseA: a, r: 2.0 + (i % 3) * 0.55 });
+      }
+    } else if (kind === 'water') {
+      for (let i = 0; i < 12; i++) {
+        const wave = new THREE.Mesh(
+          new THREE.BoxGeometry(1.2, 1.9, 0.45),
+          new THREE.MeshBasicMaterial({ color: i % 2 ? 0x2299ff : 0x99eeff, transparent: true, opacity: 0.72 })
+        );
+        const a = (i / 12) * Math.PI * 2;
+        wave.position.set(Math.cos(a) * 2.5, 0.9, Math.sin(a) * 2.5);
+        wave.rotation.y = -a;
+        grp.add(wave);
+        fxNodes.push({ kind: 'orbit_wave', mesh: wave, baseA: a });
+      }
+    } else if (kind === 'lightning') {
+      // Rotating Overhead 3D Golden Bagua Ring + Vertical Thunder Bolts!
+      const bagua = new THREE.Mesh(
+        new THREE.RingGeometry(2.0, 2.55, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffee66, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
+      );
+      bagua.rotation.x = -Math.PI / 2; bagua.position.y = 4.2; grp.add(bagua);
+      fxNodes.push({ kind: 'bagua', mesh: bagua });
+      for (let b = 0; b < 5; b++) {
+        const bolt = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.08, 0.24, 9.0, 5),
+          new THREE.MeshBasicMaterial({ color: 0xf8ffaa, transparent: true, opacity: 0.92 })
+        );
+        const a = (b / 5) * Math.PI * 2;
+        bolt.position.set(Math.cos(a) * 2.2, 4.5, Math.sin(a) * 2.2);
+        grp.add(bolt);
+        fxNodes.push({ kind: 'bolt', mesh: bolt, phase: b });
+      }
+    } else if (kind === 'dance_heal' || kind === 'dance_curse') {
+      for (let i = 0; i < 24; i++) {
+        const pet = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.32, 0.18),
+          new THREE.MeshBasicMaterial({ color: kind === 'dance_curse' ? 0xe088ff : 0x77ffe0, transparent: true, opacity: 0.9, side: THREE.DoubleSide })
+        );
+        grp.add(pet);
+        fxNodes.push({ kind: 'petal', mesh: pet, phase: (i / 24) * Math.PI * 2, h: 0.5 + (i % 6) * 0.55 });
+      }
+    } else {
+      // Heroic Aura Slash Arcs + Rising Golden Light Columns (Rally / Self / Speed / Debuff / Taunt)
+      for (let r = 0; r < 3; r++) {
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(1.55 + r * 0.32, 0.055, 6, 28, Math.PI * 1.45),
+          new THREE.MeshBasicMaterial({ color: r === 0 ? 0xffffff : sealCol, transparent: true, opacity: 0.92 })
+        );
+        ring.position.y = 1.0 + r * 0.35;
+        ring.rotation.set(0.35 * r, r * 1.2, 0.25 * r);
+        grp.add(ring);
+        fxNodes.push({ kind: 'slash_ring', mesh: ring, idx: r });
+      }
+      for (let c = 0; c < 6; c++) {
+        const a = (c / 6) * Math.PI * 2;
+        const beam = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.14, 0.24, 6.5, 6, 1, true),
+          new THREE.MeshBasicMaterial({ color: sealCol, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+        );
+        beam.position.set(Math.cos(a) * 2.4, 3.2, Math.sin(a) * 2.4);
+        grp.add(beam);
+        fxNodes.push({ kind: 'beam', mesh: beam, baseA: a });
+      }
+    }
+
+    grp.position.set(cx, 0, cz);
+    this.scene.add(grp);
+    this.heroCinemaStage = { grp, unitId: ev.unitId, kind, spdBoost: !!ev.spdBoost, fxNodes, age: 0 };
+  }
+
+  stopHeroStratagem3D() {
+    if (this.heroCinemaStage) {
+      // Restore casting hero rig back to normal battlefield scale & neutral pose!
+      const uMesh = this.unitMeshes.get(this.heroCinemaStage.unitId);
+      if (uMesh && uMesh.userData.heroRig) {
+        const hr = uMesh.userData.heroRig;
+        hr.root.scale.setScalar(hr.baseScale || 1.2);
+        hr.horsePivot.rotation.set(0, 0, 0);
+        hr.torsoPivot.rotation.set(0, 0, 0);
+        hr.rightArmPivot.rotation.set(0, 0, 0);
+        hr.leftArmPivot.rotation.set(0, 0, 0);
+      }
+      this.scene.remove(this.heroCinemaStage.grp);
+      this.heroCinemaStage = null;
+    }
   }
 
   // ---- 3D SIEGE CUTSCENE PROPS (WALL LADDERS & GATE BATTERING RAM!) ----
@@ -3656,6 +4207,46 @@ class BattleRenderer3D {
       const aliveCount = Math.max(1, Math.ceil((u.hp / u.maxHp) * nodes.length));
       for (let i = 0; i < nodes.length; i++) nodes[i].visible = (i < aliveCount);
 
+      // Animate Articulated 3D Hero Rig during normal battlefield combat
+      const hr = m.userData.heroRig;
+      const isCinemaHero = !!(this.heroCinemaStage && this.heroCinemaStage.unitId === u.uid);
+      if (m.userData.flag) m.userData.flag.visible = !isCinemaHero;
+      if (hr && !isCinemaHero) {
+        hr.root.scale.setScalar(hr.baseScale || 1.2);
+        if (hr.capeMesh) {
+          hr.capeMesh.rotation.x = 0.24 + (moving ? 0.26 : 0.04) + Math.sin(t * 7 + u.uid) * 0.08;
+        }
+        if (hr.horseLegs && hr.horseLegs.length) {
+          const gallopFreq = u.isCharging ? 18 : 13;
+          const gallopAmp = moving ? (u.isCharging ? 0.65 : 0.48) : 0;
+          hr.horseLegs.forEach((leg, li) => {
+            leg.rotation.x = gallopAmp ? Math.sin(this.sim.elapsed * gallopFreq + li * Math.PI * 0.5 + u.uid) * gallopAmp : 0;
+          });
+        }
+        if (u.inMelee) {
+          const sw = Math.sin(this.sim.elapsed * 14 + u.uid);
+          hr.horsePivot.rotation.set(0, 0, 0);
+          hr.torsoPivot.rotation.set(0.08, sw * 0.24, 0);
+          hr.rightArmPivot.rotation.set(-0.35 + sw * 0.85, 0, sw * 0.18);
+          hr.leftArmPivot.rotation.set(-0.2 - sw * 0.25, 0, 0);
+        } else if (u.isCharging) {
+          hr.horsePivot.rotation.set(-0.07, 0, 0);
+          hr.torsoPivot.rotation.set(0.16, 0, 0);
+          hr.rightArmPivot.rotation.set(-0.55, 0, 0);
+          hr.leftArmPivot.rotation.set(-0.18, 0, 0);
+        } else if (u.dancing) {
+          hr.horsePivot.rotation.set(0, 0, 0);
+          hr.torsoPivot.rotation.set(0, Math.sin(t * 3.5 + u.uid) * 0.7, 0);
+          hr.rightArmPivot.rotation.set(-0.9 + Math.sin(t * 6) * 0.5, 0, -0.3);
+          hr.leftArmPivot.rotation.set(-0.9 + Math.cos(t * 6) * 0.5, 0, 0.3);
+        } else {
+          hr.horsePivot.rotation.set(0, 0, 0);
+          hr.torsoPivot.rotation.set(0, 0, 0);
+          hr.rightArmPivot.rotation.set(Math.sin(t * 2.4 + u.uid) * 0.06, 0, 0);
+          hr.leftArmPivot.rotation.set(0, 0, 0);
+        }
+      }
+
       m.userData.chargeAura.visible = u.isCharging;
       if (u.isCharging) m.userData.chargeAura.children[0].rotation.z = t * 6.5;
 
@@ -3670,6 +4261,90 @@ class BattleRenderer3D {
       if (m.userData.walkShootAura) {
         m.userData.walkShootAura.visible = (u.general.type === 'arc' && u.walkShootTimer > 0 && !u.inMelee);
         if (m.userData.walkShootAura.visible) m.userData.walkShootAura.rotation.z = -t * 7;
+      }
+    }
+
+    // ---- ANIMATE LIVE 3D HERO STRATAGEM CUTSCENE STAGE (ALL 20 GENERALS!) ----
+    if (this.heroCinemaStage) {
+      const hs = this.heroCinemaStage;
+      hs.age += realDt;
+      const uMesh = this.unitMeshes.get(hs.unitId);
+      if (uMesh && uMesh.userData.heroRig) {
+        uMesh.visible = true;
+        const hr = uMesh.userData.heroRig;
+        const pop = Math.min(1, hs.age / 0.28);
+        hr.root.scale.setScalar((hr.baseScale || 1.2) * (1 + 0.62 * pop));
+        if (hr.capeMesh) hr.capeMesh.rotation.x = 0.68 + Math.sin(hs.age * 16) * 0.14;
+
+        const kind = hs.kind;
+        if (kind === 'dance_heal' || kind === 'dance_curse') {
+          hr.horsePivot.rotation.set(0, 0, 0);
+          hr.torsoPivot.rotation.set(0, hs.age * 3.8, 0);
+          hr.rightArmPivot.rotation.set(-1.2 + Math.sin(hs.age * 8) * 0.72, 0, -0.45);
+          hr.leftArmPivot.rotation.set(-1.2 + Math.cos(hs.age * 8) * 0.72, 0, 0.45);
+        } else if (kind === 'fire' || kind === 'water' || kind === 'lightning') {
+          hr.horsePivot.rotation.set(-0.12 * Math.sin(hs.age * 3.5), 0, 0);
+          hr.torsoPivot.rotation.set(-0.08, Math.sin(hs.age * 4.8) * 0.45, 0);
+          hr.rightArmPivot.rotation.set(-1.18 + Math.sin(hs.age * 7.8) * 0.62, Math.cos(hs.age * 7.8) * 0.75, -0.2);
+          hr.leftArmPivot.rotation.set(-1.25 + Math.cos(hs.age * 5) * 0.18, 0, 0.25);
+        } else if (kind === 'self' || hs.spdBoost) {
+          const rear = -0.30 * Math.abs(Math.sin(hs.age * 4.4));
+          hr.horsePivot.rotation.set(rear, 0, 0);
+          hr.torsoPivot.rotation.set(0.08, Math.sin(hs.age * 9.5) * 0.68, 0);
+          hr.rightArmPivot.rotation.set(-0.95 + Math.sin(hs.age * 13) * 1.15, 0, Math.cos(hs.age * 11) * 0.55);
+          hr.leftArmPivot.rotation.set(-0.55 + Math.cos(hs.age * 9) * 0.35, 0, 0.22);
+        } else if (kind === 'debuff' || kind === 'taunt') {
+          hr.horsePivot.rotation.set(-0.22 * Math.abs(Math.sin(hs.age * 5.6)), 0, 0);
+          hr.torsoPivot.rotation.set(Math.sin(hs.age * 8) * 0.22, Math.sin(hs.age * 4) * 0.3, 0);
+          hr.rightArmPivot.rotation.set(-1.55 + Math.max(0, Math.sin(hs.age * 8)) * 1.35, 0, -0.15);
+          hr.leftArmPivot.rotation.set(-0.85, 0, 0.2);
+        } else {
+          // Heroic Rally / Heal AoE: Warhorse rears, commander raises weapon skyward!
+          const rear = -0.32 * Math.sin(Math.min(Math.PI, hs.age * 2.1));
+          hr.horsePivot.rotation.set(rear, 0, 0);
+          hr.torsoPivot.rotation.set(-0.16, Math.sin(hs.age * 3.4) * 0.30, 0);
+          hr.rightArmPivot.rotation.set(-1.75 + Math.sin(hs.age * 9) * 0.16, 0, -0.28);
+          hr.leftArmPivot.rotation.set(-0.55, 0, 0.22);
+        }
+        if (hr.horseLegs && hr.horseLegs.length >= 4) {
+          hr.horseLegs[0].rotation.x = -0.55 - Math.sin(hs.age * 12) * 0.32;
+          hr.horseLegs[1].rotation.x = -0.45 + Math.sin(hs.age * 12) * 0.32;
+          hr.horseLegs[2].rotation.x = 0.18;
+          hr.horseLegs[3].rotation.x = 0.18;
+        }
+      }
+      for (const fn of hs.fxNodes) {
+        if (fn.kind === 'spin_seal') {
+          fn.mesh.rotation.z = hs.age * 2.6;
+          fn.mesh.scale.setScalar(0.86 + Math.sin(hs.age * 6.5) * 0.14);
+        } else if (fn.kind === 'orbit_flame') {
+          const a = fn.baseA + hs.age * 3.2;
+          fn.mesh.position.set(Math.cos(a) * fn.r, 1.0 + Math.sin(hs.age * 12 + fn.baseA) * 0.42, Math.sin(a) * fn.r);
+          fn.mesh.scale.y = 0.8 + Math.sin(hs.age * 16 + fn.baseA) * 0.36;
+        } else if (fn.kind === 'orbit_wave') {
+          const a = fn.baseA + hs.age * 2.8;
+          const r = 2.35 + Math.sin(hs.age * 5 + fn.baseA) * 0.45;
+          fn.mesh.position.set(Math.cos(a) * r, 0.85 + Math.sin(hs.age * 8 + fn.baseA) * 0.35, Math.sin(a) * r);
+          fn.mesh.rotation.y = -a;
+        } else if (fn.kind === 'bagua') {
+          fn.mesh.rotation.z = -hs.age * 2.4;
+          fn.mesh.scale.setScalar(0.95 + Math.sin(hs.age * 8) * 0.12);
+        } else if (fn.kind === 'bolt') {
+          fn.mesh.visible = (Math.floor(hs.age * 18 + fn.phase) % 3 !== 0);
+          fn.mesh.scale.x = 0.7 + Math.abs(Math.sin(hs.age * 30 + fn.phase)) * 0.7;
+        } else if (fn.kind === 'petal') {
+          const a = fn.phase + hs.age * 2.8;
+          const r = 1.35 + fn.h * 0.45;
+          fn.mesh.position.set(Math.cos(a) * r, ((fn.h + hs.age * 0.95) % 3.5) + 0.3, Math.sin(a) * r);
+          fn.mesh.rotation.set(hs.age * 4 + fn.phase, a, hs.age * 3);
+        } else if (fn.kind === 'slash_ring') {
+          fn.mesh.rotation.y = hs.age * (5.2 + fn.idx * 1.4) * (fn.idx % 2 ? -1 : 1);
+          fn.mesh.rotation.z = hs.age * 2.2;
+        } else if (fn.kind === 'beam') {
+          const a = fn.baseA + hs.age * 1.6;
+          fn.mesh.position.set(Math.cos(a) * 2.3, 3.2, Math.sin(a) * 2.3);
+          fn.mesh.material.opacity = 0.28 + Math.sin(hs.age * 10 + fn.baseA) * 0.2;
+        }
       }
     }
 
@@ -3798,31 +4473,37 @@ class BattleRenderer3D {
         this.camera.position.set(cm.x + 3.4 - p * 1.4, 1.5 + p * 1.6, cm.z + cm.dir * 4.2);
         this.camera.lookAt(cm.x, 1.9 + p * 0.8, cm.z);
       } else if (cm.kind === 'dance_heal' || cm.kind === 'dance_curse') {
-        // Spotlight Stage 360 Orbit around dancing general!
+        // 360° Spotlight Stage Framing around 3D Dancing Hero!
         this.spotBeam.visible = true;
         this.spotBeam.position.set(cm.x, 7.5, cm.z);
         this.spotBeam.material.color.setHex(cm.kind === 'dance_heal' ? 0x66ffdd : 0xd066ff);
-        const ang = p * Math.PI * 1.5;
-        this.camera.position.set(cm.x + Math.sin(ang) * 4.8, 3.2, cm.z + Math.cos(ang) * 4.8);
-        this.camera.lookAt(cm.x, 0.9, cm.z);
+        const ang = 0.25 + p * Math.PI * 1.5;
+        this.camera.position.set(cm.x + Math.sin(ang) * 4.5, 2.35 + Math.sin(p * Math.PI) * 0.4, cm.z + Math.cos(ang) * 4.5);
+        this.camera.lookAt(cm.x, 1.25, cm.z);
       } else if (cm.kind === 'rally' || cm.kind === 'heal_aoe') {
-        // Epic low-angle lateral sweep across commander & cheering phalanx!
+        // Dramatic low-angle heroic arc framing the enlarged 3D Hero raising weapon skyward!
         this.spotBeam.visible = true;
         this.spotBeam.position.set(cm.x, 7.5, cm.z);
         this.spotBeam.material.color.setHex(cm.kind === 'heal_aoe' ? 0x66ffaa : 0xffd266);
-        const ang = -0.9 + p * 1.8;
-        this.camera.position.set(cm.x + Math.sin(ang) * 5.6, 2.5 + p * 1.4, cm.z + Math.cos(ang) * 5.6);
-        this.camera.lookAt(cm.x, 1.0, cm.z);
+        const ang = -0.65 + p * 1.35;
+        const rad = 4.95 - p * 0.55;
+        this.camera.position.set(cm.x + Math.sin(ang) * rad, 2.25 + p * 0.65, cm.z + Math.cos(ang) * rad);
+        this.camera.lookAt(cm.x, 1.32, cm.z);
       } else if (cm.kind === 'victory_pose') {
         const ang = -0.6 + p * 1.2;
-        this.camera.position.set(cm.x + Math.sin(ang) * 5.0, 2.3, cm.z + Math.cos(ang) * 5.0);
-        this.camera.lookAt(cm.x, 1.0, cm.z);
+        this.camera.position.set(cm.x + Math.sin(ang) * 4.8, 2.2, cm.z + Math.cos(ang) * 4.8);
+        this.camera.lookAt(cm.x, 1.2, cm.z);
       } else {
-        // Hero close-up orbit for self / speed / debuff / taunt / fire / water / lightning
-        const ang = p * Math.PI * 1.15;
-        const rad = 4.6 + (1 - p) * 2.2;
-        this.camera.position.set(cm.x + Math.sin(ang) * rad, 2.6 + p * 1.6, cm.z + Math.cos(ang) * rad);
-        this.camera.lookAt(cm.x, 0.9, cm.z);
+        // Dramatic 3D Hero Action Framing (self / speed / debuff / taunt / fire / water / lightning)
+        this.spotBeam.visible = true;
+        this.spotBeam.position.set(cm.x, 7.5, cm.z);
+        const sCol = cm.kind === 'fire' ? 0xff5511 : cm.kind === 'water' ? 0x22aaff : cm.kind === 'lightning' ? 0xffee55
+          : (cm.kind === 'debuff' || cm.kind === 'taunt') ? 0xcc55ff : 0xffd255;
+        this.spotBeam.material.color.setHex(sCol);
+        const ang = -0.55 + p * Math.PI * 0.95;
+        const rad = 4.65 + (1 - p) * 0.95;
+        this.camera.position.set(cm.x + Math.sin(ang) * rad, 2.25 + p * 0.72, cm.z + Math.cos(ang) * rad);
+        this.camera.lookAt(cm.x, 1.35, cm.z);
       }
       if (this.shakeTime > 0) {
         this.shakeTime -= realDt;
@@ -4351,13 +5032,23 @@ const App = {
   selectedUid: null,
   dragState: null,
   vpadDrags: new Map(),
+  vpadGhosts: new Map(),
   unitTagEls: new Map(),
   enemyPadDots: new Map(),
   vpadResolvedPos: new Map(),
+  _vpadWindowBound: false,
+  _vpadSurfaceBound: false,
 
   isCutsceneBlocking() {
     return this.introTimer > 0 || this.defeatPauseTimer > 0 || this.ultTheaterTimer > 0 ||
            this.aowDragonTimer > 0 || this.siegeCutsceneTimer > 0 || this.ambushTimer > 0 || this.finaleTimer > 0;
+  },
+
+  applyBustImg(imgEl, obj) {
+    if (!imgEl || !obj) return;
+    const src = obj.cutoutImg || obj.img || '';
+    imgEl.src = src;
+    imgEl.classList.toggle('is-alpha-cutout', !!obj.cutoutImg);
   },
 
   init() {
@@ -4646,7 +5337,7 @@ const App = {
     document.getElementById('ic-enemy-cards').innerHTML = mkMini(enemyIds);
 
     const leadGen = this.deck.map(id => GENERAL_MAP[id]).sort((a, b) => b.cost - a.cost || b.pow - a.pow)[0];
-    document.getElementById('intro-hero-img').src = leadGen.img;
+    this.applyBustImg(document.getElementById('intro-hero-img'), leadGen);
     document.getElementById('intro-hero-quote').textContent = `${leadGen.name}：${leadGen.quote}`;
 
     // Reset all cutscene state machines
@@ -4727,9 +5418,10 @@ const App = {
       document.getElementById('btn-aow').disabled = true;
     });
 
-    document.getElementById('qcmd-advance').addEventListener('click', () => this.sim && !this.isCutsceneBlocking() && this.dispatchPlayerCmd({ type: 'ALL_ADVANCE', side: 'player' }));
-    document.getElementById('qcmd-retreat').addEventListener('click', () => this.sim && !this.isCutsceneBlocking() && this.dispatchPlayerCmd({ type: 'ALL_RETREAT', side: 'player' }));
-    document.getElementById('qcmd-stop').addEventListener('click', () => this.sim && !this.isCutsceneBlocking() && this.dispatchPlayerCmd({ type: 'ALL_STOP', side: 'player' }));
+    // Decoupled from battle cutscenes: players can always pre-issue movement orders on the card panel!
+    document.getElementById('qcmd-advance').addEventListener('click', () => this.sim && !this.sim.finished && this.dispatchPlayerCmd({ type: 'ALL_ADVANCE', side: 'player' }));
+    document.getElementById('qcmd-retreat').addEventListener('click', () => this.sim && !this.sim.finished && this.dispatchPlayerCmd({ type: 'ALL_RETREAT', side: 'player' }));
+    document.getElementById('qcmd-stop').addEventListener('click', () => this.sim && !this.sim.finished && this.dispatchPlayerCmd({ type: 'ALL_STOP', side: 'player' }));
 
     window.addEventListener('keydown', e => {
       if (!this.sim || this.isPortraitBlocked() || document.getElementById('battle-view').style.display !== 'flex') return;
@@ -4755,7 +5447,7 @@ const App = {
     const altGuide = document.getElementById('alt-mode-guide');
 
     if (this.controlMode === 2) {
-      tip.textContent = '模式2（雙手街機感）：右手滑動右側卡盤控兵（拖入底部城內區可歸城快速回血）、左手按計略！';
+      tip.textContent = '模式2（多點實體卡盤）：支援雙指以上同時拖曳！虛影＝目前部隊位置，實體卡＝即時指令點，計略演出中仍可自由下令！';
       vpadWrap.style.display = 'flex';
       altRight.classList.remove('show');
     } else if (this.controlMode === 1) {
@@ -4824,7 +5516,7 @@ const App = {
       </div>
       <div class="asp-desc-box">
         <div class="asp-strat-title">
-          <span>${g.strat.name} <small style="color:#ff9e44">${g.ultCg ? '★奧義CG動畫' : '★3D計略動畫'}</small></span>
+          <span>${g.strat.name} <small style="color:#ff9e44">★3D武將演武過場</small></span>
           <span>消耗士氣 ${g.strat.cost}</span>
         </div>
         <div>${g.strat.desc}</div>
@@ -4837,6 +5529,47 @@ const App = {
       if (this.isCutsceneBlocking() || this.isPortraitBlocked()) return;
       this.dispatchPlayerCmd({ type: 'CAST_STRATAGEM', unitId: u.uid });
     });
+  },
+
+  // Single-source-of-truth coordinate mapping between SEGA Parchment Card Board & 3D Battlefield!
+  padNormToCmd(rx, ry) {
+    const x = (rx - 0.5) * FIELD_W;
+    if (ry <= 0.13) {
+      const zone = (rx >= 0.36 && rx <= 0.64) ? 'gate' : 'wall';
+      return { zone, x, z: -CASTLE_Z };
+    }
+    if (ry >= 0.88) {
+      return { zone: 'castle', x, z: CASTLE_Z + 1.3 };
+    }
+    // Strictly battlefield (including defending right in front of our own wall line ry = 0.84..0.879!)
+    const t = Math.max(0, Math.min(1, (Math.min(ry, 0.84) - 0.13) / 0.71));
+    const z = t * (CASTLE_Z * 2 - 1.1) - (CASTLE_Z - 0.55);
+    return { zone: 'field', x, z };
+  },
+
+  worldToPadPx(wx, wz, zoneOrInC, padW, padH, cardW, cardH) {
+    const minX = cardW / 2 + 4, maxX = Math.max(minX, padW - cardW / 2 - 4);
+    const x = Math.max(minX, Math.min(maxX, (wx / FIELD_W + 0.5) * padW));
+    if (zoneOrInC === 'castle' || zoneOrInC === true) {
+      return { x, y: Math.min(padH - cardH / 2 - 2, padH * 0.94) };
+    }
+    if (zoneOrInC === 'gate' || zoneOrInC === 'wall') {
+      return { x, y: Math.max(cardH / 2 + 2, padH * 0.068) };
+    }
+    const normZ = Math.max(0, Math.min(1, (wz + (CASTLE_Z - 0.55)) / (CASTLE_Z * 2 - 1.1)));
+    const y = (0.145 + normZ * 0.685) * padH;
+    return { x, y: Math.max(padH * 0.13 + cardH / 2 + 1, Math.min(padH * 0.84 - cardH / 2 - 1, y)) };
+  },
+
+  movePadTokenToClientPos(uid, clientX, clientY) {
+    const surface = document.getElementById('vpad-surface');
+    if (!surface || !this.sim || this.sim.finished || this.isPortraitBlocked()) return;
+    const rect = surface.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const rx = Math.max(0.04, Math.min(0.96, (clientX - rect.left) / rect.width));
+    const ry = Math.max(0.025, Math.min(0.975, (clientY - rect.top) / rect.height));
+    const mapped = this.padNormToCmd(rx, ry);
+    this.dispatchPlayerCmd({ type: 'MOVE', unitId: uid, x: mapped.x, z: mapped.z, zone: mapped.zone });
   },
 
   buildLeftSkillsAndRightPad() {
@@ -4876,12 +5609,26 @@ const App = {
 
     const surface = document.getElementById('vpad-surface');
     surface.innerHTML = `
-      <canvas id="vpad-cmd-canvas"></canvas>
-      <div class="vpad-castle-lbl top">敵 城 門</div>
-      <div class="vpad-castle-zone"></div>
-      <div class="vpad-castle-lbl bot">我 城 內（拖入歸城／預置復活）</div>`;
+      <div class="vpad-enemy-wall" id="vpad-enemy-wall">
+        <span class="vpad-wall-side-lbl">◀ 城壁攻城</span>
+        <span class="vpad-wall-side-lbl">城壁攻城 ▶</span>
+        <div class="vpad-gate-notch" id="vpad-gate-notch">
+          <strong>城 門</strong>
+          <span>1.5x 強攻</span>
+        </div>
+      </div>
+      <div class="vpad-attack-lbl"><span>▲ 推入城壁＝攻城</span><span>推入城門凹槽＝攻城門 ▲</span></div>
+      <div class="vpad-watermark enemy-wm">敵 陣</div>
+      <div class="vpad-frontier"></div>
+      <div class="vpad-watermark ally-wm">自 陣</div>
+      <div class="vpad-own-wall"><span>▼ 越過我方城牆線始下令歸城 ▼</span></div>
+      <div class="vpad-castle-zone" id="vpad-castle-zone"><span>自城內・歸城回復／預置復活</span></div>
+      <canvas id="vpad-cmd-canvas"></canvas>`;
     this.enemyPadDots.clear();
+    this.vpadGhosts.clear();
+    this.vpadDrags.clear();
 
+    // Semi-transparent Enemy Cards (can overlap opposing player cards on the reader!)
     for (const eu of eUnits) {
       const ut = UNIT_TYPES[eu.general.type];
       const ec = document.createElement('div');
@@ -4896,16 +5643,16 @@ const App = {
       this.enemyPadDots.set(eu.uid, ec);
     }
 
-    const moveTokenToEvent = (uid, e) => {
-      const rect = surface.getBoundingClientRect();
-      const rx = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
-      const ry = Math.max(0.04, Math.min(0.97, (e.clientY - rect.top) / rect.height));
-      const wx = (rx - 0.5) * FIELD_W;
-      const wz = ry >= 0.87 ? (CASTLE_Z + 1.2) : ((ry / 0.87) * (CASTLE_Z * 1.95) - CASTLE_Z);
-      this.dispatchPlayerCmd({ type: 'MOVE', unitId: uid, x: wx, z: wz });
-    };
-
+    // Translucent Ghosts (current real position) + Solid Physical Command Cards (instant finger target!)
     for (const u of pUnits) {
+      const ghost = document.createElement('div');
+      ghost.className = 'vpad-ghost';
+      ghost.id = `vghost-${u.uid}`;
+      ghost.style.display = 'none';
+      ghost.innerHTML = `<img src="${u.general.img}" alt="${u.general.name}"><div class="vg-tag">實位</div>`;
+      surface.appendChild(ghost);
+      this.vpadGhosts.set(u.uid, ghost);
+
       const tok = document.createElement('div');
       tok.className = 'vpad-token';
       tok.id = `vtok-${u.uid}`;
@@ -4917,29 +5664,66 @@ const App = {
         <img src="${u.general.img}" alt="${u.general.name}">
         <div class="vt-lbl">${u.general.name}</div>`;
       surface.appendChild(tok);
+    }
 
-      tok.addEventListener('pointerdown', e => {
-        if (this.isCutsceneBlocking()) return;
-        e.stopPropagation(); sfx.ensure();
-        this.vpadDrags.set(e.pointerId, u.uid);
-        this.selectedUid = u.uid;
-        tok.classList.add('dragging');
-        tok.setPointerCapture(e.pointerId);
-        moveTokenToEvent(u.uid, e);
+    // Bind True Multi-Touch Pointer Engine ONCE (decoupled from cutscenes, blocks Safari pinch-zoom!)
+    if (!this._vpadSurfaceBound) {
+      this._vpadSurfaceBound = true;
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+        surface.addEventListener(evt, e => e.preventDefault(), { passive: false });
       });
-      tok.addEventListener('pointermove', e => {
-        const uid = this.vpadDrags.get(e.pointerId);
-        if (uid !== u.uid || this.isCutsceneBlocking()) return;
-        moveTokenToEvent(uid, e);
-      });
-      const endDrag = e => {
-        if (this.vpadDrags.get(e.pointerId) === u.uid) {
-          this.vpadDrags.delete(e.pointerId);
-          tok.classList.remove('dragging');
+      surface.addEventListener('pointerdown', e => {
+        if (!this.sim || this.sim.finished || this.isPortraitBlocked()) return;
+        e.preventDefault();
+        sfx.ensure();
+        const busyUids = new Set(this.vpadDrags.values());
+        let pickedUid = null;
+
+        const directTok = e.target.closest('.vpad-token');
+        if (directTok) {
+          const duid = Number(directTok.dataset.uid);
+          if (!busyUids.has(duid)) pickedUid = duid;
         }
+        // Generous 58px touch-radius pickup for multi-finger iPad / iPhone play!
+        if (pickedUid === null) {
+          const rect = surface.getBoundingClientRect();
+          const lx = e.clientX - rect.left, ly = e.clientY - rect.top;
+          let bestD = 58;
+          for (const u of this.sim.units.filter(x => x.side === 'player')) {
+            if (busyUids.has(u.uid)) continue;
+            const p = this.vpadResolvedPos.get(u.uid);
+            if (!p) continue;
+            const d = Math.hypot(p.x - lx, p.y - ly);
+            if (d < bestD) { bestD = d; pickedUid = u.uid; }
+          }
+        }
+        if (pickedUid === null) return;
+
+        this.vpadDrags.set(e.pointerId, pickedUid);
+        this.selectedUid = pickedUid;
+        const tok = document.getElementById(`vtok-${pickedUid}`);
+        if (tok) tok.classList.add('dragging');
+        this.movePadTokenToClientPos(pickedUid, e.clientX, e.clientY);
+      }, { passive: false });
+    }
+
+    if (!this._vpadWindowBound) {
+      this._vpadWindowBound = true;
+      window.addEventListener('pointermove', e => {
+        const uid = this.vpadDrags.get(e.pointerId);
+        if (uid === undefined) return;
+        e.preventDefault();
+        this.movePadTokenToClientPos(uid, e.clientX, e.clientY);
+      }, { passive: false });
+      const endPointer = e => {
+        const uid = this.vpadDrags.get(e.pointerId);
+        if (uid === undefined) return;
+        this.vpadDrags.delete(e.pointerId);
+        const tok = document.getElementById(`vtok-${uid}`);
+        if (tok) tok.classList.remove('dragging');
       };
-      tok.addEventListener('pointerup', endDrag);
-      tok.addEventListener('pointercancel', endDrag);
+      window.addEventListener('pointerup', endPointer);
+      window.addEventListener('pointercancel', endPointer);
     }
   },
 
@@ -4966,17 +5750,20 @@ const App = {
   },
 
   triggerCutinPause(ev) {
-    // UNIFIED 4-BEAT SEGA VER.3 STRATAGEM CUTSCENE THEATER FOR ALL 20 GENERALS!
-    // Beat 1 (stage1): Portrait + Faction War Banner High-Speed Clash
+    // UNIFIED 4-BEAT SEGA VER.3 LIVE 3D HERO STRATAGEM CUTSCENE THEATER FOR ALL 20 GENERALS!
+    // Beat 1 (stage1): Frameless Bust Portrait + Faction War Banner High-Speed Clash
     // Beat 2 (seal-phase): White Sumi-e Paper Ink Splash + Crimson Seal Slam
-    // Beat 3 (stage2): Full 16:9 CG (5 Main Generals) OR Live 3D Cinema Camera + Hero Echo (All 15 Other Generals) + 60fps Spell VFX + SEGA Bottom Info Strip
+    // Beat 3 (stage2): Live 3D Articulated Hero Performance + 3D Elemental Stage + 60fps Spell VFX + SEGA Info Strip
     // Beat 4 (End): Detonate 3D Battlefield VFX & Damage Hit Judgement Cards!
-    const dur = ev.isMajor ? 2.85 : 2.05;
+    const dur = ev.isMajor ? 2.85 : 2.15;
     this.ultDur = dur;
     this.ultTheaterTimer = dur;
     this.ultStage = 1;
     this.ultEvent = ev;
     this.pendingPostVfx = ev.postVfx || [];
+
+    const casterUnit = this.sim && this.sim.units.find(x => x.uid === ev.unitId);
+    const bustObj = (casterUnit && casterUnit.general) || ev;
 
     const sealMap = {
       rally: ev.spdBoost ? ['SPEED COMMAND!', '神速<br>號令'] : ['ATTACK COMMAND!', '英傑<br>號令'],
@@ -4994,8 +5781,8 @@ const App = {
     document.getElementById('ult-diamond-en').textContent = enLbl;
     document.getElementById('ult-diamond-zh').innerHTML = zhLbl;
 
-    // Beat 1 Clash Panel
-    document.getElementById('clash-img').src = ev.img;
+    // Beat 1 Clash Panel (Frameless Close-up Bust!)
+    this.applyBustImg(document.getElementById('clash-img'), bustObj);
     document.getElementById('clash-faction').textContent = ev.factionName || ev.factionTag;
     document.getElementById('clash-name').textContent = ev.unitName || ev.factionTag;
     document.getElementById('clash-flag-char').textContent = ev.factionChar || '戰';
@@ -5004,12 +5791,8 @@ const App = {
     const fc = ev.factionColor || '#b82929';
     flagBox.style.background = `radial-gradient(circle at 50% 45%, ${fc}e0, rgba(16,8,12,0.96))`;
 
-    // Beat 3 CG / 3D Echo + SEGA Translucent Info Strip
-    if (ev.ultCg) {
-      document.getElementById('ult-cg-img').src = ev.ultCg;
-    } else {
-      document.getElementById('ult-3d-hero-img').src = ev.img;
-    }
+    // Beat 3 Live 3D Hero Stage + Frameless Bust Echo + SEGA Translucent Info Strip (ALL 20 Generals!)
+    this.applyBustImg(document.getElementById('ult-3d-hero-img'), bustObj);
     const pill = document.getElementById('ult-faction-pill');
     pill.textContent = ev.factionTag;
     pill.style.background = fc;
@@ -5019,9 +5802,10 @@ const App = {
     document.getElementById('ult-quote-bar').textContent = ev.quote || '';
 
     const th = document.getElementById('ult-theater');
-    th.className = 'show stage1' + (ev.side === 'enemy' ? ' enemy-cast' : '') + (ev.ultCg ? ' has-cg' : ' mode-3d');
+    th.className = 'show stage1' + (ev.side === 'enemy' ? ' enemy-cast' : '') + ' mode-3d';
 
-    // Launch Real-Time 3D Cinema Camera & Glowing Pillar on Battlefield!
+    // Launch Live 3D Articulated Hero Stratagem Performance + Close-Up 3D Cinema Camera!
+    this.ren.startHeroStratagem3D(ev);
     this.ren.cinemaMode = {
       kind: ev.spellKind || 'rally',
       x: ev.focusX || 0,
@@ -5071,7 +5855,8 @@ const App = {
 
   triggerAmbushCutin(ev) {
     this.ambushTimer = 0.85;
-    document.getElementById('ambush-img').src = ev.img;
+    const ambGen = GENERALS.find(g => g.name === ev.name);
+    this.applyBustImg(document.getElementById('ambush-img'), ambGen || ev);
     document.getElementById('ambush-overlay').className = 'show' + (ev.side === 'enemy' ? ' enemy-ambush' : '');
     this.ren.cutinFocus = { x: ev.x, z: ev.z, orbit: false };
   },
@@ -5118,7 +5903,7 @@ const App = {
     const pool = sim.units.filter(u => u.side === winSide).sort((a, b) => b.general.cost - a.general.cost || b.general.pow - a.general.pow);
     const leadUnit = pool[0];
     if (leadUnit) {
-      document.getElementById('finale-hero-img').src = leadUnit.general.img;
+      this.applyBustImg(document.getElementById('finale-hero-img'), leadUnit.general);
       document.getElementById('finale-hero-quote').textContent = `${leadUnit.general.name}：${leadUnit.general.quote}`;
       this._finaleLeadUnit = leadUnit;
     }
@@ -5226,9 +6011,10 @@ const App = {
       gem.classList.toggle('full', frac >= 0.999);
     }
 
+    const inCinema = !!(this.ren && this.ren.cinemaMode);
     for (const u of sim.units) {
       const el = this.unitTagEls.get(u.uid); if (!el) continue;
-      if (!u.alive || u.inCastle || (u.side === 'enemy' && u.stealth)) { el.style.display = 'none'; continue; }
+      if (inCinema || !u.alive || u.inCastle || (u.side === 'enemy' && u.stealth)) { el.style.display = 'none'; continue; }
       el.style.display = 'flex';
       const pos = this.ren.worldToScreen(u.x, 1.85, u.z);
       el.style.left = `${pos.x}px`; el.style.top = `${pos.y}px`;
@@ -5253,27 +6039,30 @@ const App = {
       } else sg.style.display = 'none';
     }
 
-    // Measure Virtual Card Pad dimensions for 2D same-side card anti-overlap layout
+    // Measure SEGA Parchment Card Board dimensions for 2D same-side card anti-overlap layout
     const vpadSurf = document.getElementById('vpad-surface');
-    const padW = (vpadSurf && vpadSurf.clientWidth) || 220;
-    const padH = (vpadSurf && vpadSurf.clientHeight) || 420;
+    const padW = (vpadSurf && vpadSurf.clientWidth) || 260;
+    const padH = (vpadSurf && vpadSurf.clientHeight) || 440;
     const isCompactPad = (window.innerHeight <= 520);
     const eCardW = isCompactPad ? 28 : 34, eCardH = isCompactPad ? 38 : 46;
-    const pCardW = isCompactPad ? 30 : 38, pCardH = isCompactPad ? 40 : 50;
-    const worldToPadPx = (wx, wz, inC, cardH) => ({
-      x: Math.max(0.09, Math.min(0.91, wx / FIELD_W + 0.5)) * padW,
-      y: inC
-        ? Math.min(padH - cardH / 2 - 4, padH * 0.915)
-        : Math.max(0.08, Math.min(0.82, ((wz + CASTLE_Z) / (CASTLE_Z * 1.95)) * 0.87)) * padH
-    });
+    const pCardW = isCompactPad ? 34 : 42, pCardH = isCompactPad ? 46 : 56;
+    const gCardW = isCompactPad ? 30 : 38, gCardH = isCompactPad ? 40 : 50;
 
-    // Update Semi-Transparent Enemy General Cards on Right Virtual Pad (with same-side anti-overlap!)
+    // Update Decoupled Live Control Badge during cutscenes
+    const liveBadge = document.getElementById('vpad-live-badge');
+    if (liveBadge) {
+      const inCut = this.isCutsceneBlocking();
+      liveBadge.classList.toggle('cutscene-free', inCut);
+      liveBadge.textContent = inCut ? '演出中・可自由控卡' : '多指即時控卡';
+    }
+
+    // Update Semi-Transparent Enemy General Cards on Right Virtual Pad (independent anti-overlap so opposing cards CAN overlap!)
     const enemyPadItems = [];
     for (const eu of sim.units.filter(x => x.side === 'enemy')) {
       const ec = this.enemyPadDots.get(eu.uid); if (!ec) continue;
       if (!eu.alive || eu.inCastle || eu.stealth) { ec.style.display = 'none'; continue; }
       ec.style.display = 'block';
-      const raw = worldToPadPx(eu.x, eu.z, false, eCardH);
+      const raw = this.worldToPadPx(eu.x, eu.z, 'field', padW, padH, eCardW, eCardH);
       enemyPadItems.push({ uid: eu.uid, el: ec, x: raw.x, y: raw.y, inC: false, anchored: false });
       const ehp = document.getElementById(`vehp-${eu.uid}`);
       if (ehp) ehp.style.width = `${(eu.hp / eu.maxHp) * 100}%`;
@@ -5287,9 +6076,11 @@ const App = {
     // Re-render Active Skill Panel whenever selected general changes
     if (this._lastRenderedSkillUid !== this.selectedUid) this.renderActiveSkillPanel();
 
-    // Update Left HP Monitor List, Active Skill Panel & collect Right Pad Player Tokens
+    // Update Left HP Monitor List, Active Skill Panel, Translucent Ghosts (Real Pos) & Solid Cards (Instant Command Target!)
     const draggingUids = new Set(this.vpadDrags.values());
     const playerPadItems = [];
+    let anyGate = false, anyWall = false, anyRetreat = false;
+
     for (const u of sim.units.filter(x => x.side === 'player')) {
       const card = document.getElementById(`bcard-${u.uid}`);
       const st = sim.getEffectiveStats(u);
@@ -5329,24 +6120,60 @@ const App = {
         }
       }
 
+      // Determine Solid Command Target & Zone
+      const cmdZone = !u.alive
+        ? (u.rallyInCastle ? 'castle' : (u.cmdZone || 'field'))
+        : (u.cmdZone || (u.inCastle ? 'castle' : 'field'));
+      const cmdX = u.alive ? u.tx : u.rallyX;
+      const cmdZ = u.alive ? u.tz : u.rallyZ;
+      const inC = (cmdZone === 'castle');
+      if (cmdZone === 'gate') anyGate = true;
+      else if (cmdZone === 'wall') anyWall = true;
+      else if (cmdZone === 'castle') anyRetreat = true;
+
+      // Update Translucent Ghost Silhouette = Squad's Real-Time Current Position (虛影!)
+      const ghost = this.vpadGhosts.get(u.uid);
+      if (ghost) {
+        const showGhost = u.alive && (
+          (!u.inCastle && (Math.hypot(u.tx - u.x, u.tz - u.z) > 0.55 || cmdZone === 'castle' || cmdZone === 'gate' || cmdZone === 'wall'))
+          || (u.inCastle && cmdZone !== 'castle')
+        );
+        if (showGhost) {
+          ghost.style.display = 'block';
+          const gp = this.worldToPadPx(u.x, u.z, u.inCastle ? 'castle' : 'field', padW, padH, gCardW, gCardH);
+          ghost.style.left = `${gp.x.toFixed(1)}px`;
+          ghost.style.top = `${gp.y.toFixed(1)}px`;
+        } else {
+          ghost.style.display = 'none';
+        }
+      }
+
+      // Update Solid Physical Command Card = Instant Finger Destination (實體指令卡!)
       const tok = document.getElementById(`vtok-${u.uid}`);
       if (tok) {
         tok.classList.toggle('dead', !u.alive);
         tok.classList.toggle('in-castle', u.alive && u.inCastle);
         tok.classList.toggle('charging', u.alive && u.isCharging);
+        tok.classList.toggle('cmd-gate', u.alive && cmdZone === 'gate');
+        tok.classList.toggle('cmd-wall', u.alive && cmdZone === 'wall');
         const hpEl = document.getElementById(`vthp-${u.uid}`);
         if (hpEl) hpEl.style.width = `${u.alive ? hpPct : 0}%`;
         const revEl = document.getElementById(`vtrev-${u.uid}`);
         if (revEl && !u.alive) {
           revEl.innerHTML = `<span>${Math.ceil(u.respawnTimer)}s</span><small>${u.rallyInCastle ? '城內待命' : '出城前進'}</small>`;
         }
-        const dispX = u.alive ? u.x : u.rallyX;
-        const dispZ = u.alive ? u.z : u.rallyZ;
-        const inC = u.alive ? u.inCastle : u.rallyInCastle;
-        const raw = worldToPadPx(dispX, dispZ, inC, pCardH);
+        const raw = this.worldToPadPx(cmdX, cmdZ, cmdZone, padW, padH, pCardW, pCardH);
         playerPadItems.push({ uid: u.uid, el: tok, x: raw.x, y: raw.y, inC, anchored: draggingUids.has(u.uid) });
       }
     }
+
+    // Highlight Top Gate Notch / Wall Siege / Bottom Castle Shelter Bay in real time!
+    const gateEl = document.getElementById('vpad-gate-notch');
+    const wallEl = document.getElementById('vpad-enemy-wall');
+    const castleEl = document.getElementById('vpad-castle-zone');
+    if (gateEl) gateEl.classList.toggle('active-gate', anyGate);
+    if (wallEl) wallEl.classList.toggle('active-wall', anyWall);
+    if (castleEl) castleEl.classList.toggle('active-retreat', anyRetreat);
 
     this.resolvePadCardOverlap(playerPadItems, padW, padH, pCardW, pCardH, 3);
     this.vpadResolvedPos.clear();
@@ -5365,9 +6192,9 @@ const App = {
     if (items.length <= 1) return;
     const minX = cardW / 2 + 4;
     const maxX = Math.max(minX, padW - cardW / 2 - 4);
-    const minY = cardH / 2 + 16;
-    const maxFieldY = Math.max(minY, padH * 0.85 - cardH / 2 - 2);
-    const castleY = Math.min(padH - cardH / 2 - 4, padH * 0.915);
+    const minY = cardH / 2 + 2;
+    const maxFieldY = Math.max(minY, padH * 0.84 - cardH / 2 - 1);
+    const castleY = Math.min(padH - cardH / 2 - 2, padH * 0.94);
 
     const castleItems = items.filter(it => it.inC);
     if (castleItems.length > 0) {
@@ -5442,40 +6269,41 @@ const App = {
     const g = c.getContext('2d');
     g.clearRect(0, 0, w, h);
 
-    const toXY = (wx, wz, inC) => ({
-      x: Math.max(0.09, Math.min(0.91, wx / FIELD_W + 0.5)) * w,
-      y: inC
-        ? Math.min(h - 33, h * 0.915)
-        : Math.max(0.08, Math.min(0.82, ((wz + CASTLE_Z) / (CASTLE_Z * 1.95)) * 0.87)) * h
-    });
+    const isCompactPad = (window.innerHeight <= 520);
+    const gCardW = isCompactPad ? 30 : 38, gCardH = isCompactPad ? 40 : 50;
+    const draggingUids = new Set(this.vpadDrags.values());
 
-    for (const u of this.sim.units.filter(x => x.side === 'player' && x.alive && !x.inCastle)) {
+    // Draw Command Trail Arrows from Translucent Ghost (Real Current Pos) -> Solid Card (Instant Command Target!)
+    for (const u of this.sim.units.filter(x => x.side === 'player' && x.alive)) {
+      const cmdZone = u.cmdZone || (u.inCastle ? 'castle' : 'field');
       const dist = Math.hypot(u.tx - u.x, u.tz - u.z);
-      if (dist < 0.7) continue;
-      const isSel = (u.uid === this.selectedUid);
-      const from = this.vpadResolvedPos.get(u.uid) || toXY(u.x, u.z, false);
-      const toInC = u.tz >= CASTLE_Z - 0.15;
-      const to = toXY(u.tx, u.tz, toInC);
+      if (dist < 0.55 && !(u.inCastle && cmdZone !== 'castle') && !(!u.inCastle && cmdZone === 'castle')) continue;
+
+      const from = this.worldToPadPx(u.x, u.z, u.inCastle ? 'castle' : 'field', w, h, gCardW, gCardH);
+      const to = this.vpadResolvedPos.get(u.uid) || this.worldToPadPx(u.tx, u.tz, cmdZone, w, h, gCardW, gCardH);
+      if (Math.hypot(to.x - from.x, to.y - from.y) < 10) continue;
+
+      const isActive = (u.uid === this.selectedUid) || draggingUids.has(u.uid);
+      const col = cmdZone === 'gate' ? '#ff9922'
+        : cmdZone === 'wall' ? '#ffd54f'
+        : cmdZone === 'castle' ? '#56f59a'
+        : isActive ? '#ffe88a' : 'rgba(62, 34, 12, 0.72)';
 
       g.save();
-      g.strokeStyle = isSel ? 'rgba(255, 229, 138, 0.92)' : 'rgba(255, 255, 255, 0.34)';
-      g.lineWidth = isSel ? 2.6 : 1.4;
-      g.setLineDash(isSel ? [6, 4] : [4, 4]);
+      g.strokeStyle = col;
+      g.lineWidth = isActive ? 3.0 : 1.8;
+      g.setLineDash([6, 4]);
       g.beginPath(); g.moveTo(from.x, from.y); g.lineTo(to.x, to.y); g.stroke();
       g.setLineDash([]);
 
       const ang = Math.atan2(to.y - from.y, to.x - from.x);
-      const hl = isSel ? 9 : 6;
-      g.fillStyle = isSel ? '#ffe588' : 'rgba(255,255,255,0.48)';
+      const hl = isActive ? 10 : 7;
+      g.fillStyle = col;
       g.beginPath();
       g.moveTo(to.x, to.y);
       g.lineTo(to.x - hl * Math.cos(ang - 0.45), to.y - hl * Math.sin(ang - 0.45));
       g.lineTo(to.x - hl * Math.cos(ang + 0.45), to.y - hl * Math.sin(ang + 0.45));
       g.closePath(); g.fill();
-
-      g.beginPath(); g.arc(to.x, to.y, isSel ? 5.5 : 3.2, 0, Math.PI * 2);
-      g.strokeStyle = isSel ? '#ffe588' : 'rgba(255,255,255,0.42)';
-      g.lineWidth = 1.5; g.stroke();
       g.restore();
     }
   },
@@ -5521,7 +6349,9 @@ const App = {
   exitToDeck() {
     cancelAnimationFrame(this.rafId);
     this.sim = null;
+    this.vpadDrags.clear();
     if (this.ren) {
+      this.ren.stopHeroStratagem3D();
       this.ren.stopSiegeCinema();
       this.ren.cinemaMode = null;
       this.ren.cutinFocus = null;
@@ -5662,7 +6492,7 @@ const App = {
       return;
     }
 
-    // 5. Unified 4-Beat Stratagem Cutscene Theater (ALL 20 Generals!)
+    // 5. Unified 4-Beat Live 3D Hero Stratagem Cutscene Theater (ALL 20 Generals!)
     if (this.ultTheaterTimer > 0) {
       this.ultTheaterTimer -= realDt;
       const ev = this.ultEvent;
@@ -5691,6 +6521,7 @@ const App = {
       if (this.ultTheaterTimer <= 0) {
         this.ultTheaterTimer = 0;
         th.className = '';
+        this.ren.stopHeroStratagem3D();
         this.ren.cinemaMode = null;
         this.ren.cutinFocus = null;
         if (this.cutscenePlayer) this.cutscenePlayer.stop();
