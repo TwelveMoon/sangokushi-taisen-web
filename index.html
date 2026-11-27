@@ -9,7 +9,7 @@
 <meta name="screen-orientation" content="portrait">
 <meta name="x5-orientation" content="portrait">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰‧天 網頁版 v5.0</title>
+<title>三國志大戰‧天 網頁版 v5.1</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%239e1c18'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38' font-weight='900' fill='%23ffe599'>天</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
@@ -1470,9 +1470,10 @@
     font-size: 9px; font-weight: 900; color: rgba(255,232,190,0.92); letter-spacing: 1px;
     text-shadow: 0 1px 3px #000;
   }
-  /* Central Recessed Metallic/Gold Enemy Gate Notch (城門凹槽!) */
+  /* Central Recessed Metallic/Gold Enemy Gate Notch (城門凹槽 — 正統單張卡寬度!) */
   .vpad-gate-notch {
-    position: absolute; top: 0; left: 36%; width: 28%; height: 100%; z-index: 2; pointer-events: none;
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: calc(var(--vtok-w) + 14px); min-width: 48px; max-width: 64px; height: 100%; z-index: 2; pointer-events: none;
     background: linear-gradient(180deg, rgba(245,222,168,0.86) 0%, rgba(200,152,72,0.82) 55%, rgba(125,74,26,0.88) 100%);
     border-left: 2.5px solid #3d1d0c; border-right: 2.5px solid #3d1d0c; border-bottom: 2.5px solid #ffe494;
     border-radius: 0 0 7px 7px;
@@ -1484,7 +1485,7 @@
     background: linear-gradient(180deg, #fff6cc 0%, #ff9922 65%, #c8240c 100%);
     box-shadow: 0 0 22px rgba(255,130,30,1), inset 0 0 10px #fff;
   }
-  .vpad-gate-notch strong { font-size: 11px; font-weight: 900; color: #4a1206; letter-spacing: 2px; line-height: 1; }
+  .vpad-gate-notch strong { font-size: 10.5px; font-weight: 900; color: #4a1206; letter-spacing: 1px; line-height: 1; }
   .vpad-gate-notch.active-gate strong { color: #fff; text-shadow: 0 1px 4px #000; }
 
   .vpad-frontier {
@@ -2579,7 +2580,7 @@
     <div class="brand-title">
       <div class="brand-seal">天</div>
       <h1>三國志大戰‧天</h1>
-      <span class="brand-badge">v5.0</span>
+      <span class="brand-badge">v5.1</span>
     </div>
     <div class="deck-header-actions">
       <button class="hdr-chip-btn" id="btn-toggle-unlock-all" title="切換戰役收集模式／全 192 武將自由解鎖">全武將:關</button>
@@ -3234,7 +3235,7 @@ const GENERALS = _DB.generals.map(g => {
     fallbackImg:`./assets/img/card/${g.id}.webp`,
     cutoutImg:  `./assets/img/bustup/${g.id}.webp`,
     thumbImg:   `./assets/img/thumb/${g.id}.webp`,
-    skillVideo: `./assets/video/${g.vid || 'skill_charge'}.mp4`,
+    skillVideo: g.vid ? `./assets/video/${g.vid}.mp4` : null,
     voices: {
       cast:    vv[0] ? `./assets/audio/voice/v_${vv[0]}.mp3` : '',
       deploy:  vv[1] ? `./assets/audio/voice/v_${vv[1]}.mp3` : '',
@@ -3502,7 +3503,7 @@ const BattleAssetPreloader = {
       if (item.type === 'img') await this.loadImage(item.url);
       else if (item.type === 'glb') await this.loadGLB(item.url);
       else if (item.type === 'audio') await this.loadAudio(item.url, true);
-      else if (item.type === 'bgm') await this.loadAudio(item.url, false);
+      else if (item.type === 'bgm') await this.loadAudio(item.url, true);
       else if (item.type === 'video') await this.loadVideoBlob(item.url);
       done++;
       onProgress(done, total, item.stage);
@@ -3520,7 +3521,7 @@ const BattleAssetPreloader = {
 };
 
 // ============================================================
-// 2. HYBRID WEB AUDIO ENGINE (Zero-Stutter Preloaded AudioBuffer SE/Voice + Cached Blob BGM!)
+// 2. HYBRID WEB AUDIO ENGINE (Gapless Looping Web Audio BGM + Preloaded SE/Voice!)
 // ============================================================
 class SoundFX {
   constructor() {
@@ -3532,7 +3533,11 @@ class SoundFX {
     this.narratorBase = './assets/audio/narrator/';
     this.seLastPlay = new Map();
     this.bgmEl = null;
+    this.bgmNode = null;
+    this.bgmGain = null;
     this.bgmTrack = null;
+    this.bgmPlayingTrack = null;
+    this.bgmLoadingTrack = null;
     this.voiceNode = null;
     this.voiceEl = null;
     this.narratorNode = null;
@@ -3545,20 +3550,38 @@ class SoundFX {
       if (AC) this.ctx = new AC();
     }
     if (this.ctx && this.ctx.state === 'suspended' && !this.muted) {
-      this.ctx.resume().catch(() => {});
+      this.ctx.resume().then(() => this.resumeBGMIfNeeded()).catch(() => {});
+    } else if (!this.muted) {
+      this.resumeBGMIfNeeded();
     }
     return this.ctx;
   }
   setMuted(m) {
     this.muted = !!m;
-    if (this.bgmEl) {
-      if (this.muted) { try { this.bgmEl.pause(); } catch (e) {} }
-      else if (this.bgmTrack) { this.bgmEl.play().catch(() => {}); }
-    }
     if (this.muted) {
+      this._stopBgmPlayback();
       this._stopVoice();
       this._stopNarrator();
+    } else if (this.bgmTrack) {
+      const t = this.bgmTrack;
+      this.bgmPlayingTrack = null;
+      this.playBGM(t);
     }
+  }
+  _stopBgmPlayback() {
+    if (this.bgmNode) {
+      try { this.bgmNode.onended = null; this.bgmNode.stop(); this.bgmNode.disconnect(); } catch (e) {}
+      this.bgmNode = null;
+    }
+    if (this.bgmGain) {
+      try { this.bgmGain.disconnect(); } catch (e) {}
+      this.bgmGain = null;
+    }
+    if (this.bgmEl) {
+      try { this.bgmEl.pause(); this.bgmEl.currentTime = 0; } catch (e) {}
+      this.bgmEl = null;
+    }
+    this.bgmPlayingTrack = null;
   }
   _stopVoice() {
     if (this.voiceNode) { try { this.voiceNode.stop(); } catch (e) {} this.voiceNode = null; }
@@ -3587,26 +3610,117 @@ class SoundFX {
       return false;
     }
   }
+  _isLoopTrack(track) {
+    return (track === 'ten_battle' || track === 'battle' || track === 'setup' || track === 'title');
+  }
+  _startBgmBuffer(track, buf) {
+    if (this.muted || this.bgmTrack !== track) return false;
+    const ctx = this.ctx;
+    if (!ctx || !buf) return false;
+    try {
+      this._stopBgmPlayback();
+      const shouldLoop = this._isLoopTrack(track);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = shouldLoop;
+      const g = ctx.createGain();
+      g.gain.value = 0.30;
+      src.connect(g);
+      g.connect(ctx.destination);
+      src.onended = () => {
+        if (this.bgmNode === src) {
+          this.bgmNode = null;
+          this.bgmPlayingTrack = null;
+        }
+      };
+      this.bgmNode = src;
+      this.bgmGain = g;
+      this.bgmPlayingTrack = track;
+      src.start(0);
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  _startBgmFallbackAudio(track, rawSrc) {
+    if (this.muted || this.bgmTrack !== track) return;
+    this._stopBgmPlayback();
+    const shouldLoop = this._isLoopTrack(track);
+    const src = AssetCache.getAudioBlobUrl(rawSrc);
+    const a = new Audio(src);
+    a.loop = shouldLoop;
+    a.volume = 0.30;
+    a._track = track;
+    a.addEventListener('ended', () => {
+      if (shouldLoop && !this.muted && this.bgmTrack === track && this.bgmEl === a) {
+        try { a.currentTime = 0; a.play().catch(() => {}); } catch (e) {}
+      }
+    });
+    this.bgmEl = a;
+    this.bgmPlayingTrack = track;
+    a.play().catch(() => {
+      if (this.bgmEl === a) this.bgmPlayingTrack = null;
+    });
+  }
+  resumeBGMIfNeeded() {
+    if (this.muted || !this.bgmTrack) return;
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+    if (this.bgmNode && this.bgmPlayingTrack === this.bgmTrack) return;
+    if (this.bgmEl && this.bgmEl._track === this.bgmTrack && !this.bgmEl.paused) return;
+    if (this.bgmLoadingTrack === this.bgmTrack) return;
+    this.playBGM(this.bgmTrack);
+  }
   playBGM(track) {
     this.bgmTrack = track;
-    if (this.muted) return;
-    const rawSrc = `${this.bgmBase}${track}.mp3`;
-    const src = AssetCache.getAudioBlobUrl(rawSrc);
-    if (this.bgmEl && this.bgmEl._track === track) {
-      if (this.bgmEl.paused) this.bgmEl.play().catch(() => {});
+    if (this.muted) { this._stopBgmPlayback(); return; }
+    if (this.bgmNode && this.bgmPlayingTrack === track) {
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
       return;
     }
-    if (this.bgmEl) { try { this.bgmEl.pause(); } catch (e) {} }
-    const a = new Audio(src);
-    a.loop = (track === 'ten_battle' || track === 'battle' || track === 'setup' || track === 'title');
-    a.volume = 0.28;
-    a._track = track;
-    this.bgmEl = a;
-    a.play().catch(() => {});
+    if (this.bgmEl && this.bgmEl._track === track && !this.bgmEl.paused) return;
+
+    const rawSrc = `${this.bgmBase}${track}.mp3`;
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) this.ctx = new AC();
+    }
+    const cachedBuf = AssetCache.audioBuffers.get(rawSrc);
+    if (cachedBuf && this.ctx) {
+      if (this._startBgmBuffer(track, cachedBuf)) return;
+    }
+    if (this.ctx) {
+      this._stopBgmPlayback();
+      this.bgmLoadingTrack = track;
+      fetch(rawSrc).then(r => (r.ok ? r.arrayBuffer() : null)).then(ab => {
+        if (!ab || !this.ctx) return null;
+        return this.ctx.decodeAudioData(ab.slice(0));
+      }).then(buf => {
+        if (this.bgmLoadingTrack === track) this.bgmLoadingTrack = null;
+        if (buf) {
+          AssetCache.audioBuffers.set(rawSrc, buf);
+          if (!this.muted && this.bgmTrack === track) {
+            this._startBgmBuffer(track, buf);
+          }
+        } else if (!this.muted && this.bgmTrack === track) {
+          this._startBgmFallbackAudio(track, rawSrc);
+        }
+      }).catch(() => {
+        if (this.bgmLoadingTrack === track) this.bgmLoadingTrack = null;
+        if (!this.muted && this.bgmTrack === track) {
+          this._startBgmFallbackAudio(track, rawSrc);
+        }
+      });
+      return;
+    }
+    this._startBgmFallbackAudio(track, rawSrc);
   }
   stopBGM() {
-    if (this.bgmEl) { try { this.bgmEl.pause(); this.bgmEl.currentTime = 0; } catch (e) {} }
+    this._stopBgmPlayback();
     this.bgmTrack = null;
+    this.bgmLoadingTrack = null;
   }
   playSE(name, vol = 0.62, cooldownMs = 60, fallbackFn = null) {
     if (this.muted) return;
@@ -4026,10 +4140,27 @@ class BattleSimulation {
         return;
       }
       if (u.dancing || u.tauntTargetId) return;
+      const targetEnemyZ = u.side === 'player' ? -CASTLE_Z : CASTLE_Z;
+      const wantsGate = !wantsCastle && (cmd.zone === 'gate' || (Math.abs(cz - targetEnemyZ) < 0.45 && Math.abs(cx) <= 2.35));
+      let effZone = cmd.zone || (wantsCastle ? 'castle' : (Math.abs(cz - targetEnemyZ) < 0.45 ? (Math.abs(cx) <= 2.35 ? 'gate' : 'wall') : 'field'));
+      if (wantsGate) {
+        const otherInGate = this.units.find(o => o.uid !== u.uid && o.side === u.side && o.alive && !o.inCastle && (
+          o.cmdZone === 'gate' || (o.siegeZone === 'gate' && Math.abs(o.tz - targetEnemyZ) < 0.9)
+        ));
+        if (otherInGate) {
+          // Authentic SEGA single-card gate rule: deflect 2nd card to left/right castle wall!
+          const sideSign = cx < 0 ? -1 : (cx > 0 ? 1 : (u.x < otherInGate.x ? -1 : 1));
+          cx = sideSign * Math.max(3.6, Math.abs(cx));
+          effZone = 'wall';
+        } else {
+          cx = 0;
+          effZone = 'gate';
+        }
+      }
       const res = this.resolveSameSideTarget(u, cx, cz, wantsCastle);
-      u.tx = res.x;
-      u.tz = wantsCastle ? cz : res.z;
-      u.cmdZone = cmd.zone || (wantsCastle ? 'castle' : (Math.abs(u.tz - (u.side === 'player' ? -CASTLE_Z : CASTLE_Z)) < 0.35 ? (Math.abs(u.tx) <= 3.0 ? 'gate' : 'wall') : 'field'));
+      u.tx = effZone === 'gate' ? 0 : res.x;
+      u.tz = wantsCastle ? cz : (effZone === 'gate' || effZone === 'wall' ? targetEnemyZ : res.z);
+      u.cmdZone = effZone;
       if (u.inCastle && !wantsCastle) {
         u.inCastle = false;
         u.z = u.side === 'player' ? CASTLE_Z - 0.65 : -CASTLE_Z + 0.65;
@@ -4044,15 +4175,25 @@ class BattleSimulation {
       const list = this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing)
         .sort((a, b) => a.x - b.x || a.uid - b.uid);
       const n = list.length;
-      const span = Math.min(17.6, Math.max(0, (n - 1) * 3.8));
+      const gateIdx = Math.floor((n - 1) / 2);
+      const wallSlots = [];
+      let leftCnt = gateIdx;
+      let rightCnt = n - 1 - gateIdx;
+      for (let i = 0; i < leftCnt; i++) {
+        wallSlots.push(-3.9 - (leftCnt - 1 - i) * 3.1);
+      }
+      wallSlots.push(0); // Single centermost unit attacks the 1-card castle gate!
+      for (let i = 0; i < rightCnt; i++) {
+        wallSlots.push(3.9 + i * 3.1);
+      }
       list.forEach((u, idx) => {
         if (u.inCastle) {
           u.inCastle = false;
           u.z = cmd.side === 'player' ? CASTLE_Z - 0.65 : -CASTLE_Z + 0.65;
         }
-        u.tx = n === 1 ? 0 : -span / 2 + (idx / (n - 1)) * span;
+        u.tx = Math.max(-FIELD_W * 0.45, Math.min(FIELD_W * 0.45, wallSlots[idx]));
         u.tz = cmd.side === 'player' ? -CASTLE_Z : CASTLE_Z;
-        u.cmdZone = Math.abs(u.tx) <= 3.0 ? 'gate' : 'wall';
+        u.cmdZone = (idx === gateIdx) ? 'gate' : 'wall';
       });
     } else if (cmd.type === 'ALL_RETREAT') {
       const list = this.units.filter(u => u.side === cmd.side && u.alive && !u.dancing)
@@ -4646,7 +4787,17 @@ class BattleSimulation {
       if (atEnemyCastle) {
         u.stealth = false;
         u.isSieging = true;
-        u.siegeZone = Math.abs(u.x) <= 3.0 ? 'gate' : 'wall';
+        const inGateRange = Math.abs(u.x) <= 2.35;
+        let canUseGate = inGateRange;
+        if (canUseGate) {
+          const existingGateHolder = this.units.find(o => o.uid !== u.uid && o.side === u.side && o.alive && !o.inCastle && o.isSieging && o.siegeZone === 'gate');
+          if (existingGateHolder) canUseGate = false;
+        }
+        u.siegeZone = canUseGate ? 'gate' : 'wall';
+        if (!canUseGate && inGateRange) {
+          const pushDir = u.x < 0 ? -1 : (u.x > 0 ? 1 : (u.uid % 2 === 0 ? 1 : -1));
+          u.x += pushDir * dt * 2.8;
+        }
         u.isCharging = false; u.chargeTimer = 0; u.walkShootTimer = 0;
 
         const wallArrowDps = u.maxHp * Math.max(0.022, 0.044 - st.pow * 0.0014) * (u.general.type === 'sge' ? 0.65 : 1.0);
@@ -8015,6 +8166,24 @@ const App = {
       this.updateFullscreenButtons();
       onViewportChange();
     });
+
+    // Unlock Web Audio + start looping hub BGM on first user gesture, and keep BGM alive across tab/focus changes!
+    const unlockAudioAndBGM = () => {
+      sfx.ensure();
+      if (!sfx.bgmTrack) {
+        sfx.playBGM(this.sim ? 'ten_battle' : 'setup');
+      } else {
+        sfx.resumeBGMIfNeeded();
+      }
+    };
+    window.addEventListener('pointerdown', unlockAudioAndBGM, { passive: true });
+    window.addEventListener('keydown', unlockAudioAndBGM, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !sfx.muted) {
+        sfx.ensure();
+        sfx.resumeBGMIfNeeded();
+      }
+    });
   },
 
   loadSavedState() {
@@ -8313,7 +8482,7 @@ const App = {
         </div>`;
     }).join('');
     sfx.ensure();
-    sfx.victory();
+    sfx.playSE('victory', 0.85, 300);
     document.getElementById('card-pack-modal').classList.add('open');
   },
 
@@ -9553,11 +9722,29 @@ const App = {
     this.drawRangePreview(u);
   },
 
-  padNormToCmd(rx, ry) {
+  padNormToCmd(rx, ry, uid = null) {
     const x = (rx - 0.5) * FIELD_W;
     if (ry <= 0.13) {
-      const zone = (rx >= 0.36 && rx <= 0.64) ? 'gate' : 'wall';
-      return { zone, x, z: -CASTLE_Z };
+      const padW = this._padW || 260;
+      const pCardW = (this._padCardSizes && this._padCardSizes.pCardW) || 42;
+      const gateHalfRx = Math.max(0.085, Math.min(0.145, ((pCardW + 14) * 0.52) / padW));
+      if (Math.abs(rx - 0.5) <= gateHalfRx) {
+        const otherInGate = this.sim && this.sim.units.find(o => o.uid !== uid && o.side === 'player' && o.alive && !o.inCastle && (
+          o.cmdZone === 'gate' || (o.siegeZone === 'gate' && Math.abs(o.tz + CASTLE_Z) < 0.9)
+        ));
+        if (otherInGate) {
+          const sideSign = rx < 0.5 ? -1 : 1;
+          const wallRx = Math.max(0.06, Math.min(0.94, 0.5 + sideSign * (gateHalfRx + (pCardW * 0.62) / padW)));
+          const now = performance.now();
+          if (!this._lastGateToastTs || now - this._lastGateToastTs > 2200) {
+            this._lastGateToastTs = now;
+            this.toast('城門僅能容納 1 張卡片攻城，第 2 隊將進攻城壁');
+          }
+          return { zone: 'wall', x: (wallRx - 0.5) * FIELD_W, z: -CASTLE_Z };
+        }
+        return { zone: 'gate', x: 0, z: -CASTLE_Z };
+      }
+      return { zone: 'wall', x, z: -CASTLE_Z };
     }
     if (ry >= 0.88) {
       return { zone: 'castle', x, z: CASTLE_Z + 1.3 };
@@ -9569,7 +9756,7 @@ const App = {
 
   worldToPadPx(wx, wz, zoneOrInC, padW, padH, cardW, cardH) {
     const minX = cardW / 2 + 4, maxX = Math.max(minX, padW - cardW / 2 - 4);
-    const x = Math.max(minX, Math.min(maxX, (wx / FIELD_W + 0.5) * padW));
+    const x = zoneOrInC === 'gate' ? padW * 0.5 : Math.max(minX, Math.min(maxX, (wx / FIELD_W + 0.5) * padW));
     if (zoneOrInC === 'castle' || zoneOrInC === true) {
       return { x, y: Math.min(padH - cardH / 2 - 2, padH * 0.94) };
     }
@@ -9588,7 +9775,7 @@ const App = {
     if (!rect.width || !rect.height) return;
     const rx = Math.max(0.04, Math.min(0.96, (clientX - rect.left) / rect.width));
     const ry = Math.max(0.025, Math.min(0.975, (clientY - rect.top) / rect.height));
-    const mapped = this.padNormToCmd(rx, ry);
+    const mapped = this.padNormToCmd(rx, ry, uid);
     this.dispatchPlayerCmd({ type: 'MOVE', unitId: uid, x: mapped.x, z: mapped.z, zone: mapped.zone });
   },
 
@@ -9898,6 +10085,7 @@ const App = {
     if (v) {
       try { v.pause(); v.currentTime = 0; } catch (e) {}
     }
+    sfx.resumeBGMIfNeeded();
   },
 
   stopAllCutsceneVideos() {
@@ -9910,20 +10098,20 @@ const App = {
   // Stage 1 (0.00–0.35s): Darken + Camera Zoom to Caster (phase-focus)
   // Stage 2 (0.35–1.00s): Transparent General Bust-Up + Faction Flag ONLY (stage1)
   // Stage 3 (1.00–1.55s): Giant Octagonal Calligraphy Seal Slam ONLY (seal-phase)
-  // Stage 4 (1.55–3.15s): Clean Fullscreen Ver.3 HD Skill Movie + Bottom Strip ONLY (stage2 has-video)
+  // Stage 4 (1.55–3.25s): Official SEGA TrickMovieNo HD Movie (if TrickMovieNo>0) OR crisp Tactical VFX (if MovieNo=0)
   // Stage 5 (postImpactTimer 0.85s): Clear movie -> 3D Battlefield Focus + Explosion VFX!
   // Stage 6 (dmgJudgeTimer 1.25s): BLOCKING Damage Judgment Cards with animated HP drop!
   // Stage 7 (deferredRetreatQueue): Sequential 擊破 SMASH! / 撤退 EVACUATION! ONE BY ONE!
   triggerCutinPause(ev) {
-    const dur = ev.isMajor ? 3.15 : 2.75;
+    const casterUnit = this.sim && this.sim.units.find(x => x.uid === ev.unitId);
+    const bustObj = (casterUnit && casterUnit.general) || ev;
+    const hasOfficialMovie = !!(bustObj && bustObj.skillVideo);
+    const dur = hasOfficialMovie ? 3.25 : 2.35;
     this.ultDur = dur;
     this.ultTheaterTimer = dur;
     this.ultStage = 0;
     this.ultEvent = ev;
     this.pendingPostVfx = [];
-
-    const casterUnit = this.sim && this.sim.units.find(x => x.uid === ev.unitId);
-    const bustObj = (casterUnit && casterUnit.general) || ev;
 
     const sealMap = {
       rally: ev.spdBoost ? ['SPEED COMMAND!', '神速<br>號令'] : ['ATTACK COMMAND!', '英傑<br>號令'],
@@ -10466,7 +10654,7 @@ const App = {
           }
         }
         const raw = this.worldToPadPx(cmdX, cmdZ, cmdZone, padW, padH, pCardW, pCardH);
-        playerPadItems.push({ uid: u.uid, ref: pr, el: tok, x: raw.x, y: raw.y, inC, anchored: !!(draggingUids && draggingUids.has(u.uid)) });
+        playerPadItems.push({ uid: u.uid, ref: pr, el: tok, x: raw.x, y: raw.y, inC, isGate: (u.alive && cmdZone === 'gate'), anchored: !!(draggingUids && draggingUids.has(u.uid)) || (u.alive && cmdZone === 'gate') });
       }
     }
 
@@ -10541,7 +10729,7 @@ const App = {
           if (ox > 0 && oy > 0) {
             anyOverlap = true;
             let pushX = 0, pushY = 0;
-            if (ox <= oy) {
+            if (ox <= oy || a.isGate || b.isGate) {
               const sgn = Math.abs(dx) > 0.5 ? Math.sign(dx) : (b.uid > a.uid ? 1 : -1);
               pushX = sgn * ox;
             } else {
@@ -10555,8 +10743,13 @@ const App = {
         }
       }
       for (const it of fieldItems) {
-        it.x = Math.max(minX, Math.min(maxX, it.x));
-        it.y = Math.max(minY, Math.min(maxFieldY, it.y));
+        if (it.isGate) {
+          it.x = padW * 0.5;
+          it.y = Math.max(minY, padH * 0.068);
+        } else {
+          it.x = Math.max(minX, Math.min(maxX, it.x));
+          it.y = Math.max(minY, Math.min(maxFieldY, it.y));
+        }
       }
       if (!anyOverlap) break;
     }
