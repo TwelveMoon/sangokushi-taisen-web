@@ -9,7 +9,7 @@
 <meta name="screen-orientation" content="portrait">
 <meta name="x5-orientation" content="portrait">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰‧天 網頁版 v5.1</title>
+<title>三國志大戰‧天 網頁版 v5.2</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%239e1c18'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38' font-weight='900' fill='%23ffe599'>天</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
@@ -2580,10 +2580,10 @@
     <div class="brand-title">
       <div class="brand-seal">天</div>
       <h1>三國志大戰‧天</h1>
-      <span class="brand-badge">v5.1</span>
+      <span class="brand-badge">v5.2</span>
     </div>
     <div class="deck-header-actions">
-      <button class="hdr-chip-btn" id="btn-toggle-unlock-all" title="切換戰役收集模式／全 192 武將自由解鎖">全武將:關</button>
+      <button class="hdr-chip-btn active" id="btn-toggle-unlock-all" title="切換全 210 武將自由模式／戰役收集模式">全武將:開</button>
       <button class="hdr-chip-btn" id="btn-toggle-presets">推薦牌組 ▾</button>
       <button class="hdr-chip-btn" id="btn-fullscreen-deck">⛶ 全螢幕</button>
     </div>
@@ -2595,7 +2595,7 @@
       <span>天下統一</span><span class="hub-tab-pill" id="hub-camp-prog">0/24</span>
     </button>
     <button class="hub-tab-btn" data-hub="deck">
-      <span>陣容編輯</span><span class="hub-tab-pill" id="hub-col-prog">36/192</span>
+      <span>陣容編輯</span><span class="hub-tab-pill" id="hub-col-prog">210/210</span>
     </button>
     <button class="hub-tab-btn" data-hub="free">
       <span>自由對戰</span><span class="hub-tab-pill">模擬</span>
@@ -2702,7 +2702,7 @@
         </div>
 
         <div class="ded-tools-row">
-          <button class="ded-mini-btn active" id="btn-roster-generals">武將(192)</button>
+          <button class="ded-mini-btn active" id="btn-roster-generals">武將(210)</button>
           <button class="ded-mini-btn" id="btn-roster-gunshi">軍師(20)</button>
           <input class="ded-search" id="roster-search" type="search" placeholder="搜尋武將／計略名…">
           <select class="ded-select" id="filter-cost" title="依 Cost 篩選">
@@ -2736,7 +2736,7 @@
         <div class="roster-grid" id="roster-grid"></div>
         <div class="roster-table-wrap" id="roster-table-wrap" style="display:none"></div>
         <div class="roster-pager" id="roster-pager">
-          <span id="roster-count-lbl">顯示 0 / 192 名武將</span>
+          <span id="roster-count-lbl">顯示 0 / 210 名武將</span>
           <div style="display:flex;gap:5px;align-items:center">
             <button class="ded-mini-btn" id="btn-page-prev">◀ 上頁</button>
             <span id="roster-page-lbl">1 / 1</span>
@@ -2804,9 +2804,9 @@
       <div class="free-card-box">
         <h3>🗂 戰役存檔與圖鑑管理</h3>
         <div style="font-size:12px;color:#c6d4ce;line-height:1.55">
-          ‧ 本作已完整收錄 NDS《三國志大戰‧天》全部 <strong>192 名可編入武將</strong> 與 <strong>20 名正統軍師</strong>。<br>
+          ‧ 本作已完全收錄 NDS《三國志大戰‧天》全部 <strong>210 名武將</strong>（含 192 正統卡、3 張隱藏 EX 卡、4 張異畫 SR 與 11 名史實劇情名將袁紹／顏良／文醜／劉表／張任等）與 <strong>20 名正統軍師</strong>，共 <strong>230 位角色</strong>！<br>
           ‧ 單人「天下統一」模式可攻克全中華 <strong>24 座名城</strong>，戰勝即可獲得軍資金與 <strong>3 連開卡登用包</strong>。<br>
-          ‧ 若想直接自由測試任意陣容，可點擊右上角「全武將」按鈕一鍵自由解鎖全部武將與軍師。
+          ‧ 預設已開啟「全武將自由模式」可直接體驗全 230 角色；亦可點擊右上角「全武將」按鈕切換為戰役逐步收集模式。
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="cb-edit-btn" id="btn-free-unlock-toggle" style="flex:1">一鍵切換全武將自由模式</button>
@@ -8043,7 +8043,7 @@ const App = {
     ownedGunshi: [...STARTER_GUNSHI_IDS],
     gold: 300,
     wins: 0,
-    freeUnlockAll: false
+    freeUnlockAll: true
   },
   selectedChapterId: CAMPAIGN_CHAPTERS[0]?.id || 'ch1',
   selectedStageId: CAMPAIGN_CHAPTERS[0]?.stages[0]?.id || 's1_1',
@@ -8201,7 +8201,8 @@ const App = {
             : [...STARTER_GUNSHI_IDS];
           this.campaign.gold = typeof c.gold === 'number' ? c.gold : 300;
           this.campaign.wins = typeof c.wins === 'number' ? c.wins : 0;
-          this.campaign.freeUnlockAll = !!c.freeUnlockAll;
+          this.campaign.freeUnlockAll = c.v52AllMigrated ? !!c.freeUnlockAll : true;
+          this.campaign.v52AllMigrated = true;
         }
       }
       const dRaw = localStorage.getItem('sgt_decks_v5');
@@ -8231,6 +8232,7 @@ const App = {
   },
 
   saveCampaign() {
+    this.campaign.v52AllMigrated = true;
     try { localStorage.setItem('sgt_campaign_v5', JSON.stringify(this.campaign)); } catch (e) {}
   },
 
@@ -8270,15 +8272,21 @@ const App = {
 
   syncUnlockButtons() {
     const on = !!this.campaign.freeUnlockAll;
+    const totalG = GENERALS.length;
+    const totalS = GUNSHI_LIST.length;
     const b1 = document.getElementById('btn-toggle-unlock-all');
     if (b1) {
       b1.textContent = on ? '全武將:開' : '全武將:關';
       b1.classList.toggle('active', on);
     }
     const b2 = document.getElementById('btn-free-unlock-toggle');
-    if (b2) b2.textContent = on ? '目前已開啟全武將自由模式（點擊切換收集模式）' : '一鍵開啟全 192 武將自由模式';
+    if (b2) b2.textContent = on ? `目前已開啟全 ${totalG} 武將自由模式（點擊切換收集模式）` : `一鍵開啟全 ${totalG} 武將＋${totalS} 軍師自由模式`;
+    const rgBtn = document.getElementById('btn-roster-generals');
+    if (rgBtn) rgBtn.textContent = `武將(${totalG})`;
+    const rsBtn = document.getElementById('btn-roster-gunshi');
+    if (rsBtn) rsBtn.textContent = `軍師(${totalS})`;
     const colEl = document.getElementById('hub-col-prog');
-    if (colEl) colEl.textContent = on ? `192/192` : `${this.campaign.ownedGenerals.length}/${GENERALS.length}`;
+    if (colEl) colEl.textContent = on ? `${totalG}/${totalG}` : `${this.campaign.ownedGenerals.length}/${totalG}`;
     const campEl = document.getElementById('hub-camp-prog');
     if (campEl) campEl.textContent = `${this.campaign.cleared.length}/${ALL_CAMPAIGN_STAGES.length}`;
   },
@@ -8651,13 +8659,13 @@ const App = {
       this.switchHubTab(btn.dataset.hub);
     });
 
-    // Global Free-Unlock Toggle (Collection Mode vs All 192 Free Sandbox!)
+    // Global Free-Unlock Toggle (Collection Mode vs All 210+20 Free Sandbox!)
     const toggleUnlock = () => {
       this.campaign.freeUnlockAll = !this.campaign.freeUnlockAll;
       this.saveCampaign();
       this.syncUnlockButtons();
       this.renderRoster();
-      this.toast(this.campaign.freeUnlockAll ? '已開啟全武將自由模式（192武將＋20軍師全解鎖！）' : '已切回單人戰役收集模式');
+      this.toast(this.campaign.freeUnlockAll ? `已開啟全武將自由模式（${GENERALS.length}武將＋${GUNSHI_LIST.length}軍師全解鎖！）` : '已切回單人戰役收集模式');
     };
     document.getElementById('btn-toggle-unlock-all').addEventListener('click', toggleUnlock);
     document.getElementById('btn-free-unlock-toggle').addEventListener('click', toggleUnlock);
