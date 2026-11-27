@@ -9,7 +9,7 @@
 <meta name="screen-orientation" content="portrait">
 <meta name="x5-orientation" content="portrait">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰‧天 網頁版 v5.2</title>
+<title>三國志大戰‧天 網頁版 v5.3</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%239e1c18'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38' font-weight='900' fill='%23ffe599'>天</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
@@ -2102,6 +2102,52 @@
   #ult-theater.stage2.has-video .ult-title-big { font-size: clamp(16px, 3.6vw, 24px); letter-spacing: 4px; }
   #ult-theater.stage2.has-video .ult-quote-bar { display: none; }
 
+  /* 5B. AUTHENTIC ARCADE STAGE 5: POST-MOVIE BATTLEFIELD BUFF/DEBUFF EFFECT HOLD (Matches arcade_1 & arcade_3!) */
+  #ult-theater.stage-post-hold {
+    background: transparent !important;
+    pointer-events: none;
+  }
+  #ult-theater.stage-post-hold #ult-dragon-bg,
+  #ult-theater.stage-post-hold #ult-clash-stage,
+  #ult-theater.stage-post-hold #ult-seal-stage,
+  #ult-theater.stage-post-hold #ult-video-stage,
+  #ult-theater.stage-post-hold #ult-3d-hero-echo {
+    opacity: 0 !important;
+    display: none !important;
+  }
+  #ult-theater.stage-post-hold .ult-caption-wrap {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    bottom: 7%; left: 10%; right: 10%; padding: 6px 14px;
+    background: linear-gradient(90deg, rgba(14,8,8,0.12) 0%, rgba(128,22,18,0.92) 16%, rgba(128,22,18,0.92) 84%, rgba(14,8,8,0.12) 100%);
+    border-top: 1.5px solid rgba(255,224,136,0.88);
+    border-bottom: 1.5px solid rgba(255,224,136,0.88);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.65);
+  }
+  #ult-theater.stage-post-hold.enemy-cast .ult-caption-wrap {
+    background: linear-gradient(90deg, rgba(8,14,24,0.12) 0%, rgba(18,52,116,0.92) 16%, rgba(18,52,116,0.92) 84%, rgba(8,14,24,0.12) 100%);
+    border-color: rgba(130,210,255,0.88);
+  }
+  #ult-theater.stage-post-hold .ult-title-big { font-size: clamp(15px, 3.2vw, 21px); letter-spacing: 3px; }
+  #ult-theater.stage-post-hold .ult-quote-bar { display: none; }
+
+  .float-callout.status-badge {
+    font-size: 13px; font-weight: 900; letter-spacing: 0.8px;
+    padding: 3px 9px; border-radius: 999px;
+    background: rgba(12, 10, 18, 0.92);
+    border: 1.5px solid currentColor;
+    box-shadow: 0 0 16px currentColor, 0 2px 8px rgba(0,0,0,0.85);
+    animation: arcadeStatusPop 1.85s cubic-bezier(0.16, 0.9, 0.28, 1) forwards;
+    z-index: 52;
+  }
+  @keyframes arcadeStatusPop {
+    0%   { opacity: 0.35; transform: translate(-50%, 4px) scale(0.72); }
+    12%  { opacity: 1; transform: translate(-50%, -14px) scale(1.12); }
+    24%  { opacity: 1; transform: translate(-50%, -18px) scale(1.0); }
+    82%  { opacity: 1; transform: translate(-50%, -26px) scale(1.0); }
+    100% { opacity: 0; transform: translate(-50%, -36px) scale(0.95); }
+  }
+
   /* 6. 4-CORNER GOLD GUNSHI CALLIGRAPHY (Matches seq_gunshi.png: 再 / 起 / 興 / 軍!) */
   #aow-corners {
     position: absolute; inset: 0; z-index: 68; pointer-events: none; display: none;
@@ -2580,7 +2626,7 @@
     <div class="brand-title">
       <div class="brand-seal">天</div>
       <h1>三國志大戰‧天</h1>
-      <span class="brand-badge">v5.2</span>
+      <span class="brand-badge">v5.3</span>
     </div>
     <div class="deck-header-actions">
       <button class="hdr-chip-btn active" id="btn-toggle-unlock-all" title="切換全 210 武將自由模式／戰役收集模式">全武將:開</button>
@@ -3210,11 +3256,11 @@ const FACTIONS = {
 
 // All 5 Official NDS《三國志大戰‧天》Unit Types (騎/槍/弓/步/攻)
 const UNIT_TYPES = {
-  cav: { name: '騎兵',   icon: '騎', speed: 2.88, siege: 1.00, hpBonus: 0,  color: '#d9721e' },
-  spr: { name: '槍兵',   icon: '槍', speed: 1.66, siege: 1.25, hpBonus: 8,  color: '#269956' },
-  arc: { name: '弓兵',   icon: '弓', speed: 1.94, siege: 0.90, hpBonus: 0,  color: '#2579c4' },
-  inf: { name: '步兵',   icon: '步', speed: 2.08, siege: 1.58, hpBonus: 6,  color: '#9b4dca' },
-  sge: { name: '攻城兵', icon: '攻', speed: 1.26, siege: 2.65, hpBonus: 44, color: '#c99724' }
+  cav: { name: '騎兵',   icon: '騎', speed: 2.08, siege: 1.00, hpBonus: 0,  color: '#d9721e' },
+  spr: { name: '槍兵',   icon: '槍', speed: 1.24, siege: 1.25, hpBonus: 8,  color: '#269956' },
+  arc: { name: '弓兵',   icon: '弓', speed: 1.42, siege: 0.90, hpBonus: 0,  color: '#2579c4' },
+  inf: { name: '步兵',   icon: '步', speed: 1.52, siege: 1.58, hpBonus: 6,  color: '#9b4dca' },
+  sge: { name: '攻城兵', icon: '攻', speed: 0.94, siege: 2.65, hpBonus: 44, color: '#c99724' }
 };
 
 // ALL 20 Official NDS《三國志大戰‧天》Gunshi + ALL 192 Official Playable Generals + 24-City Campaign DB!
@@ -3890,7 +3936,7 @@ class BattleSimulation {
   constructor(playerIds, enemyIds, playerGunshi, enemyGunshi, matchSeed = 13372026) {
     this._rngState = (matchSeed >>> 0) || 13372026;
     this.timeCount = 99.0;
-    this.countRate = 1 / 1.85; // ~183s authentic arcade 99-count match
+    this.countRate = 1 / 2.40; // Exact SEGA Arcade 2.40s per count (~238s full 99-count battle)
     this.elapsed = 0;
     this.finished = false;
     this.winner = null;
@@ -4232,6 +4278,8 @@ class BattleSimulation {
     const enemies = this.units.filter(u => u.side !== side && u.alive && !u.inCastle);
 
     let focusX = 0, focusZ = side === 'player' ? 2.2 : -2.2;
+    const postVfx = [];
+    const postCallouts = [];
 
     if (mode === 'heiryaku') {
       if (ougi.id === 'saiki' || ougi.id === 'taihei') {
@@ -4240,14 +4288,30 @@ class BattleSimulation {
             u.alive = true; u.respawnTimer = 0; u.hp = u.maxHp * 0.92;
             u.x = (this._rand() - 0.5) * 6; u.z = side === 'player' ? CASTLE_Z - 0.8 : -CASTLE_Z + 0.8;
             u.tx = u.x; u.tz = u.z;
+            postVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: 'heal', color: 0xffe484 });
+            postCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '全軍復活！', color: '#ffe580', statusBadge: true });
           } else {
             u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.35);
+            postVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: 'heal', color: 0x5effa6 });
+            postCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '兵力回復！', color: '#6effb0', statusBadge: true });
           }
         });
       } else if (ougi.id === 'zouen') {
-        allies.filter(u => u.alive).forEach(u => { u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.45); });
+        allies.filter(u => u.alive).forEach(u => {
+          u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.45);
+          postVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: 'heal', color: 0x5effa6 });
+          postCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '兵力增援 +45%', color: '#6effb0', statusBadge: true });
+        });
       } else if (ougi.id === 'shichisei') {
-        allies.filter(u => u.alive).forEach(u => { u.hp = Math.max(u.hp, u.maxHp * 1.3); });
+        allies.filter(u => u.alive).forEach(u => {
+          u.hp = Math.max(u.hp, u.maxHp * 1.3);
+          postVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: 'heal', color: 0x7ef2ff });
+          postCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: '上限突破 130%', color: '#8ef5ff', statusBadge: true });
+        });
+      }
+      if (livingAllies.length) {
+        focusX = livingAllies.reduce((s, u) => s + u.x, 0) / livingAllies.length;
+        focusZ = livingAllies.reduce((s, u) => s + u.z, 0) / livingAllies.length;
       }
     } else {
       // 陣略: Deploy glowing 3D Formation Ring centered on the battlefield clash!
@@ -4257,13 +4321,22 @@ class BattleSimulation {
         focusX = refGroup.reduce((s, u) => s + u.x, 0) / refGroup.length;
         focusZ = refGroup.reduce((s, u) => s + u.z, 0) / refGroup.length;
       }
+      const fmDur = Math.round((ougi.dur || 18) * 1.3);
       this.activeFormations.push({
         uid: 'fm_' + (++this.nextUid),
         side, gunshiId: gDef.id, id: ougi.id, name: ougi.name,
         x: focusX, z: focusZ, radius: ougi.radius || 6.5,
-        color: ougi.color || 0xffe08a, dur: ougi.dur || 18, rem: ougi.dur || 18
+        color: ougi.color || 0xffe08a, dur: fmDur, rem: fmDur
+      });
+      refGroup.forEach(u => {
+        if (Math.hypot(u.x - focusX, u.z - focusZ) <= (ougi.radius || 6.5)) {
+          postVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: isEnemyDebuff ? 'debuff' : 'buff', color: ougi.color || 0xffe08a });
+          postCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: isEnemyDebuff ? `${ougi.name} 弱化！` : `${ougi.name} 展開！`, color: isEnemyDebuff ? '#d68fff' : '#ffe588', statusBadge: true });
+        }
       });
     }
+
+    postVfx.unshift({ type: 'VFX_PILLAR_RING', x: focusX, z: focusZ, radius: ougi.radius || 9.0, color: ougi.color || (side === 'player' ? 0xffe08a : 0xff5555) });
 
     this.events.push({
       type: 'AOW_DRAGON',
@@ -4273,8 +4346,26 @@ class BattleSimulation {
       factionTag: `${FACTIONS[gDef.faction].name}・軍師 ${gDef.name}`,
       quote: ougi.quote, desc: ougi.desc,
       focusX, focusZ,
-      postVfx: [{ type: 'VFX_PILLAR_RING', x: focusX, z: focusZ, radius: ougi.radius || 10.0, color: ougi.color || (side === 'player' ? 0xffe08a : 0xff5555) }]
+      postVfx, postCallouts
     });
+  }
+
+  _buildStatusText(s, fallbackDelta = null) {
+    const parts = [];
+    const pd = fallbackDelta != null ? fallbackDelta : (s.powDelta || 0);
+    if (pd > 0) parts.push(`武+${pd}`);
+    else if (pd < 0) parts.push(`武${pd}`);
+    if (s.spdMul && s.spdMul >= 1.35) parts.push('速↑↑');
+    else if (s.spdMul && s.spdMul > 1.05) parts.push('速↑');
+    else if (s.spdMul && s.spdMul <= 0.6) parts.push('速↓↓');
+    else if (s.spdMul && s.spdMul < 0.95) parts.push('速↓');
+    if (s.healPct) parts.push(`兵+${Math.round(s.healPct * 100)}%`);
+    if (s.omniSpear) parts.push('車輪');
+    if (s.slowArrow) parts.push('麻痺矢');
+    if (s.arcBoost && s.arcBoost > 1.1) parts.push('剛弓');
+    if (s.siegeMul && s.siegeMul > 1.15) parts.push('攻城↑');
+    if (s.dmgReduce && s.dmgReduce < 0.85) parts.push('減傷');
+    return parts.join(' ') || (s.kind === 'debuff' ? '弱化！' : '強化！');
   }
 
   castStratagem(unitId) {
@@ -4291,7 +4382,11 @@ class BattleSimulation {
     const allies = this.units.filter(x => x.side === u.side && x.alive && !x.inCastle);
     const enemies = this.units.filter(x => x.side !== u.side && x.alive && !x.inCastle);
     const impactVfx = [];
+    const statusCallouts = [];
+    const affectedPts = [];
     let dmgJudge = null;
+    const durScale = 1.30; // Match deliberate arcade 2.4s/count tempo
+    const fHex = FACTIONS[u.general.faction].hex;
 
     // CRITICAL FIX: Defer all RETREAT_CUTIN events caused by this stratagem until AFTER movie -> explosion -> damage judge!
     this._deferRetreats = [];
@@ -4301,17 +4396,26 @@ class BattleSimulation {
         powDelta: s.powDelta || 0, spdMul: s.spdMul || 1, omniSpear: !!s.omniSpear,
         arcBoost: s.arcBoost || 1, dmgReduce: s.dmgReduce || 1, siegeMul: s.siegeMul || 1,
         antiIntercept: !!s.antiIntercept, multiShot: s.multiShot || 1,
-        selfSacrifice: !!s.selfSacrifice, rem: s.dur
+        selfSacrifice: !!s.selfSacrifice, rem: (s.dur || 10) * durScale
       });
       if (s.healPct) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * s.healPct);
-      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 3.6, color: FACTIONS[u.general.faction].hex });
+      const auraHex = (s.spdMul && s.spdMul >= 1.35) ? 0x62e8ff : 0xffd255;
+      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 3.6, color: fHex });
+      impactVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: 'buff', color: auraHex });
+      statusCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: this._buildStatusText(s), color: auraHex === 0x62e8ff ? '#7cf0ff' : '#ffe375', statusBadge: true });
+      affectedPts.push({ x: u.x, z: u.z });
     } else if (s.kind === 'copy_pow') {
       const maxEnemyPow = enemies.length ? Math.max(...enemies.map(e => this.getEffectiveStats(e).pow)) : 10;
       const delta = Math.max(4, maxEnemyPow - u.general.pow + 2);
-      u.buffs.push({ powDelta: delta, spdMul: 1.22, rem: s.dur || 14 });
+      u.buffs.push({ powDelta: delta, spdMul: 1.22, rem: (s.dur || 14) * durScale });
       impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 4.0, color: 0xe299ff });
+      impactVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: 'buff', color: 0xe299ff });
+      statusCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: this._buildStatusText(s, delta), color: '#eab5ff', statusBadge: true });
+      affectedPts.push({ x: u.x, z: u.z });
     } else if (s.kind === 'rally') {
       if (s.selfCastleDmg) this.castleHp[u.side] = Math.max(1, this.castleHp[u.side] - s.selfCastleDmg);
+      const auraHex = (s.spdMul && s.spdMul >= 1.35) ? 0x62e8ff : 0xffd255;
+      const badgeTxt = this._buildStatusText(s);
       allies.forEach(a => {
         if (s.factionOnly && a.general.faction !== s.factionOnly) return;
         if (s.typeOnly && a.general.type !== s.typeOnly) return;
@@ -4319,41 +4423,57 @@ class BattleSimulation {
           a.buffs.push({
             powDelta: s.powDelta || 0, spdMul: s.spdMul || 1,
             arcBoost: s.arcBoost || 1, slowArrow: !!s.slowArrow,
-            selfSacrifice: !!s.selfSacrifice, rem: s.dur
+            selfSacrifice: !!s.selfSacrifice, rem: (s.dur || 12) * durScale
           });
           if (s.healPct) a.hp = Math.min(a.maxHp, a.hp + a.maxHp * s.healPct);
+          impactVfx.push({ type: 'VFX_UNIT_AURA', x: a.x, z: a.z, auraKind: 'buff', color: auraHex });
+          statusCallouts.push({ type: 'CALLOUT', x: a.x, z: a.z, text: badgeTxt, color: auraHex === 0x62e8ff ? '#7cf0ff' : '#ffe375', statusBadge: true });
+          affectedPts.push({ x: a.x, z: a.z });
         }
       });
-      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: FACTIONS[u.general.faction].hex });
+      impactVfx.unshift({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: fHex });
     } else if (s.kind === 'heal_aoe') {
+      const badgeTxt = this._buildStatusText(s);
       allies.forEach(a => {
         if (Math.hypot(a.x - u.x, a.z - u.z) <= s.radius) {
-          a.hp = Math.min(a.maxHp, a.hp + a.maxHp * s.healPct);
-          if (s.powDelta) a.buffs.push({ powDelta: s.powDelta, rem: s.dur || 10 });
+          a.hp = Math.min(a.maxHp, a.hp + a.maxHp * (s.healPct || 0.4));
+          if (s.powDelta) a.buffs.push({ powDelta: s.powDelta, rem: (s.dur || 10) * durScale });
+          impactVfx.push({ type: 'VFX_UNIT_AURA', x: a.x, z: a.z, auraKind: 'heal', color: 0x55ff99 });
+          statusCallouts.push({ type: 'CALLOUT', x: a.x, z: a.z, text: badgeTxt, color: '#6effb0', statusBadge: true });
+          affectedPts.push({ x: a.x, z: a.z });
         }
       });
-      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0x55ff99 });
+      impactVfx.unshift({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0x55ff99 });
     } else if (s.kind === 'debuff') {
       const cz = u.z + dirZ * 3.2;
+      const badgeTxt = this._buildStatusText(s);
       enemies.forEach(e => {
-        if (Math.hypot(e.x - u.x, e.z - cz) <= s.radius) e.buffs.push({ powDelta: s.powDelta, spdMul: s.spdMul || 1, rem: s.dur });
+        if (Math.hypot(e.x - u.x, e.z - cz) <= s.radius) {
+          e.buffs.push({ powDelta: s.powDelta, spdMul: s.spdMul || 1, rem: (s.dur || 11) * durScale });
+          impactVfx.push({ type: 'VFX_UNIT_AURA', x: e.x, z: e.z, auraKind: 'debuff', color: 0xb85cff });
+          statusCallouts.push({ type: 'CALLOUT', x: e.x, z: e.z, text: badgeTxt, color: '#da8cff', statusBadge: true });
+          affectedPts.push({ x: e.x, z: e.z });
+        }
       });
-      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: cz, radius: s.radius, color: 0xb366ff });
+      impactVfx.unshift({ type: 'VFX_PILLAR_RING', x: u.x, z: cz, radius: s.radius, color: 0xb366ff });
     } else if (s.kind === 'taunt') {
       enemies.forEach(e => {
         if (Math.hypot(e.x - u.x, e.z - u.z) <= s.radius) {
           e.tauntTargetId = u.uid;
-          e.buffs.push({ powDelta: s.powDelta, taunt: true, rem: s.dur });
+          e.buffs.push({ powDelta: s.powDelta, taunt: true, rem: (s.dur || 9) * durScale });
+          impactVfx.push({ type: 'VFX_UNIT_AURA', x: e.x, z: e.z, auraKind: 'debuff', color: 0xff8833 });
+          statusCallouts.push({ type: 'CALLOUT', x: e.x, z: e.z, text: s.powDelta ? `挑釁！武${s.powDelta}` : '挑釁！', color: '#ffb05c', statusBadge: true });
+          affectedPts.push({ x: e.x, z: e.z });
         }
       });
-      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0xff9933 });
+      impactVfx.unshift({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: s.radius, color: 0xff9933 });
     } else if (s.kind === 'meteor') {
       const dmgC = s.castleDmg || 20;
       this.castleHp[opp] = Math.max(0, this.castleHp[opp] - dmgC);
       const cz = u.side === 'player' ? -CASTLE_Z : CASTLE_Z;
       impactVfx.push({ type: 'VFX_FIRE', x: 0, z: cz, radius: 7.2 });
       impactVfx.push({ type: 'VFX_PILLAR_RING', x: 0, z: cz, radius: 6.5, color: 0xffaa22 });
-      impactVfx.push({ type: 'CALLOUT', x: 0, z: cz, text: `天外流星 -${dmgC}%！`, color: '#ffbb33' });
+      statusCallouts.push({ type: 'CALLOUT', x: 0, z: cz, text: `天外流星 -${dmgC}%！`, color: '#ffbb33', statusBadge: true });
     } else if (s.kind === 'self_destruct') {
       const hits = [];
       enemies.forEach(e => {
@@ -4416,15 +4536,23 @@ class BattleSimulation {
       if (hits.length) dmgJudge = { title: s.name, hits, focusX: hits[0].x, focusZ: hits[0].z };
     } else if (s.kind === 'dance_heal' || s.kind === 'dance_curse') {
       u.dancing = s.kind; u.tx = u.x; u.tz = u.z;
-      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 4.8, color: s.kind === 'dance_heal' ? 0x66e0ff : 0xd066ff });
+      const dHex = s.kind === 'dance_heal' ? 0x66e0ff : 0xd066ff;
+      impactVfx.push({ type: 'VFX_PILLAR_RING', x: u.x, z: u.z, radius: 5.5, color: dHex });
+      impactVfx.push({ type: 'VFX_UNIT_AURA', x: u.x, z: u.z, auraKind: s.kind === 'dance_heal' ? 'heal' : 'debuff', color: dHex });
+      statusCallouts.push({ type: 'CALLOUT', x: u.x, z: u.z, text: `${s.name} 發動！`, color: s.kind === 'dance_heal' ? '#7ceeff' : '#e08cff', statusBadge: true });
+      affectedPts.push({ x: u.x, z: u.z });
     }
 
     const deferredRetreats = this._deferRetreats;
     this._deferRetreats = null;
 
     const f = FACTIONS[u.general.faction];
-    const impactX = dmgJudge ? dmgJudge.focusX : (s.kind === 'meteor' ? 0 : (impactVfx[0]?.x ?? u.x));
-    const impactZ = dmgJudge ? dmgJudge.focusZ : (s.kind === 'meteor' ? (u.side === 'player' ? -CASTLE_Z : CASTLE_Z) : (impactVfx[0]?.z ?? u.z));
+    let impactX = dmgJudge ? dmgJudge.focusX : (s.kind === 'meteor' ? 0 : (impactVfx[0]?.x ?? u.x));
+    let impactZ = dmgJudge ? dmgJudge.focusZ : (s.kind === 'meteor' ? (u.side === 'player' ? -CASTLE_Z : CASTLE_Z) : (impactVfx[0]?.z ?? u.z));
+    if (!dmgJudge && affectedPts.length) {
+      impactX = affectedPts.reduce((sum, p) => sum + p.x, 0) / affectedPts.length;
+      impactZ = affectedPts.reduce((sum, p) => sum + p.z, 0) / affectedPts.length;
+    }
     this.events.push({
       type: 'CUTIN', side: u.side, isMajor: (s.cost >= 5), unitId: u.uid,
       unitName: u.general.name, unitType: u.general.type,
@@ -4434,7 +4562,7 @@ class BattleSimulation {
       quote: u.general.quote, desc: s.desc, img: u.general.img,
       focusX: u.x, focusZ: u.z,
       impactX, impactZ,
-      impactVfx, dmgJudge, deferredRetreats
+      impactVfx, statusCallouts, dmgJudge, deferredRetreats
     });
   }
 
@@ -4453,7 +4581,7 @@ class BattleSimulation {
     if (target.hp <= 0) {
       target.hp = 0; target.alive = false; target.dancing = null; target.buffs = [];
       target.isCharging = false; target.chargeTimer = 0; target.siegeProgress = 0;
-      target.respawnTimer = target.general.traits.includes('復活') ? 12.0 : 20.0;
+      target.respawnTimer = target.general.traits.includes('復活') ? 15.0 : 24.0;
       target.rallyX = target.x; target.rallyZ = target.z; target.rallyInCastle = false;
       if (attacker && attacker.side === 'player') this.stats.kills++;
       const retreatEv = {
@@ -4479,9 +4607,9 @@ class BattleSimulation {
     this.timeCount = Math.max(0, this.timeCount - dt * this.countRate);
 
     for (const side of ['player', 'enemy']) {
-      this.morale[side] = Math.min(this.moraleCap[side], this.morale[side] + dt * 0.38);
+      this.morale[side] = Math.min(this.moraleCap[side], this.morale[side] + dt * 0.27);
       if (this.gunshi[side] && !this.gunshi[side].used) {
-        this.gunshi[side].gauge = Math.min(100, this.gunshi[side].gauge + dt * 2.5);
+        this.gunshi[side].gauge = Math.min(100, this.gunshi[side].gauge + dt * 1.8);
       }
     }
 
@@ -4678,8 +4806,8 @@ class BattleSimulation {
         if (dist < 1.55) {
           if (a.isCharging && a.chargeCd <= 0 && !b.stealth) {
             const stA = this.getEffectiveStats(a), stB = this.getEffectiveStats(b);
-            this.applyDamage(b, Math.max(12, (16 + (stA.pow - stB.pow) * 2.0 + stA.pow * 1.3) * (stA.chargeMul || 1)), a);
-            a.isCharging = false; a.chargeTimer = 0; a.chargeCd = 2.0;
+            this.applyDamage(b, Math.max(10, (13 + (stA.pow - stB.pow) * 1.7 + stA.pow * 1.05) * (stA.chargeMul || 1)), a);
+            a.isCharging = false; a.chargeTimer = 0; a.chargeCd = 2.8;
             if (a.side === 'player') this.stats.charges++;
             this.events.push({ type: 'CALLOUT', x: b.x, z: b.z, text: '突擊！RUSH!!', color: '#ffffff' });
             this.events.push({ type: 'FIELD_BUST', x: a.x, z: a.z, img: a.general.cutoutImg, label: `${a.general.name} 突擊！` });
@@ -4689,8 +4817,8 @@ class BattleSimulation {
           }
           if (b.isCharging && b.chargeCd <= 0 && !a.stealth) {
             const stB = this.getEffectiveStats(b), stA = this.getEffectiveStats(a);
-            this.applyDamage(a, Math.max(12, (16 + (stB.pow - stA.pow) * 2.0 + stB.pow * 1.3) * (stB.chargeMul || 1)), b);
-            b.isCharging = false; b.chargeTimer = 0; b.chargeCd = 2.0;
+            this.applyDamage(a, Math.max(10, (13 + (stB.pow - stA.pow) * 1.7 + stB.pow * 1.05) * (stB.chargeMul || 1)), b);
+            b.isCharging = false; b.chargeTimer = 0; b.chargeCd = 2.8;
             this.events.push({ type: 'CALLOUT', x: a.x, z: a.z, text: '突擊！RUSH!!', color: '#ffbbbb' });
             this.events.push({ type: 'FIELD_BUST', x: b.x, z: b.z, img: b.general.cutoutImg, label: `${b.general.name} 突擊！` });
             this.events.push({ type: 'VFX_CHARGE_HIT', x: a.x, z: a.z });
@@ -4698,14 +4826,14 @@ class BattleSimulation {
           }
         }
 
-        // Authentic Zero-Push Melee: first-arriving squad holds its exact position; incoming engages in melee!
+        // Authentic Zero-Push Melee: deliberate arcade melee pace (~20-26s balanced clash)
         if (dist < 1.42 && a.alive && b.alive) {
           a.inMelee = true; b.inMelee = true;
           a.isCharging = false; a.chargeTimer = 0;
           b.isCharging = false; b.chargeTimer = 0;
           const stA = this.getEffectiveStats(a), stB = this.getEffectiveStats(b);
-          this.applyDamage(b, Math.max(3, 6.2 + (stA.pow - stB.pow) * 1.15) * dt, a);
-          this.applyDamage(a, Math.max(3, 6.2 + (stB.pow - stA.pow) * 1.15) * dt, b);
+          this.applyDamage(b, Math.max(2.2, 4.4 + (stA.pow - stB.pow) * 0.85) * dt, a);
+          this.applyDamage(a, Math.max(2.2, 4.4 + (stB.pow - stA.pow) * 0.85) * dt, b);
         }
       }
     }
@@ -4735,17 +4863,17 @@ class BattleSimulation {
 
       // Official 募兵 (Recruit) trait: gentle HP regen while standing still out of melee!
       if (u.general.traits.includes('募兵') && u.standTimer > 0.6 && !u.inMelee && !u.isSieging && u.hp < u.maxHp) {
-        u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.032 * dt);
+        u.hp = Math.min(u.maxHp, u.hp + u.maxHp * 0.026 * dt);
       }
 
-      if (u.general.type === 'cav' && !u.inMelee && Math.hypot(u.vx, u.vz) > 1.1) {
+      if (u.general.type === 'cav' && !u.inMelee && Math.hypot(u.vx, u.vz) > 0.85) {
         u.chargeTimer += dt;
-        if (u.chargeTimer >= 1.6 && u.chargeCd <= 0) u.isCharging = true;
+        if (u.chargeTimer >= 2.15 && u.chargeCd <= 0) u.isCharging = true;
       }
 
       if (u.general.type === 'arc' && !u.inMelee && !u.isSieging && !u.dancing && !u.stealth) {
         const isWalkShoot = (u.walkShootTimer > 0 && u.standTimer <= 0.05);
-        const canShoot = (u.standTimer > 0.28) || isWalkShoot;
+        const canShoot = (u.standTimer > 0.35) || isWalkShoot;
         if (canShoot && u.arrowCd <= 0) {
           const range = 7.6 * (st.arcBoost > 1 ? 1.25 : 1.0);
           const inRange = [];
@@ -4757,11 +4885,11 @@ class BattleSimulation {
           if (inRange.length) {
             inRange.sort((x, y) => x.d - y.d);
             const shots = inRange.slice(0, st.multiShot || 1);
-            u.arrowCd = 0.95;
+            u.arrowCd = 1.30;
             u.facing = Math.atan2(shots[0].e.z - u.z, shots[0].e.x - u.x);
             for (const { e: best } of shots) {
               const stE = this.getEffectiveStats(best);
-              let dmg = Math.max(3, (5.2 + (st.pow - stE.pow) * 0.72) * st.arcBoost);
+              let dmg = Math.max(2.4, (4.0 + (st.pow - stE.pow) * 0.56) * st.arcBoost);
               if (best.isCharging) dmg *= 0.45;
               const volleyHalf = shots.length > 1 ? 1 : 2;
               for (let k = -volleyHalf; k <= volleyHalf; k++) {
@@ -4770,7 +4898,7 @@ class BattleSimulation {
                   tx: best.x + k * 0.24, tz: best.z + k * 0.18,
                   targetUid: best.uid, attackerUid: u.uid, dmg: k === 0 ? dmg : 0,
                   slowHit: (k === 0 && st.slowArrow),
-                  t: -Math.abs(k) * 0.05, dur: 0.44, side: u.side, walkShoot: isWalkShoot
+                  t: -Math.abs(k) * 0.05, dur: 0.48, side: u.side, walkShoot: isWalkShoot
                 });
               }
             }
@@ -4800,21 +4928,22 @@ class BattleSimulation {
         }
         u.isCharging = false; u.chargeTimer = 0; u.walkShootTimer = 0;
 
-        const wallArrowDps = u.maxHp * Math.max(0.022, 0.044 - st.pow * 0.0014) * (u.general.type === 'sge' ? 0.65 : 1.0);
+        const wallArrowDps = u.maxHp * Math.max(0.016, 0.032 - st.pow * 0.001) * (u.general.type === 'sge' ? 0.65 : 1.0);
         u.hp -= wallArrowDps * dt;
         u.castleArrowCd -= dt;
         if (u.castleArrowCd <= 0) {
-          u.castleArrowCd = 0.85;
+          u.castleArrowCd = 1.05;
           this.projectiles.push({
             sx: u.x + (Math.random() - 0.5) * 1.4, sz: targetCastleZ + (u.side === 'player' ? -1.1 : 1.1),
             x: u.x, z: targetCastleZ, tx: u.x, tz: u.z,
-            targetUid: -1, attackerUid: -1, dmg: 0, t: 0, dur: 0.28, side: u.side === 'player' ? 'enemy' : 'player', visualOnly: true
+            targetUid: -1, attackerUid: -1, dmg: 0, t: 0, dur: 0.30, side: u.side === 'player' ? 'enemy' : 'player', visualOnly: true
           });
         }
         if (u.hp <= 0) { this.applyDamage(u, 1, null); continue; }
 
         if (!u.inMelee) {
-          u.siegeProgress += dt / (u.general.type === 'sge' ? 4.2 : 4.5);
+          // Authentic SEGA Arcade ~3-count (~7.2s) siege bar buildup!
+          u.siegeProgress += dt / (u.general.type === 'sge' ? 6.4 : 7.2);
           if (u.siegeProgress >= 1.0) {
             u.siegeProgress = 0;
             const opp = u.side === 'player' ? 'enemy' : 'player';
@@ -6876,19 +7005,64 @@ class BattleRenderer3D {
   spawnVFX(ev) {
     if (ev.type === 'VFX_PILLAR_RING') {
       const grp = new THREE.Group();
+      const rOuter = Math.max(1.5, ev.radius || 5.0);
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.4, ev.radius, 36),
-        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.56, blending: THREE.AdditiveBlending, depthWrite: false })
+        new THREE.RingGeometry(rOuter * 0.86, rOuter, 40),
+        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.55, depthWrite: false })
       );
-      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.16; ring.userData.baseOpacity = 0.56; grp.add(ring);
+      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.16; ring.userData.baseOpacity = 0.55; grp.add(ring);
       const pillar = new THREE.Mesh(
-        new THREE.CylinderGeometry(ev.radius * 0.42, ev.radius * 0.55, 9.5, 20, 1, true),
-        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false })
+        new THREE.CylinderGeometry(rOuter * 0.96, rOuter * 0.99, 1.9, 32, 1, true),
+        new THREE.MeshBasicMaterial({ color: ev.color, side: THREE.DoubleSide, transparent: true, opacity: 0.14, depthWrite: false })
       );
-      pillar.position.y = 4.75; pillar.userData.baseOpacity = 0.12; grp.add(pillar);
+      pillar.position.y = 0.95; pillar.userData.baseOpacity = 0.14; grp.add(pillar);
       grp.position.set(ev.x, 0, ev.z);
       this.scene.add(grp);
-      this.vfxList.push({ mesh: grp, age: 0, dur: 1.25, kind: 'pillar' });
+      this.vfxList.push({ mesh: grp, age: 0, dur: 2.15, kind: 'pillar' });
+    } else if (ev.type === 'VFX_UNIT_AURA') {
+      const grp = new THREE.Group();
+      const isDebuff = ev.auraKind === 'debuff';
+      const col = ev.color || (isDebuff ? 0x9b42f5 : (ev.auraKind === 'heal' ? 0x32e088 : 0xffc83b));
+      const baseRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.92, 1.34, 24),
+        new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide, transparent: true, opacity: 0.78, depthWrite: false })
+      );
+      baseRing.rotation.x = -Math.PI / 2; baseRing.position.y = 0.20; baseRing.userData.baseOpacity = 0.78;
+      grp.add(baseRing);
+
+      const beam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.75, 1.05, 4.2, 16, 1, true),
+        new THREE.MeshBasicMaterial({ color: col, side: THREE.FrontSide, transparent: true, opacity: 0.24, depthWrite: false })
+      );
+      beam.position.y = 2.1; beam.userData.baseOpacity = 0.24;
+      grp.add(beam);
+
+      const halo = new THREE.Mesh(
+        new THREE.RingGeometry(0.88, 1.14, 24),
+        new THREE.MeshBasicMaterial({ color: isDebuff ? 0xd966ff : (ev.auraKind === 'heal' ? 0x7effc0 : 0xffe985), side: THREE.DoubleSide, transparent: true, opacity: 0.80, depthWrite: false })
+      );
+      halo.rotation.x = -Math.PI / 2; halo.position.y = isDebuff ? 3.5 : 0.45; halo.userData.baseOpacity = 0.80;
+      grp.add(halo);
+
+      const motes = [];
+      for (let k = 0; k < 8; k++) {
+        const ang = (k / 8) * Math.PI * 2;
+        const mote = new THREE.Mesh(
+          this.sharedGeo.vfxSpark,
+          new THREE.MeshBasicMaterial({ color: k % 2 ? col : (isDebuff ? 0xe080ff : 0xfff0a8), transparent: true, opacity: 0.88, depthWrite: false })
+        );
+        mote.userData.sharedGeo = true;
+        mote.userData.ang = ang;
+        mote.userData.rad = 0.88 + (k % 3) * 0.22;
+        mote.userData.y0 = isDebuff ? (3.0 + (k % 3) * 0.55) : (0.30 + (k % 3) * 0.40);
+        mote.scale.set(1.0, 2.0, 1.0);
+        mote.position.set(Math.cos(ang) * mote.userData.rad, mote.userData.y0, Math.sin(ang) * mote.userData.rad);
+        grp.add(mote);
+        motes.push(mote);
+      }
+      grp.position.set(ev.x, 0, ev.z);
+      this.scene.add(grp);
+      this.vfxList.push({ mesh: grp, age: 0, dur: 2.15, kind: 'unit_aura', isDebuff, baseRing, beam, halo, motes });
     } else if (ev.type === 'VFX_FIRE') {
       const grp = new THREE.Group();
       const count = this.qualityTier === 'high' ? 18 : 12;
@@ -7363,10 +7537,28 @@ class BattleRenderer3D {
         v.mesh.scale.setScalar(0.6 + p * 0.9);
         v.mesh.material.opacity = (1 - p);
       } else if (v.kind === 'pillar') {
-        v.mesh.children[0].scale.setScalar(0.55 + p * 0.65);
-        v.mesh.children[0].material.opacity = (1 - p) * 0.8;
-        v.mesh.children[1].scale.set(1 + p * 0.35, 1 + p * 0.4, 1 + p * 0.35);
-        v.mesh.children[1].material.opacity = (1 - p) * 0.45;
+        v.mesh.children[0].scale.setScalar(0.85 + p * 0.22);
+        v.mesh.children[0].material.opacity = (1 - p) * 0.55;
+        v.mesh.children[1].scale.set(0.88 + p * 0.18, 1 + p * 0.3, 0.88 + p * 0.18);
+        v.mesh.children[1].material.opacity = (1 - p) * 0.16;
+      } else if (v.kind === 'unit_aura') {
+        const fade = p < 0.15 ? (p / 0.15) : (p > 0.78 ? (1 - p) / 0.22 : 1.0);
+        const pulse = 1.0 + Math.sin(p * Math.PI * 5) * 0.10;
+        v.baseRing.scale.setScalar((0.88 + p * 0.28) * pulse);
+        v.baseRing.material.opacity = fade * 0.76;
+        v.beam.scale.set(0.92 + Math.sin(p * Math.PI) * 0.16, 0.82 + Math.sin(p * Math.PI * 0.8) * 0.28, 0.92 + Math.sin(p * Math.PI) * 0.16);
+        v.beam.material.opacity = fade * 0.24;
+        v.halo.position.y = v.isDebuff ? (3.5 - p * 3.1) : (0.35 + p * 3.2);
+        v.halo.scale.setScalar(v.isDebuff ? (1.18 - p * 0.25) : (0.90 + p * 0.32));
+        v.halo.material.opacity = fade * 0.78;
+        for (let k = 0; k < v.motes.length; k++) {
+          const m = v.motes[k];
+          const ang = m.userData.ang + p * (v.isDebuff ? -5.0 : 5.5);
+          m.position.x = Math.cos(ang) * m.userData.rad;
+          m.position.z = Math.sin(ang) * m.userData.rad;
+          m.position.y = v.isDebuff ? Math.max(0.25, m.userData.y0 - p * 2.8) : (m.userData.y0 + p * 3.2);
+          m.material.opacity = fade * 0.88;
+        }
       } else if (v.kind === 'fire') {
         v.mesh.scale.y = 0.8 + Math.sin(p * Math.PI) * 0.75;
         v.mesh.children.forEach(c => { c.material.opacity = (1 - p) * 0.9; });
@@ -9308,7 +9500,7 @@ const App = {
       document.getElementById('intro-hero-quote').textContent = `${leadGen.name}：${leadGen.quote}`;
 
       this.stopAllCutsceneVideos();
-      this.introTimer = 4.05;
+      this.introTimer = 4.85;
       this.introPhase = 0;
       this.defeatPauseTimer = 0;
       this.ultTheaterTimer = 0;
@@ -10102,19 +10294,20 @@ const App = {
     this.stopCutsceneVideo('siege-cutscene', 'siege-video', 'has-video');
   },
 
-  // STRICTLY SEQUENTIAL NON-OVERLAPPING STRATAGEM CUTSCENE (Matches seq_dmg_strat.png!)
-  // Stage 1 (0.00–0.35s): Darken + Camera Zoom to Caster (phase-focus)
-  // Stage 2 (0.35–1.00s): Transparent General Bust-Up + Faction Flag ONLY (stage1)
-  // Stage 3 (1.00–1.55s): Giant Octagonal Calligraphy Seal Slam ONLY (seal-phase)
-  // Stage 4 (1.55–3.25s): Official SEGA TrickMovieNo HD Movie (if TrickMovieNo>0) OR crisp Tactical VFX (if MovieNo=0)
-  // Stage 5 (postImpactTimer 0.85s): Clear movie -> 3D Battlefield Focus + Explosion VFX!
-  // Stage 6 (dmgJudgeTimer 1.25s): BLOCKING Damage Judgment Cards with animated HP drop!
+  // AUTHENTIC SEGA ARCADE SEQUENTIAL STRATAGEM CUTSCENE (Calibrated from 3 Arcade Reference Videos)
+  // Stage 1 (0.00–0.55s): Darken + Camera Swoop to Caster (phase-focus)
+  // Stage 2 (0.55–1.65s): Transparent General Bust-Up + Faction Flag + Full Voice Line (stage1)
+  // Stage 3 (1.65–2.75s): Giant Octagonal Calligraphy Seal Slam (seal-phase)
+  // Stage 4 (2.75s–end): Full Official SEGA TrickMovieNo HD Movie (never chopped early!) OR Tactical VFX
+  // Stage 5 (postImpactTimer 2.25s / 1.85s): Keep bottom arcade banner (stage-post-hold) -> Frozen 3D Battlefield + Per-Unit 3D Buff/Debuff/Heal Aura Pillars + Cascading Status Badges!
+  // Stage 6 (dmgJudgeTimer 1.75s): BLOCKING Damage Judgment Cards with animated HP drop!
   // Stage 7 (deferredRetreatQueue): Sequential 擊破 SMASH! / 撤退 EVACUATION! ONE BY ONE!
   triggerCutinPause(ev) {
     const casterUnit = this.sim && this.sim.units.find(x => x.uid === ev.unitId);
     const bustObj = (casterUnit && casterUnit.general) || ev;
     const hasOfficialMovie = !!(bustObj && bustObj.skillVideo);
-    const dur = hasOfficialMovie ? 3.25 : 2.35;
+    const movieEst = hasOfficialMovie ? 3.20 : 1.55;
+    const dur = 2.75 + movieEst;
     this.ultDur = dur;
     this.ultTheaterTimer = dur;
     this.ultStage = 0;
@@ -10163,12 +10356,12 @@ const App = {
     document.getElementById('clash-faction').textContent = ev.factionName || ev.factionTag;
     document.getElementById('clash-name').textContent = ev.unitName || ev.factionTag;
     document.getElementById('clash-flag-char').textContent = ev.factionChar || '戰';
-    document.getElementById('clash-flag-motto').textContent = ev.isMajor ? '計略發動' : '計略發動';
+    document.getElementById('clash-flag-motto').textContent = '計略發動';
     const flagBox = document.getElementById('clash-flag-box');
     const fc = ev.factionColor || '#b82929';
     flagBox.style.background = `radial-gradient(circle at 50% 45%, ${fc}e0, rgba(16,8,12,0.96))`;
 
-    // Stage 4: Clean Bottom Caption Strip
+    // Stage 4 & Stage 5 Hold: Clean Arcade Bottom Caption Strip
     const pill = document.getElementById('ult-faction-pill');
     pill.textContent = ev.factionTag;
     pill.style.background = fc;
@@ -10181,14 +10374,29 @@ const App = {
     // Start in Stage 1: Darken + Camera Zoom to Caster (NO bust, NO seal, NO movie yet!)
     th.className = 'show phase-focus' + (ev.side === 'enemy' ? ' enemy-cast' : '');
 
-    // Pre-bind video Blob URL without playing yet
+    // Pre-bind video Blob URL and sync real official movie duration so it never gets cut off early
     this._ultPendingVideoSrc = (bustObj && bustObj.skillVideo) ? bustObj.skillVideo : null;
     if (this._ultPendingVideoSrc) {
       const uv = document.getElementById('ult-video');
-      if (uv && uv.getAttribute('data-src') !== this._ultPendingVideoSrc) {
-        uv.setAttribute('data-src', this._ultPendingVideoSrc);
-        uv.src = AssetCache.getVideoUrl(this._ultPendingVideoSrc);
-        uv.load();
+      if (uv) {
+        const syncDur = () => {
+          if (this.ultEvent !== ev) return;
+          if (Number.isFinite(uv.duration) && uv.duration > 0.5) {
+            const realMovieDur = Math.max(2.3, Math.min(4.4, uv.duration));
+            const newTotal = 2.75 + realMovieDur;
+            const elapsedNow = this.ultDur - this.ultTheaterTimer;
+            this.ultDur = newTotal;
+            this.ultTheaterTimer = Math.max(0.25, newTotal - elapsedNow);
+          }
+        };
+        uv.onloadedmetadata = syncDur;
+        if (uv.getAttribute('data-src') !== this._ultPendingVideoSrc) {
+          uv.setAttribute('data-src', this._ultPendingVideoSrc);
+          uv.src = AssetCache.getVideoUrl(this._ultPendingVideoSrc);
+          uv.load();
+        } else if (uv.readyState >= 1) {
+          syncDur();
+        }
       }
     }
 
@@ -10197,15 +10405,17 @@ const App = {
     if (bustObj && bustObj.id) sfx.playVoice(bustObj.id, 'cast');
   },
 
-  // STRICTLY SEQUENTIAL OFFICIAL GUNSHI OUGI CUTSCENE (Matches seq_gunshi.png!)
-  // Phase 0 (0.00–0.90s): Jade Dragon Orb Movie ONLY
-  // Phase 1 (0.90–1.75s): Official Gunshi Bust-Up + Namebar + Gunshi Voice ONLY
-  // Phase 2 (1.75–2.95s): 4-Corner Giant Gold Calligraphy (e.g. 再/起/興/軍) + Golden Dragon Burst ONLY
+  // AUTHENTIC ARCADE GUNSHI OUGI CUTSCENE (4.50s + 2.10s Post-Ougi Battlefield Hold)
+  // Phase 0 (0.00–1.50s): Jade Dragon Orb Movie ONLY
+  // Phase 1 (1.50–2.85s): Official Gunshi Bust-Up + Namebar + Gunshi Voice ONLY
+  // Phase 2 (2.85–4.50s): 4-Corner Giant Gold Calligraphy (e.g. 再/起/興/軍) + Golden Dragon Burst ONLY
+  // Stage 5 Hold (2.10s): Live 3D Battlefield Aura Pillars + Status Badges + Bottom Banner!
   triggerAoWDragon(ev) {
-    this.aowDragonTimer = 2.95;
+    this.aowDragonTimer = 4.50;
     this.aowDragonPhase = 0;
     this.aowEvent = ev;
     this.pendingPostVfx = ev.postVfx || [];
+    this.pendingPostCallouts = ev.postCallouts || [];
 
     const gStage = document.getElementById('aow-gunshi-stage');
     const gCorners = document.getElementById('aow-corners');
@@ -10217,7 +10427,7 @@ const App = {
   },
 
   triggerFirstSiegeCutscene(ev) {
-    this.siegeCutsceneTimer = 2.35;
+    this.siegeCutsceneTimer = 3.05;
     this.siegeCutscenePhase = 0;
     document.getElementById('sc-hud-main').textContent = ev.isGate ? '城門衝車強襲！' : '雲梯登城突擊！';
     document.getElementById('sc-hud-sub').textContent = `${ev.unitName} 突破防線，重創城池耐力 -${ev.dmg}%！`;
@@ -10316,7 +10526,7 @@ const App = {
 
   showDamageJudge(v) {
     if (!v || !v.hits || !v.hits.length) return;
-    this.dmgJudgeTimer = 1.25;
+    this.dmgJudgeTimer = 1.75;
     this.ren.cutinFocus = { x: v.focusX, z: v.focusZ, orbit: false };
     document.getElementById('dmg-judge-banner').textContent = `${v.title} ・ 傷害判定！`;
     const wrap = document.getElementById('dmg-judge-cards');
@@ -10337,7 +10547,7 @@ const App = {
         const bar = document.getElementById(`djhp-${i}`);
         if (bar) bar.style.width = `${h.afterPct}%`;
       });
-    }, 90);
+    }, 110);
   },
 
   handlePostVfxItem(v) {
@@ -10346,7 +10556,7 @@ const App = {
     } else if (v.type === 'DMG_JUDGE') {
       this.showDamageJudge(v);
     } else if (v.type === 'POST_ZOOM') {
-      this.postZoomTimer = v.dur || 0.85;
+      this.postZoomTimer = v.dur || 1.05;
       this.ren.cutinFocus = { x: v.x, z: v.z, orbit: false };
     } else {
       this.ren.spawnVFX(v);
@@ -10354,7 +10564,7 @@ const App = {
   },
 
   triggerDefeatSlashPause(ev) {
-    this.defeatPauseTimer = 1.25;
+    this.defeatPauseTimer = 1.55;
     this.defeatPhase = 0;
     const ov = document.getElementById('defeat-overlay');
     const isEnemy = (ev.side === 'enemy');
@@ -10376,14 +10586,14 @@ const App = {
   },
 
   spawnCallout(ev) {
-    const pos = this.ren.worldToScreen(ev.x, 1.85, ev.z);
+    const pos = this.ren.worldToScreen(ev.x, ev.statusBadge ? 2.15 : 1.85, ev.z);
     const el = document.createElement('div');
-    el.className = 'float-callout';
+    el.className = ev.statusBadge ? 'float-callout status-badge' : 'float-callout';
     el.textContent = ev.text;
     el.style.left = `${pos.x}px`; el.style.top = `${pos.y}px`;
     el.style.color = ev.color || '#fff';
     document.getElementById('hud-overlay').appendChild(el);
-    setTimeout(() => el.remove(), 1150);
+    setTimeout(() => el.remove(), ev.statusBadge ? 1900 : 1150);
   },
 
   spawnFieldBust(ev) {
@@ -10999,24 +11209,24 @@ const App = {
     this.lastTs = ts;
     const H = this._hud;
 
-    // 1. Opening Sequence (Matches seq_intro.png: Twin Bronze Doors -> Castle-to-Army Swoop + 出陣 -> 開戰!)
+    // 1. Opening Sequence (Authentic Stately Arcade Pacing: 4.85s)
     if (this.introTimer > 0) {
       this.introTimer -= realDt;
-      const elapsed = 4.05 - this.introTimer;
+      const elapsed = 4.85 - this.introTimer;
       const ov = document.getElementById('intro-overlay');
-      if (this.introPhase === 0 && elapsed >= 0.35) {
+      if (this.introPhase === 0 && elapsed >= 0.45) {
         this.introPhase = 1;
         ov.classList.add('doors-open');
         sfx.playBGM('ten_battle');
-      } else if (this.introPhase === 1 && elapsed >= 1.35) {
+      } else if (this.introPhase === 1 && elapsed >= 1.65) {
         this.introPhase = 2;
         ov.className = 'show phase-parade';
         sfx.startDrum();
         if (this._introLeadGen && this._introLeadGen.id) sfx.playVoice(this._introLeadGen.id, 'deploy');
-      } else if (this.introPhase === 2 && elapsed >= 2.95) {
+      } else if (this.introPhase === 2 && elapsed >= 3.50) {
         this.introPhase = 3;
         ov.className = 'show kaizen';
-        this.ren.cinemaMode = { kind: 'intro_overview', age: 0, dur: 1.1 };
+        this.ren.cinemaMode = { kind: 'intro_overview', age: 0, dur: 1.35 };
         sfx.kaizenHit();
         sfx.playNarrator('kaizen', 0.94);
       }
@@ -11077,17 +11287,17 @@ const App = {
       return;
     }
 
-    // 3. Authentic Arcade Defeat (Flame-X SMASH!) / Retreat (Ink-X EVACUATION!) Freeze Pause
+    // 3. Authentic Arcade Defeat (Flame-X SMASH!) / Retreat (Ink-X EVACUATION!) Freeze Pause (1.55s)
     if (this.defeatPauseTimer > 0) {
       this.defeatPauseTimer -= realDt;
-      const elapsed = 1.25 - this.defeatPauseTimer;
+      const elapsed = 1.55 - this.defeatPauseTimer;
       const ov = document.getElementById('defeat-overlay');
-      if (this.defeatPhase === 0 && elapsed >= 0.18) {
+      if (this.defeatPhase === 0 && elapsed >= 0.22) {
         this.defeatPhase = 1;
         ov.classList.add('slashed');
         if (this._defeatIsEnemy) sfx.retreatEnemy(); else sfx.retreatAlly();
       }
-      if (this.defeatPhase === 1 && elapsed >= 0.40) {
+      if (this.defeatPhase === 1 && elapsed >= 0.50) {
         this.defeatPhase = 2;
         ov.classList.add('stamped');
       }
@@ -11102,15 +11312,15 @@ const App = {
       return;
     }
 
-    // 4. Strictly Sequential Official Gunshi Ougi Cutscene (Jade Orb -> Gunshi Bust -> 4-Corner Gold Calligraphy!)
+    // 4. Authentic Arcade Gunshi Ougi Cutscene (4.50s -> 2.10s Post-Ougi Battlefield Hold)
     if (this.aowDragonTimer > 0) {
       this.aowDragonTimer -= realDt;
       const ev = this.aowEvent;
-      const elapsed = 2.95 - this.aowDragonTimer;
+      const elapsed = 4.50 - this.aowDragonTimer;
       const gStage = document.getElementById('aow-gunshi-stage');
       const gCorners = document.getElementById('aow-corners');
 
-      if (this.aowDragonPhase === 0 && elapsed >= 0.90) {
+      if (this.aowDragonPhase === 0 && elapsed >= 1.50) {
         this.aowDragonPhase = 1;
         this.stopCutsceneVideo('aow-video-stage', 'aow-video', 'show');
         if (ev && gStage) {
@@ -11125,7 +11335,7 @@ const App = {
           gStage.classList.add('show');
           sfx.playGunshiVoice(gDef.id);
         }
-      } else if (this.aowDragonPhase === 1 && elapsed >= 1.75) {
+      } else if (this.aowDragonPhase === 1 && elapsed >= 2.85) {
         this.aowDragonPhase = 2;
         if (gStage) gStage.classList.remove('show');
         if (ev && gCorners) {
@@ -11142,7 +11352,7 @@ const App = {
             ev.side === 'player' ? '#ffe08a' : '#ff5555',
             ev.title,
             false,
-            1.20,
+            1.65,
             `${ev.factionTag} ｜ ${ev.desc}`
           );
         }
@@ -11155,10 +11365,32 @@ const App = {
         if (gCorners) gCorners.classList.remove('show');
         if (this.cutscenePlayer) this.cutscenePlayer.stop();
         if (ev) {
-          this.postZoomTimer = 0.75;
+          const th = (H && H.ultTheater) || document.getElementById('ult-theater');
+          const pill = document.getElementById('ult-faction-pill');
+          if (pill) {
+            pill.textContent = ev.factionTag || '軍師奧義';
+            pill.style.background = ev.side === 'enemy' ? '#b82929' : '#1f5ea8';
+          }
+          const tBig = document.getElementById('ult-title-big');
+          if (tBig) tBig.textContent = ev.title || '奧義發動';
+          const cPill = document.getElementById('ult-cost-pill');
+          if (cPill) cPill.textContent = ev.modeLabel || '軍師奧義';
+          const dLine = document.getElementById('ult-desc-line');
+          if (dLine) dLine.textContent = ev.desc || '';
+          if (th) th.className = 'show stage-post-hold' + (ev.side === 'enemy' ? ' enemy-cast' : '');
+
           this.ren.cutinFocus = { x: ev.focusX || 0, z: ev.focusZ || 0, orbit: false };
+          while (this.pendingPostVfx.length) this.handlePostVfxItem(this.pendingPostVfx.shift());
+          this.pendingImpactEvent = {
+            statusCallouts: this.pendingPostCallouts || [],
+            spellKind: 'rally',
+            side: ev.side
+          };
+          this.pendingPostCallouts = [];
+          this.postImpactTimer = 2.10;
+          this.postImpactDur = 2.10;
+          this._postCalloutIdx = 0;
         }
-        while (this.pendingPostVfx.length) this.handlePostVfxItem(this.pendingPostVfx.shift());
         this.aowEvent = null;
       }
       const skip3D = (this.aowDragonPhase === 0 && H && H.aowVideoStage && H.aowVideoStage.classList.contains('show'));
@@ -11169,49 +11401,58 @@ const App = {
       return;
     }
 
-    // 5. Strictly Sequential Non-Overlapping Stratagem Cutscene Theater (Stage 1..4)
+    // 5. Authentic SEGA Arcade Stratagem Cutscene Theater (Stage 1..4 -> Stage 5 Hold!)
     if (this.ultTheaterTimer > 0) {
       this.ultTheaterTimer -= realDt;
       const ev = this.ultEvent;
       const elapsed = this.ultDur - this.ultTheaterTimer;
       const th = (H && H.ultTheater) || document.getElementById('ult-theater');
 
-      if (this.ultStage === 0 && elapsed >= 0.35) {
-        // Stage 2: General Transparent Bust-Up + Faction War Flag ONLY
+      if (this.ultStage === 0 && elapsed >= 0.55) {
+        // Stage 2 (0.55–1.65s): General Transparent Bust-Up + Faction War Flag + Voice
         this.ultStage = 1;
         th.classList.remove('phase-focus');
         th.classList.add('stage1');
         sfx.bannerClash();
-      } else if (this.ultStage === 1 && elapsed >= 1.00) {
-        // Stage 3: Giant Octagonal Calligraphy Seal Slam ONLY
+      } else if (this.ultStage === 1 && elapsed >= 1.65) {
+        // Stage 3 (1.65–2.75s): Giant Octagonal Calligraphy Seal Slam
         this.ultStage = 2;
         th.classList.remove('stage1');
         th.classList.add('seal-phase');
         sfx.sealSlam();
-      } else if (this.ultStage === 2 && elapsed >= 1.55) {
-        // Stage 4: Clean Fullscreen Ver.3 HD Skill Movie + Bottom Strip ONLY (NO overlapping canvas VFX!)
+      } else if (this.ultStage === 2 && elapsed >= 2.75) {
+        // Stage 4 (2.75s–end): Full Official SEGA TrickMovieNo HD Movie + Bottom Strip
         this.ultStage = 3;
         th.classList.remove('seal-phase');
         th.classList.add('stage2');
         if (this._ultPendingVideoSrc) {
           this.playCutsceneVideo('ult-theater', 'ult-video', this._ultPendingVideoSrc, 'has-video');
+          const uv = document.getElementById('ult-video');
+          if (uv && Number.isFinite(uv.duration) && uv.duration > 0.5) {
+            const realMovieDur = Math.max(2.3, Math.min(4.4, uv.duration));
+            const newTotal = 2.75 + realMovieDur;
+            this.ultDur = newTotal;
+            this.ultTheaterTimer = Math.max(0.25, newTotal - elapsed);
+          }
         } else if (this.cutscenePlayer && ev) {
           const vKind = (ev.spdBoost && (ev.spellKind === 'self' || ev.spellKind === 'rally')) ? 'speed' : (ev.spellKind || 'rally');
-          this.cutscenePlayer.start(vKind, ev.factionColor || '#ffe08a', ev.title, true, Math.max(0.8, this.ultDur - 1.55));
+          this.cutscenePlayer.start(vKind, ev.factionColor || '#ffe08a', ev.title, true, Math.max(1.2, this.ultDur - 2.75));
         }
         sfx.playStratagemSE(ev ? ev.spellKind : 'rally', !!(ev && ev.isMajor));
       }
 
       if (this.ultTheaterTimer <= 0) {
-        // Exit Movie -> Transition to Stage 5: 3D Battlefield Focus + Explosion VFX!
+        // Exit Movie -> Transition to Stage 5: Frozen 3D Battlefield Effect Hold (Keep Bottom Arcade Banner!)
         this.ultTheaterTimer = 0;
+        const uv = document.getElementById('ult-video');
+        if (uv) uv.onloadedmetadata = null;
         this.stopCutsceneVideo('ult-theater', 'ult-video', 'has-video');
-        th.className = '';
         this.ren.stopHeroStratagem3D();
         this.ren.cinemaMode = null;
         if (this.cutscenePlayer) this.cutscenePlayer.stop();
 
         if (ev) {
+          th.className = 'show stage-post-hold' + (ev.side === 'enemy' ? ' enemy-cast' : '');
           this.pendingImpactEvent = ev;
           this.ren.cutinFocus = { x: ev.impactX ?? ev.focusX ?? 0, z: ev.impactZ ?? ev.focusZ ?? 0, orbit: false };
           if (ev.impactVfx && ev.impactVfx.length) {
@@ -11220,12 +11461,16 @@ const App = {
           if (ev.spellKind === 'meteor') {
             this.flashCastleGauge(ev.side === 'player' ? 'enemy' : 'player');
           }
-          if (ev.dmgJudge || ev.spellKind === 'meteor' || ev.spellKind === 'self_destruct') {
+          const isDamageSpell = !!(ev.dmgJudge || ev.spellKind === 'meteor' || ev.spellKind === 'self_destruct');
+          if (isDamageSpell) {
             sfx.playStratagemSE(ev.spellKind, false);
-            this.postImpactTimer = 0.85;
-          } else {
-            this.postImpactTimer = 0.45;
           }
+          const holdDur = isDamageSpell ? 1.85 : 2.25;
+          this.postImpactTimer = holdDur;
+          this.postImpactDur = holdDur;
+          this._postCalloutIdx = 0;
+        } else {
+          th.className = '';
         }
         this.ultEvent = null;
       }
@@ -11237,12 +11482,33 @@ const App = {
       return;
     }
 
-    // 5B. Stage 5 (BLOCKING): 3D Battlefield Explosion Focus -> Transitions to Stage 6 (Damage Judgment Cards)!
+    // 5B. Stage 5 (BLOCKING 2.25s Arcade Hold): Live 3D Battlefield Aura Pillars + Cascading Status Badges + Persistent Bottom Banner!
     if (this.postImpactTimer > 0) {
       this.postImpactTimer -= realDt;
+      const pev = this.pendingImpactEvent;
+      const pElapsed = (this.postImpactDur || 2.25) - this.postImpactTimer;
+      if (pev && pev.statusCallouts && pev.statusCallouts.length) {
+        const list = pev.statusCallouts;
+        if (this._postCalloutIdx == null) this._postCalloutIdx = 0;
+        while (this._postCalloutIdx < list.length && pElapsed >= 0.25 + this._postCalloutIdx * 0.08) {
+          if (this._postCalloutIdx === 0) {
+            const sk = pev.spellKind || 'rally';
+            if (sk === 'debuff' || sk === 'dance_curse') {
+              sfx.playSE('ten_fear', 0.72, 120, () => sfx.playSE('confirm', 0.60, 120));
+            } else if (sk === 'taunt') {
+              sfx.playSE('ten_provoke', 0.74, 120, () => sfx.playSE('confirm', 0.60, 120));
+            } else {
+              sfx.playSE('buff', 0.74, 120, () => sfx.playSE('confirm', 0.62, 120));
+            }
+          }
+          this.spawnCallout(list[this._postCalloutIdx]);
+          this._postCalloutIdx++;
+        }
+      }
       if (this.postImpactTimer <= 0) {
         this.postImpactTimer = 0;
-        const pev = this.pendingImpactEvent;
+        const th = (H && H.ultTheater) || document.getElementById('ult-theater');
+        if (th) th.className = '';
         this.pendingImpactEvent = null;
         if (pev && pev.deferredRetreats && pev.deferredRetreats.length) {
           this.deferredRetreatQueue.push(...pev.deferredRetreats);
@@ -11253,13 +11519,13 @@ const App = {
           this.ren.cutinFocus = null;
         }
       }
-      this.ren.render(realDt * 0.25, realDt, this.selectedUid, null);
+      this.ren.render(0, realDt, this.selectedUid, null);
       this.updateHUD();
       this.rafId = requestAnimationFrame(t => this.loop(t));
       return;
     }
 
-    // 5C. Stage 6 (BLOCKING): Hit Judgment Cards with Animated HP Drop -> Then Stage 7 (KO Split Cards)!
+    // 5C. Stage 6 (BLOCKING 1.75s): Hit Judgment Cards with Animated HP Drop -> Then Stage 7 (KO Split Cards)!
     if (this.dmgJudgeTimer > 0) {
       this.dmgJudgeTimer -= realDt;
       if (this.dmgJudgeTimer <= 0) {
@@ -11283,12 +11549,12 @@ const App = {
       return;
     }
 
-    // 6. First-Siege HD Movie + 3D Target Strike Cutscene
+    // 6. First-Siege HD Movie + 3D Target Strike Cutscene (3.05s)
     if (this.siegeCutsceneTimer > 0) {
       this.siegeCutsceneTimer -= realDt;
-      const elapsed = 2.35 - this.siegeCutsceneTimer;
+      const elapsed = 3.05 - this.siegeCutsceneTimer;
       const sc = (H && H.siegeCutscene) || document.getElementById('siege-cutscene');
-      if (this.siegeCutscenePhase === 0 && elapsed >= 0.45) {
+      if (this.siegeCutscenePhase === 0 && elapsed >= 0.65) {
         this.siegeCutscenePhase = 1;
         sc.classList.remove('stamp-on');
         sc.classList.add('action-on');
