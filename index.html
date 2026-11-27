@@ -9,7 +9,7 @@
 <meta name="screen-orientation" content="portrait">
 <meta name="x5-orientation" content="portrait">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰 網頁版 v3.2</title>
+<title>三國志大戰 網頁版 v3.3</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%239e1c18'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38' font-weight='900' fill='%23ffe599'>戰</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
@@ -1818,7 +1818,7 @@
     <div class="brand-title">
       <div class="brand-seal">戰</div>
       <h1>三國志大戰</h1>
-      <span class="brand-badge">v3.2</span>
+      <span class="brand-badge">v3.3</span>
     </div>
     <div class="deck-header-actions">
       <button class="hdr-chip-btn" id="btn-toggle-presets">推薦牌組 ▾</button>
@@ -1951,11 +1951,12 @@
       <button class="mode-btn" data-mode="3">點控</button>
     </div>
     <div class="top-actions">
-      <button class="top-btn" id="btn-quality" style="border-color:#68b6ff;color:#bfe4ff">畫質：高</button>
+      <button class="top-btn" id="btn-troop-style" style="border-color:#ffd266;color:#ffe899">天部隊</button>
+      <button class="top-btn" id="btn-quality" style="border-color:#68b6ff;color:#bfe4ff">流暢</button>
       <button class="top-btn" id="btn-fullscreen" style="border-color:var(--gold);color:var(--gold-bright)">⛶ 全螢幕</button>
       <button class="top-btn" id="btn-pause">暫停</button>
       <button class="top-btn" id="btn-speed">1.0x</button>
-      <button class="top-btn" id="btn-mute">音效：開</button>
+      <button class="top-btn" id="btn-mute">音：開</button>
       <button class="top-btn" id="btn-exit">編隊</button>
     </div>
   </div>
@@ -2534,6 +2535,15 @@ const BattleAssetPreloader = {
     };
     addSideStamps(playerIds, 'player');
     addSideStamps(enemyIds, 'enemy');
+
+    // 3.5 Authentic NDS《三國志大戰‧天》HD xBR 4x Battlefield Troop Sprite Sheets
+    for (const id of allIds) {
+      const g = GENERAL_MAP[id];
+      if (!g) continue;
+      const isFem = (g.id === 'daqiao' || g.id === 'diaochan');
+      const pref = g.type === 'cav' ? 'cav_m' : g.type === 'spr' ? 'spear_m' : (isFem ? 'arc_f' : 'arc_m');
+      push('img', `./assets/img/troops/${pref}_${g.faction}.webp`, '載入三國志大戰‧天原版部隊素材');
+    }
 
     // 4. 3D GLB models required for this map
     push('glb', './assets/models/castle_wall.glb', '載入 3D 戰場模型');
@@ -3796,12 +3806,13 @@ class BattleAI {
 // 5. CINEMATIC PBR THREE.JS 3D BATTLEFIELD RENDERER (v1.95)
 // ============================================================
 class BattleRenderer3D {
-  constructor(container, sim, mapTheme = 'grassland', qualityTier = null) {
+  constructor(container, sim, mapTheme = 'grassland', qualityTier = null, troopStyle = 'ten') {
     this.container = container;
     this.sim = sim;
     this.mapTheme = mapTheme || 'grassland';
     const isCoarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
     this.qualityTier = qualityTier || ((isCoarse || window.innerWidth <= 900) ? 'balanced' : 'high');
+    this.troopStyle = troopStyle || 'ten';
 
     this.unitMeshes = new Map();
     this.barMeshes = new Map();
@@ -3810,6 +3821,7 @@ class BattleRenderer3D {
     this.torchLights = [];
     this.bannerTexCache = new Map();
     this.portraitTexCache = new Map();
+    this.troopTexBaseCache = new Map();
     this.matPool = new Map();
     this.shakeTime = 0;
     this.baseCamTarget = new THREE.Vector3(0, 0, -0.3);
@@ -5278,6 +5290,13 @@ class BattleRenderer3D {
       soldierNodes.push(s);
     });
 
+    // Authentic NDS《三國志大戰‧天》HD xBR 4x Animated 2.5D Billboard Troop Squad!
+    const tenData = this.buildTenSpriteSquad(u, offsets);
+    grp.add(tenData.grp);
+    const useTen = (this.troopStyle === 'ten');
+    soldiersGrp.visible = !useTen;
+    tenData.grp.visible = useTen;
+
     const pole = new THREE.Mesh(this.sharedGeo.pole, sDarkMat);
     pole.position.set(-0.34, 1.08, -0.34); grp.add(pole);
     const flagTex = this.getBannerTexture(fObj.name.charAt(0), fObj.color);
@@ -5340,8 +5359,100 @@ class BattleRenderer3D {
     walkShootAura.rotation.x = -Math.PI / 2; walkShootAura.position.y = 0.1; walkShootAura.visible = false;
     grp.add(walkShootAura);
 
-    grp.userData = { soldiersGrp, soldierNodes, heroRig, chargeAura, spearFan, walkShootAura, flag };
+    grp.userData = { soldiersGrp, soldierNodes, tenData, heroRig, chargeAura, spearFan, walkShootAura, flag };
     return grp;
+  }
+
+  // ---- AUTHENTIC NDS《三國志大戰‧天》HD 2.5D ANIMATED TROOP SPRITE ENGINE ----
+  getTenTroopSheetKey(u) {
+    const g = u.general;
+    const fac = g.faction;
+    if (g.type === 'cav') return `cav_m_${fac}`;
+    if (g.type === 'spr') return `spear_m_${fac}`;
+    const isFemale = (g.id === 'daqiao' || g.id === 'diaochan');
+    return isFemale ? `arc_f_${fac}` : `arc_m_${fac}`;
+  }
+
+  createTenTroopTexInstance(key) {
+    const url = `./assets/img/troops/${key}.webp`;
+    let entry = this.troopTexBaseCache.get(key);
+    if (!entry) {
+      const pre = (typeof AssetCache !== 'undefined' && AssetCache.images) ? AssetCache.images.get(url) : null;
+      if (pre && pre.complete && pre.naturalWidth > 0) {
+        entry = { img: pre, loaded: true, texes: [] };
+      } else {
+        const img = new Image();
+        entry = { img, loaded: false, texes: [] };
+        img.onload = () => {
+          entry.loaded = true;
+          for (const tx of entry.texes) {
+            tx.image = img;
+            tx.needsUpdate = true;
+          }
+        };
+        img.src = url;
+      }
+      this.troopTexBaseCache.set(key, entry);
+    }
+    const tex = new THREE.Texture(entry.loaded ? entry.img : undefined);
+    tex.encoding = THREE.sRGBEncoding;
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.magFilter = THREE.LinearFilter;
+    tex.minFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    tex.repeat.set(1 / 8, 1 / 4);
+    tex.offset.set(0, 0.75);
+    if (entry.loaded) tex.needsUpdate = true;
+    entry.texes.push(tex);
+    return tex;
+  }
+
+  buildTenSpriteSquad(u, offsets) {
+    const grp = new THREE.Group();
+    const key = this.getTenTroopSheetKey(u);
+    const texA = this.createTenTroopTexInstance(key);
+    const texB = this.createTenTroopTexInstance(key);
+    const matA = new THREE.SpriteMaterial({ map: texA, transparent: true, alphaTest: 0.12, depthWrite: true });
+    const matB = new THREE.SpriteMaterial({ map: texB, transparent: true, alphaTest: 0.12, depthWrite: true });
+    const isCav = (u.general.type === 'cav');
+    const baseSz = isCav ? 1.28 : 1.10;
+    const nodes = [];
+
+    offsets.forEach(([ox, oz], idx) => {
+      const sp = new THREE.Sprite(idx % 2 === 0 ? matA : matB);
+      const sz = idx === 0 ? baseSz * 1.24 : baseSz * (0.88 + (idx % 3) * 0.05);
+      sp.center.set(0.5, 0.08);
+      sp.scale.set(sz, sz, 1);
+      sp.position.set(ox, 0.03, oz);
+      grp.add(sp);
+      nodes.push(sp);
+    });
+
+    const cmdHalo = new THREE.Mesh(
+      new THREE.RingGeometry(0.24, 0.36, 18),
+      new THREE.MeshBasicMaterial({ color: 0xffe07d, side: THREE.DoubleSide, transparent: true, opacity: 0.82 })
+    );
+    cmdHalo.rotation.x = -Math.PI / 2;
+    cmdHalo.position.set(offsets[0][0], 0.055, offsets[0][1]);
+    grp.add(cmdHalo);
+
+    return { grp, nodes, texA, texB, type: u.general.type };
+  }
+
+  setTroopStyle(style) {
+    this.troopStyle = (style === '3d') ? '3d' : 'ten';
+  }
+
+  updateTenSpriteTex(tex, row, col, flipX) {
+    const v = 1 - (row + 1) / 4;
+    if (flipX) {
+      tex.repeat.set(-1 / 8, 1 / 4);
+      tex.offset.set((col + 1) / 8, v);
+    } else {
+      tex.repeat.set(1 / 8, 1 / 4);
+      tex.offset.set(col / 8, v);
+    }
   }
 
   // ---- LIVE 3D ANIMATED CHARACTER STRATAGEM STAGE (ZERO Dynamic PointLight -> ZERO Shader Recompile Freeze!) ----
@@ -5750,19 +5861,58 @@ class BattleRenderer3D {
       m.position.set(u.x, 0, u.z);
       m.rotation.y = Math.PI / 2 - u.facing;
       const moving = Math.hypot(u.vx, u.vz) > 0.2;
-      m.userData.soldiersGrp.position.y = moving ? Math.abs(Math.sin(this.sim.elapsed * (u.general.type === 'cav' ? 12 : 8) + u.uid)) * 0.14 : 0;
+      const isCinemaHero = !!(this.heroCinemaStage && this.heroCinemaStage.unitId === u.uid);
+      const useTen = (this.troopStyle === 'ten') && !isCinemaHero && !!m.userData.tenData;
+      m.userData.soldiersGrp.visible = !useTen;
+      if (m.userData.tenData) m.userData.tenData.grp.visible = useTen;
+      if (m.userData.flag) m.userData.flag.visible = !isCinemaHero;
       m.userData.flag.rotation.y = Math.sin(t * 5.5 + u.uid) * 0.3;
 
-      // Dynamic HP-based soldier count (Commander at idx 0 always visible while alive!)
       const nodes = m.userData.soldierNodes;
       const aliveCount = Math.max(1, Math.ceil((u.hp / u.maxHp) * nodes.length));
-      for (let i = 0; i < nodes.length; i++) nodes[i].visible = (i < aliveCount);
 
-      // Animate Articulated 3D Hero Rig during normal battlefield combat
+      if (useTen) {
+        const td = m.userData.tenData;
+        for (let i = 0; i < td.nodes.length; i++) td.nodes[i].visible = (i < aliveCount);
+        const hopFreq = u.general.type === 'cav' ? (u.isCharging ? 16 : 12) : 8;
+        td.grp.position.y = moving ? Math.abs(Math.sin(this.sim.elapsed * hopFreq + u.uid)) * 0.09 : 0;
+
+        // Compute directional view (front = facing +Z camera, back = facing -Z enemy castle, side = left/right)
+        const fx = Math.cos(u.facing), fz = Math.sin(u.facing);
+        let dir = 'side', flipX = false;
+        if (fz > 0.52) dir = 'front';
+        else if (fz < -0.52) dir = 'back';
+        else flipX = (fx > 0);
+
+        const isShooting = (u.general.type === 'arc' && (u.standTimer > 0.25 || u.walkShootTimer > 0) && !u.inMelee);
+        const isAtk = u.inMelee || u.isCharging || u.isSieging || isShooting;
+        let frames;
+        if (td.type === 'cav') {
+          if (isAtk) frames = dir === 'front' ? [[2,4],[2,5],[2,6]] : dir === 'back' ? [[3,3],[3,4],[3,5]] : [[3,0],[3,1],[3,2]];
+          else if (moving) frames = dir === 'front' ? [[1,0],[1,1],[1,2],[1,3]] : dir === 'back' ? [[2,0],[2,1],[2,2],[2,3]] : [[1,4],[1,5],[1,6],[1,7]];
+          else frames = [dir === 'front' ? [0,0] : dir === 'back' ? [0,2] : [0,1]];
+        } else if (td.type === 'spr') {
+          if (isAtk) frames = dir === 'front' ? [[2,6],[2,7],[3,0]] : dir === 'back' ? [[3,4],[3,5],[3,6]] : [[3,1],[3,2],[3,3]];
+          else if (moving) frames = dir === 'front' ? [[0,4],[0,5],[0,6],[0,7],[1,0],[1,1]] : dir === 'back' ? [[2,0],[2,1],[2,2],[2,3],[2,4],[2,5]] : [[1,2],[1,3],[1,4],[1,5],[1,6],[1,7]];
+          else frames = [dir === 'front' ? [0,0] : dir === 'back' ? [0,2] : [0,1]];
+        } else {
+          if (isAtk) frames = dir === 'front' ? [[2,4],[2,5],[2,6],[2,7]] : dir === 'back' ? [[3,4],[3,5],[3,6],[3,7]] : [[3,0],[3,1],[3,2],[3,3]];
+          else if (moving) frames = dir === 'front' ? [[1,0],[1,1],[1,2],[1,3]] : dir === 'back' ? [[2,0],[2,1],[2,2],[2,3]] : [[1,4],[1,5],[1,6],[1,7]];
+          else frames = [dir === 'front' ? [0,0] : dir === 'back' ? [0,2] : [0,1]];
+        }
+        const fps = u.isCharging ? 13 : isAtk ? 8 : (td.type === 'cav' ? 10 : 7);
+        const stepA = Math.floor(this.sim.elapsed * fps + u.uid * 1.7) % frames.length;
+        const stepB = (stepA + Math.max(1, Math.floor(frames.length / 2))) % frames.length;
+        this.updateTenSpriteTex(td.texA, frames[stepA][0], frames[stepA][1], flipX);
+        this.updateTenSpriteTex(td.texB, frames[stepB][0], frames[stepB][1], flipX);
+      } else {
+        m.userData.soldiersGrp.position.y = moving ? Math.abs(Math.sin(this.sim.elapsed * (u.general.type === 'cav' ? 12 : 8) + u.uid)) * 0.14 : 0;
+        for (let i = 0; i < nodes.length; i++) nodes[i].visible = (i < aliveCount);
+      }
+
+      // Animate Articulated 3D Hero Rig during normal battlefield combat (when 3D style or cinema zoom is active)
       const hr = m.userData.heroRig;
-      const isCinemaHero = !!(this.heroCinemaStage && this.heroCinemaStage.unitId === u.uid);
-      if (m.userData.flag) m.userData.flag.visible = !isCinemaHero;
-      if (hr && !isCinemaHero) {
+      if (hr && !isCinemaHero && !useTen) {
         hr.root.scale.setScalar(hr.baseScale || 1.2);
         if (hr.capeMesh) {
           hr.capeMesh.rotation.x = 0.24 + (moving ? 0.26 : 0.04) + Math.sin(t * 7 + u.uid) * 0.08;
@@ -7105,10 +7255,15 @@ const App = {
       setLoadUI(93, '建構 3D 戰場與預編譯光影著色器…');
       await new Promise(r => requestAnimationFrame(r));
 
-      this.ren = new BattleRenderer3D(document.getElementById('three-container'), this.sim, mapTheme, this.qualityTier || 'balanced');
+      if (!this.troopStyle) {
+        try { this.troopStyle = localStorage.getItem('sgt_troop_v1') || 'ten'; } catch (e) { this.troopStyle = 'ten'; }
+      }
+      this.ren = new BattleRenderer3D(document.getElementById('three-container'), this.sim, mapTheme, this.qualityTier || 'balanced', this.troopStyle);
       this.qualityTier = this.ren.qualityTier;
       const qBtn = document.getElementById('btn-quality');
-      if (qBtn) qBtn.textContent = this.qualityTier === 'high' ? '畫質：高' : '畫質：流暢';
+      if (qBtn) qBtn.textContent = this.qualityTier === 'high' ? '高畫質' : '流暢';
+      const tsBtn = document.getElementById('btn-troop-style');
+      if (tsBtn) tsBtn.textContent = this.troopStyle === 'ten' ? '天部隊' : '3D部隊';
       if (qSel) qSel.value = this.qualityTier;
       this.ren.precompile();
       this.cutscenePlayer = new SpellCutscenePlayer(document.getElementById('cutscene-canvas'));
@@ -7192,6 +7347,16 @@ const App = {
       if (this.controlMode === 2) this.refreshPadDimensions();
     });
 
+    document.getElementById('btn-troop-style').addEventListener('click', () => {
+      if (!this.ren) return;
+      const next = this.ren.troopStyle === 'ten' ? '3d' : 'ten';
+      this.troopStyle = next;
+      try { localStorage.setItem('sgt_troop_v1', next); } catch (e) {}
+      this.ren.setTroopStyle(next);
+      document.getElementById('btn-troop-style').textContent = next === 'ten' ? '天部隊' : '3D部隊';
+      this.toast(next === 'ten' ? '部隊切換：三國志大戰‧天 原版動態精靈（HD xBR）' : '部隊切換：PBR 3D 立體模組');
+    });
+
     document.getElementById('btn-quality').addEventListener('click', () => {
       if (!this.ren) return;
       const next = this.ren.qualityTier === 'high' ? 'balanced' : 'high';
@@ -7201,7 +7366,7 @@ const App = {
       if (qSel) qSel.value = next;
       this.updateCfgSummary();
       this.ren.setQualityTier(next);
-      document.getElementById('btn-quality').textContent = next === 'high' ? '畫質：高' : '畫質：流暢';
+      document.getElementById('btn-quality').textContent = next === 'high' ? '高畫質' : '流暢';
       this.toast(next === 'high' ? '高畫質（柔光泛光＋精細陰影）' : '流暢模式（60fps 低發熱）');
     });
 
@@ -7228,7 +7393,7 @@ const App = {
     });
     document.getElementById('btn-mute').addEventListener('click', () => {
       sfx.setMuted(!sfx.muted);
-      document.getElementById('btn-mute').textContent = sfx.muted ? '音效：關' : '音效：開';
+      document.getElementById('btn-mute').textContent = sfx.muted ? '音：關' : '音：開';
     });
     document.getElementById('btn-exit').addEventListener('click', () => this.exitToDeck());
     document.getElementById('btn-back-deck').addEventListener('click', () => this.exitToDeck());
