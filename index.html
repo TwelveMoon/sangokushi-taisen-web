@@ -9,8 +9,8 @@
 <meta name="screen-orientation" content="portrait">
 <meta name="x5-orientation" content="portrait">
 <meta name="x5-fullscreen" content="true">
-<title>三國志大戰 網頁版 v3.3</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%239e1c18'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38' font-weight='900' fill='%23ffe599'>戰</text></svg>">
+<title>三國志大戰‧天 網頁版 v5.0</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%239e1c18'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38' font-weight='900' fill='%23ffe599'>天</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -19,6 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="./assets/data/ten_db.js"></script>
 <style>
   :root {
     --bg-dark: #09070c;
@@ -2148,6 +2149,382 @@
     #arcade-cast-btn.rr-orb-btn { width: 50px; height: 50px; }
     #arcade-cast-btn.rr-orb-btn .orb-v { font-size: 10.5px; }
   }
+
+  /* ============================================================
+     v5.0 AUTHENTIC NDS《三國志大戰‧天》SINGLE-PLAYER CAMPAIGN + DECK EDITOR
+     ============================================================ */
+  /* Top Navigation Bar (Jade & Imperial Gold Theme inspired by DED_TBG/SEN_TBG!) */
+  .deck-header {
+    background: linear-gradient(180deg, #0d3a34 0%, #092421 100%);
+    border-bottom: 2px solid #d4af37;
+    padding: 6px 10px;
+  }
+  .hub-nav-bar {
+    display: flex; align-items: center; gap: 5px; padding: 5px 10px;
+    background: linear-gradient(180deg, #0b1c1a 0%, #10131a 100%);
+    border-bottom: 1.5px solid #2d4c44; flex-shrink: 0;
+  }
+  .hub-tab-btn {
+    flex: 1; padding: 7px 6px; border-radius: 7px; font-size: 12.5px; font-weight: 900;
+    letter-spacing: 1px; color: #b7c9c2; background: #162220; border: 1.5px solid #2d4c44;
+    display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.14s;
+  }
+  .hub-tab-btn.active {
+    background: linear-gradient(180deg, #257a65 0%, #13473c 100%);
+    color: #fff6cc; border-color: #f4d378;
+    box-shadow: 0 0 12px rgba(52, 200, 155, 0.4), inset 0 1px 0 rgba(255,255,255,0.28);
+  }
+  .hub-tab-pill {
+    font-size: 9.5px; padding: 1px 5px; border-radius: 9px;
+    background: rgba(0,0,0,0.45); color: #ffe588; font-weight: 800;
+  }
+
+  .hub-panel { display: none; flex: 1; min-height: 0; flex-direction: column; overflow: hidden; }
+  .hub-panel.active { display: flex; }
+
+  /* 1. SINGLE-PLAYER CAMPAIGN (天下統一 戰略模式) */
+  .camp-status-strip {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    padding: 5px 10px; background: linear-gradient(90deg, #0d2622, #181a24, #1b1510);
+    border-bottom: 1px solid #355249; flex-shrink: 0; flex-wrap: wrap;
+  }
+  .camp-stat-grp { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .camp-badge {
+    font-size: 11px; font-weight: 900; padding: 2px 8px; border-radius: 5px;
+    background: rgba(15, 22, 26, 0.85); border: 1px solid #496e62; color: #dff7ee;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .camp-badge.gold { border-color: var(--gold); color: var(--gold-bright); background: rgba(45,30,10,0.75); }
+  .camp-badge.rank { border-color: #5ee6b8; color: #9effdd; background: rgba(12,48,38,0.85); }
+  .camp-tavern-btn {
+    padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 900;
+    background: linear-gradient(180deg, #f0c24b, #b07316); color: #1a0c02;
+    border: 1px solid #fff0b0; box-shadow: 0 2px 8px rgba(240,180,50,0.4);
+  }
+  .camp-tavern-btn:active { transform: scale(0.96); }
+
+  .camp-chapter-bar {
+    display: flex; gap: 5px; padding: 5px 10px; overflow-x: auto; flex-shrink: 0;
+    background: #101319; border-bottom: 1px solid #2b3532;
+  }
+  .chap-pill {
+    padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 800;
+    white-space: nowrap; flex-shrink: 0;
+    background: #191f26; color: #a7b6be; border: 1px solid #334048; transition: 0.14s;
+  }
+  .chap-pill.active {
+    background: linear-gradient(180deg, #d8a53c, #996616); color: #160c02; border-color: #ffe99e;
+  }
+  .chap-pill.cleared { border-color: #46cc82; color: #8ff5bd; }
+  .chap-pill.active.cleared { color: #160c02; }
+
+  /* Official NDS China Strategy Map Container (Upper Screen of Campaign!) */
+  .camp-map-wrap {
+    position: relative; width: 100%; flex: 0 0 43%; min-height: 210px; max-height: 410px;
+    background: #14100a; border-bottom: 2px solid #8a6c34; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .camp-map-stage {
+    position: relative; height: 100%; aspect-ratio: 4 / 3; max-width: 100%;
+    background: url('./assets/img/ui/senryaku_map.webp') center/100% 100% no-repeat;
+    box-shadow: 0 0 24px rgba(0,0,0,0.85);
+  }
+  .map-chap-banner {
+    position: absolute; top: 6px; left: 8px; z-index: 8; pointer-events: none;
+    padding: 3px 9px; border-radius: 5px;
+    background: rgba(10, 18, 16, 0.86); border: 1px solid var(--gold);
+    color: #ffe8a0; font-size: 11px; font-weight: 900; letter-spacing: 1px;
+  }
+  .map-legend {
+    position: absolute; bottom: 5px; right: 6px; z-index: 8; pointer-events: none;
+    padding: 2px 7px; border-radius: 4px; background: rgba(10, 12, 16, 0.82);
+    border: 1px solid rgba(255,220,130,0.4); font-size: 9.5px; color: #ddd;
+    display: flex; gap: 7px;
+  }
+
+  /* Clickable Castle Nodes on the Official NDS China Map */
+  .prov-node {
+    position: absolute; transform: translate(-50%, -50%); z-index: 5;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center;
+    transition: transform 0.14s ease;
+  }
+  .prov-node:hover { transform: translate(-50%, -50%) scale(1.14); z-index: 12; }
+  .prov-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid #fff3cc; background: #5a4b38;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9.5px; font-weight: 900; color: #fff;
+  }
+  .prov-node.capital .prov-dot { width: 22px; height: 22px; border-width: 2.5px; font-size: 11px; }
+  .prov-node.fac-wei .prov-dot { background: #c92b2b; }
+  .prov-node.fac-shu .prov-dot { background: #268c44; }
+  .prov-node.fac-wu  .prov-dot { background: #1d6bc7; }
+  .prov-node.fac-qun .prov-dot { background: #967830; }
+  .prov-node.cleared .prov-dot {
+    background: linear-gradient(135deg, #ffe98a, #c98c1c); color: #1a0d02;
+    border-color: #fffbe0; box-shadow: 0 0 10px rgba(255,215,90,0.85);
+  }
+  .prov-node.in-chapter .prov-dot {
+    box-shadow: 0 0 0 3px rgba(255,95,65,0.65), 0 0 14px rgba(255,65,45,0.9);
+  }
+  .prov-node.selected { z-index: 15; }
+  .prov-node.selected .prov-dot {
+    transform: scale(1.22);
+    border-color: #fff;
+    box-shadow: 0 0 0 3px #ffeb7a, 0 0 18px #ff5c33;
+    animation: provPulse 1.1s ease-in-out infinite;
+  }
+  @keyframes provPulse {
+    0%, 100% { box-shadow: 0 0 0 2px #ffeb7a, 0 0 12px #ff5c33; }
+    50% { box-shadow: 0 0 0 5px #ffeb7a, 0 0 22px #ff5c33; }
+  }
+  .prov-lbl {
+    margin-top: 1px; padding: 0 4px; border-radius: 3px; white-space: nowrap;
+    font-size: 9.5px; font-weight: 900; color: #fff;
+    background: rgba(12, 10, 16, 0.84); border: 1px solid rgba(255,220,130,0.45);
+    text-shadow: 0 1px 2px #000;
+  }
+  .prov-node.selected .prov-lbl { background: #9c1a14; border-color: #ffe899; color: #fff8d6; }
+  .prov-node.cleared .prov-lbl { border-color: #ffd56b; color: #ffe899; }
+
+  /* Lower Screen of Campaign: Stage List + Selected Stage War Council Briefing */
+  .camp-lower {
+    flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto;
+    padding: 8px 10px 10px; gap: 8px;
+    background: linear-gradient(180deg, #10141b 0%, #0a0b10 100%);
+  }
+  .camp-stage-strip {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; flex-shrink: 0;
+  }
+  .cstage-chip {
+    padding: 6px 6px; border-radius: 7px; text-align: left;
+    background: #171b24; border: 1.5px solid #303a48; color: #d8d4cc;
+    display: flex; flex-direction: column; gap: 2px; transition: 0.14s;
+  }
+  .cstage-chip.selected {
+    background: linear-gradient(135deg, #2b1d1c, #1a1524);
+    border-color: var(--gold-bright); box-shadow: 0 0 12px rgba(240,190,80,0.35);
+  }
+  .cstage-chip.cleared { border-color: #3db876; }
+  .cstage-chip .cs-top { display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #9db0ba; }
+  .cstage-chip .cs-title { font-size: 12px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cstage-chip .cs-stars { font-size: 9.5px; color: #ffd45e; }
+
+  .camp-brief-card {
+    background: linear-gradient(160deg, #161d22 0%, #11131b 100%);
+    border: 1.5px solid #48635a; border-radius: 10px; padding: 10px;
+    display: flex; flex-direction: column; gap: 8px; flex: 1;
+  }
+  .cb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .cb-title { font-size: 16px; font-weight: 900; color: #ffe8a0; letter-spacing: 1px; }
+  .cb-sub { font-size: 11.5px; color: #d2cec4; margin-top: 2px; line-height: 1.38; }
+  .cb-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+  .cb-tag {
+    font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;
+    background: rgba(255,255,255,0.07); border: 1px solid #3c4b52; color: #cde6de;
+  }
+  .cb-tag.rule { border-color: #d97e38; color: #ffcf99; background: rgba(80,35,10,0.45); }
+  .cb-tag.reward { border-color: #e6bf55; color: #ffe899; background: rgba(70,50,12,0.5); }
+
+  .cb-enemy-row {
+    display: flex; align-items: center; gap: 6px; overflow-x: auto; padding: 4px 0;
+  }
+  .cb-enemy-card {
+    width: 62px; flex-shrink: 0; border-radius: 6px; overflow: hidden;
+    border: 1.5px solid #a83c3c; background: #140d14; position: relative;
+  }
+  .cb-enemy-card.gunshi { border-color: #5ec8ff; }
+  .cb-enemy-card img { width: 100%; aspect-ratio: 2 / 2.75; object-fit: cover; display: block; }
+  .cb-enemy-card .ce-lbl {
+    font-size: 9.5px; font-weight: 900; text-align: center; color: #fff;
+    background: rgba(10,8,14,0.92); padding: 2px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cb-enemy-card .ce-tag {
+    position: absolute; top: 2px; left: 2px; font-size: 8.5px; font-weight: 900;
+    padding: 0 4px; border-radius: 3px; background: rgba(12,8,16,0.88); color: #ffe588;
+  }
+
+  .cb-actions {
+    display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: auto;
+  }
+  .cb-edit-btn {
+    padding: 10px 10px; border-radius: 8px; font-size: 13px; font-weight: 900;
+    background: linear-gradient(180deg, #1d574b, #11342d); color: #d8fff0;
+    border: 1.5px solid #52b89b;
+  }
+  .cb-launch-btn {
+    padding: 10px 12px; border-radius: 8px; font-size: 15px; font-weight: 900; letter-spacing: 3px;
+    background: linear-gradient(180deg, #f3c85c 0%, #c7831e 60%, #8f4d0c 100%);
+    color: #1c0c02; border: 2px solid #fff0b3;
+    box-shadow: 0 4px 16px rgba(240,165,45,0.45);
+  }
+
+  /* 2. AUTHENTIC NDS《三國志大戰‧天》DECK EDITOR (DED_TBG + DED_BBG Jade-Imperial Design!) */
+  .deck-stage-bar {
+    background: linear-gradient(180deg, #0d2b26 0%, #0b1c1c 100%);
+    border-bottom: 2px solid #c9a242;
+    padding: 6px 10px 7px;
+  }
+  .ded-top-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 5px; flex-wrap: wrap;
+  }
+  /* Authentic 8 Cost Gold Beads (合計コスト!) */
+  .cost-beads-wrap {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 8px;
+    background: #0a1414; border: 1.5px solid #c9a242;
+  }
+  .cost-beads-lbl { font-size: 10px; font-weight: 900; color: #ffe588; margin-right: 2px; }
+  .cost-bead {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #232a2e; border: 1.5px solid #59686e; position: relative; overflow: hidden;
+  }
+  .cost-bead.full {
+    background: radial-gradient(circle at 35% 30%, #fff7be, #f2b729 60%, #995808);
+    border-color: #fff2b2; box-shadow: 0 0 6px rgba(255,210,75,0.85);
+  }
+  .cost-bead.half::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 50%;
+    background: radial-gradient(circle at 40% 35%, #fff7be, #f2b729 70%, #995808);
+  }
+  .cost-bead.half { border-color: #f2c860; }
+
+  .deck-mem-tabs { display: inline-flex; gap: 3px; }
+  .dmem-btn {
+    padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 900;
+    background: #132523; color: #9fc2b7; border: 1px solid #2e544a;
+  }
+  .dmem-btn.active { background: #267864; color: #fff6cc; border-color: #ffe28a; }
+
+  /* 7-Slot Upright 2:3 Deck Grid (Up to 6 Generals within 8.0 Cost + 1 Official Gunshi!) */
+  .deck-slots-grid {
+    display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px;
+  }
+  .dslot {
+    aspect-ratio: 2 / 2.72; max-height: 138px;
+  }
+
+  /* Multi-Axis Filter + Sort + Search + Card/List Switcher (DED_BBG Logic!) */
+  .ded-tools-row {
+    display: flex; align-items: center; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; flex-shrink: 0;
+  }
+  .ded-search {
+    flex: 1; min-width: 110px; padding: 4px 8px; border-radius: 6px; font-size: 11.5px;
+    background: #12181c; border: 1px solid #35504a; color: #f2f5f3; outline: none;
+  }
+  .ded-search:focus { border-color: var(--gold-bright); }
+  .ded-select {
+    padding: 4px 6px; border-radius: 6px; font-size: 11px; font-weight: 800;
+    background: #152024; color: #e6ebe8; border: 1px solid #35504a;
+  }
+  .ded-mini-btn {
+    padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 900;
+    background: #172726; color: #cde8de; border: 1px solid #386156; white-space: nowrap;
+  }
+  .ded-mini-btn.active { background: #247864; color: #fff6cc; border-color: #ffe388; }
+  .ded-mini-btn.unlock-on { background: #6b4710; color: #fff0ad; border-color: #ffd566; }
+
+  /* Rarity Badges on Cards (C / UC / R / SR / LE) */
+  .rare-badge {
+    font-size: 8.5px; font-weight: 900; padding: 0 4px; border-radius: 3px;
+    line-height: 1.35; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.4);
+  }
+  .rare-C  { background: #4a525c; color: #e8edf2; }
+  .rare-UC { background: #267848; color: #e8ffef; }
+  .rare-R  { background: #1e62b8; color: #e8f5ff; border-color: #88ccff; }
+  .rare-SR { background: linear-gradient(135deg, #d48c14, #f5cf5b); color: #1c0c02; border-color: #fff6cc; }
+  .rare-LE { background: linear-gradient(135deg, #c9268a, #f2a830, #42c8f5); color: #fff; border-color: #fff; }
+
+  .gcard.locked { filter: grayscale(0.92) brightness(0.55); opacity: 0.72; }
+  .gcard .lock-banner {
+    display: none; position: absolute; inset: 0; align-items: center; justify-content: center;
+    background: rgba(8, 10, 14, 0.45); color: #e2d8c0; font-size: 11px; font-weight: 900;
+    letter-spacing: 1px; text-shadow: 0 1px 4px #000;
+  }
+  .gcard.locked .lock-banner { display: flex; }
+
+  /* Authentic NDS List-Table View (DED_TBG: 國 | 稀 | 武將名 | 兵種 | Cost | 武 | 知 | 特技 | 計略) */
+  .roster-table-wrap {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: #10181a; border: 1px solid #2d4c44; border-radius: 8px;
+  }
+  .roster-table {
+    width: 100%; border-collapse: collapse; font-size: 11px;
+  }
+  .roster-table th {
+    position: sticky; top: 0; z-index: 4; padding: 5px 4px; text-align: center;
+    background: #123630; color: #ffe699; border-bottom: 1.5px solid #c9a242; font-weight: 900;
+  }
+  .roster-table td {
+    padding: 5px 4px; border-bottom: 1px solid #1e2d2c; text-align: center; color: #e8ecea;
+  }
+  .roster-table tr { cursor: pointer; transition: background 0.1s; }
+  .roster-table tr:hover { background: #1a2c2b; }
+  .roster-table tr.selected { background: rgba(45, 130, 96, 0.34); }
+  .roster-table tr.locked { opacity: 0.48; filter: grayscale(0.8); }
+  .roster-table td.td-name { text-align: left; font-weight: 900; color: #fff; white-space: nowrap; }
+  .roster-table td.td-strat { text-align: left; color: #cfd9d4; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .roster-pager {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 5px 2px 2px; font-size: 11px; color: #b9c9c2; flex-shrink: 0;
+  }
+
+  /* 3. FREE BATTLE TAB (自由對戰設定面板) */
+  .free-panel-body {
+    flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;
+    background: linear-gradient(180deg, #10151c 0%, #0a0b10 100%);
+  }
+  .free-card-box {
+    background: #151c22; border: 1.5px solid #38544c; border-radius: 10px; padding: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .free-card-box h3 { font-size: 14px; color: #ffe699; letter-spacing: 1px; margin: 0; }
+
+  /* 4. AUTHENTIC POST-BATTLE / TAVERN 3-CARD PACK OPENING MODAL (CARD GET!) */
+  .pack-modal-card {
+    max-width: 560px; padding: 16px; text-align: center;
+    background: radial-gradient(circle at 50% 20%, #243832 0%, #10131b 72%);
+    border: 2px solid #f2cc66;
+  }
+  .pack-title {
+    font-size: 20px; font-weight: 900; color: #ffe88a; letter-spacing: 4px;
+    text-shadow: 0 0 18px rgba(255,205,70,0.7);
+  }
+  .pack-sub { font-size: 12px; color: #cbe0d8; margin: 4px 0 12px; }
+  .pack-cards-row {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px;
+  }
+  .pack-card {
+    background: #14121c; border-radius: 9px; overflow: hidden; border: 2px solid #8c7238;
+    animation: packPop 0.42s cubic-bezier(0.14, 0.96, 0.24, 1.08) both;
+    position: relative;
+  }
+  .pack-card.r-SR { border-color: #ffd55e; box-shadow: 0 0 18px rgba(255,205,65,0.75); }
+  .pack-card.r-LE { border-color: #ff8ef0; box-shadow: 0 0 22px rgba(255,120,235,0.85); }
+  .pack-card.r-R  { border-color: #62b8ff; box-shadow: 0 0 14px rgba(80,175,255,0.55); }
+  .pack-card img { width: 100%; aspect-ratio: 2 / 2.75; object-fit: cover; display: block; }
+  .pack-card-meta {
+    padding: 5px 4px; background: #0c0e14; font-size: 11px; font-weight: 900; color: #fff;
+  }
+  .pack-new-pill {
+    position: absolute; top: 5px; right: 5px; font-size: 9.5px; font-weight: 900;
+    padding: 1px 6px; border-radius: 4px; background: #e02828; color: #fff; border: 1px solid #ffe899;
+  }
+  .pack-new-pill.dup { background: #3b4652; color: #d0dce6; border-color: #6a7c8c; }
+  @keyframes packPop {
+    0% { opacity: 0; transform: translateY(22px) scale(0.75); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @media (max-width: 520px) {
+    .camp-stage-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .deck-slots-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+    .dslot { max-height: 86px; }
+    .cost-bead { width: 11px; height: 11px; }
+    .prov-dot { width: 15px; height: 15px; font-size: 8px; }
+    .prov-lbl { font-size: 8.5px; }
+  }
 </style>
 </head>
 <body>
@@ -2197,140 +2574,245 @@
 
 <!-- ================= PORTRAIT DECK BUILDER VIEW (v3.2 REDESIGNED) ================= -->
 <div id="deck-view">
-  <!-- 1. Crisp Single-Row Header -->
+  <!-- 1. Imperial Jade & Gold Header -->
   <div class="deck-header">
     <div class="brand-title">
       <div class="brand-seal">天</div>
       <h1>三國志大戰‧天</h1>
-      <span class="brand-badge">v4.0</span>
+      <span class="brand-badge">v5.0</span>
     </div>
     <div class="deck-header-actions">
-      <button class="hdr-chip-btn" id="btn-open-gunshi">軍師選擇</button>
+      <button class="hdr-chip-btn" id="btn-toggle-unlock-all" title="切換戰役收集模式／全 192 武將自由解鎖">全武將:關</button>
       <button class="hdr-chip-btn" id="btn-toggle-presets">推薦牌組 ▾</button>
       <button class="hdr-chip-btn" id="btn-fullscreen-deck">⛶ 全螢幕</button>
     </div>
+  </div>
+
+  <!-- 2. Authentic 3-Mode Single-Player Hub Navigation -->
+  <div class="hub-nav-bar" id="hub-nav-bar">
+    <button class="hub-tab-btn active" data-hub="campaign">
+      <span>天下統一</span><span class="hub-tab-pill" id="hub-camp-prog">0/24</span>
+    </button>
+    <button class="hub-tab-btn" data-hub="deck">
+      <span>陣容編輯</span><span class="hub-tab-pill" id="hub-col-prog">36/192</span>
+    </button>
+    <button class="hub-tab-btn" data-hub="free">
+      <span>自由對戰</span><span class="hub-tab-pill">模擬</span>
+    </button>
   </div>
 
   <!-- Collapsible Quick Preset Strip -->
   <div class="preset-drawer" id="preset-drawer">
     <div class="preset-bar">
       <button class="preset-btn wei" data-preset="wei">魏・霸道</button>
-      <button class="preset-btn shu" data-preset="shu">蜀・五虎</button>
+      <button class="preset-btn wei" data-preset="wei_sima">魏・司馬</button>
+      <button class="preset-btn shu" data-preset="shu">蜀・桃園</button>
+      <button class="preset-btn shu" data-preset="shu_five">蜀・五虎</button>
       <button class="preset-btn wu"  data-preset="wu">吳・赤壁</button>
+      <button class="preset-btn wu"  data-preset="wu_tiger">吳・江東</button>
       <button class="preset-btn qun" data-preset="qun">群・無雙</button>
+      <button class="preset-btn qun" data-preset="qun_yellow">群・黃巾</button>
     </div>
   </div>
 
-  <!-- 2. Enlarged Upright 2:3 Visual Deck Bar (5 Generals + 1 Official Gunshi Card!) -->
-  <div class="deck-stage-bar">
-    <div class="deck-stage-top">
-      <div class="deck-cost-group">
-        <span class="deck-cost-val" id="cost-readout">0.0 / 8.0 <small>Cost</small></span>
-        <span class="dstat-pill gold" id="morale-cap-readout">士氣 14</span>
-        <span class="dstat-pill" id="start-morale-readout">開局 2.5</span>
+  <!-- ================= TAB 1: 天下統一（單人戰役戰略模式） ================= -->
+  <div class="hub-panel active" id="panel-campaign">
+    <div class="camp-status-strip">
+      <div class="camp-stat-grp">
+        <span class="camp-badge rank" id="camp-rank-badge">官位：十品官</span>
+        <span class="camp-badge gold" id="camp-gold-badge">軍資金：300</span>
+        <span class="camp-badge" id="camp-city-badge">制霸：0 / 24 城</span>
       </div>
-      <div class="deck-stat-pills">
-        <span class="dstat-pill" id="troop-mix-readout">騎0 槍0 弓0 步0 攻0</span>
-        <button class="deck-clear-btn" id="btn-clear-deck" title="清空牌組">清空</button>
+      <div class="camp-stat-grp">
+        <button class="camp-tavern-btn" id="btn-tavern-draw">酒館登用 3連抽 (200金)</button>
       </div>
     </div>
-    <div class="cost-bar-wrap">
-      <div class="cost-bar-fill" id="cost-bar-fill" style="width:0%"></div>
-      <div class="cost-bar-ticks"></div>
-    </div>
-    <div class="deck-slots-grid" id="deck-slots"></div>
-  </div>
 
-  <!-- 3. Spacious Center Roster Browser (40 Authentic NDS Generals, 5 Unit Types!) -->
-  <div class="deck-main">
-    <div class="roster-col">
-      <div class="filter-bar">
-        <div class="faction-tabs" id="faction-tabs">
-          <button class="ftab active" data-faction="all">全部(40)</button>
-          <button class="ftab" data-faction="wei">魏</button>
-          <button class="ftab" data-faction="shu">蜀</button>
-          <button class="ftab" data-faction="wu">吳</button>
-          <button class="ftab" data-faction="qun">群雄</button>
-        </div>
-        <div class="type-tabs" id="type-tabs">
-          <button class="ttab active" data-type="all">全</button>
-          <button class="ttab" data-type="cav">騎</button>
-          <button class="ttab" data-type="spr">槍</button>
-          <button class="ttab" data-type="arc">弓</button>
-          <button class="ttab" data-type="inf">步</button>
-          <button class="ttab" data-type="sge">攻</button>
+    <div class="camp-chapter-bar" id="camp-chapter-bar"></div>
+
+    <!-- Official NDS 512x384 -> 1024x768 China Strategy Map with 24 Clickable Castles -->
+    <div class="camp-map-wrap">
+      <div class="camp-map-stage" id="camp-map-stage">
+        <div class="map-chap-banner" id="map-chap-banner">184年・第一章 黃巾之亂</div>
+        <div class="map-legend">
+          <span style="color:#ffe88a">★ 已制霸</span>
+          <span style="color:#ff846e">● 本章戰場</span>
         </div>
       </div>
-      <div class="roster-grid" id="roster-grid"></div>
+    </div>
+
+    <!-- Lower Stage Selector & War Council Briefing -->
+    <div class="camp-lower">
+      <div class="camp-stage-strip" id="camp-stage-strip"></div>
+      <div class="camp-brief-card" id="camp-brief-card"></div>
     </div>
   </div>
 
-  <!-- Expandable Battle Settings Drawer -->
-  <div class="cfg-sheet-backdrop" id="cfg-sheet-backdrop"></div>
-  <div class="cfg-sheet" id="cfg-sheet">
-    <div class="cfg-sheet-head">
-      <strong>⚙ 對戰、軍師與戰場設定</strong>
-      <button class="cfg-sheet-done" id="btn-cfg-done">完成</button>
+  <!-- ================= TAB 2: 陣容編輯（正統《天》雙屏編隊系統） ================= -->
+  <div class="hub-panel" id="panel-deck">
+    <!-- Upper Jade-Imperial Deck Stage (DED_TBG Logic: 8 Cost Gold Beads + 3 Memory Slots + Upright Cards) -->
+    <div class="deck-stage-bar">
+      <div class="ded-top-row">
+        <div class="cost-beads-wrap" id="cost-beads-wrap">
+          <span class="cost-beads-lbl">合計Cost</span>
+          <span id="cost-beads" style="display:inline-flex;gap:3px"></span>
+          <span class="deck-cost-val" id="cost-readout" style="font-size:12px;margin-left:4px">0.0/8.0</span>
+        </div>
+        <div class="deck-mem-tabs" id="deck-mem-tabs">
+          <button class="dmem-btn active" data-slot="0">牌組1</button>
+          <button class="dmem-btn" data-slot="1">牌組2</button>
+          <button class="dmem-btn" data-slot="2">牌組3</button>
+        </div>
+      </div>
+      <div class="deck-stage-top" style="margin-bottom:4px">
+        <div class="deck-cost-group">
+          <span class="dstat-pill gold" id="morale-cap-readout">士氣 14</span>
+          <span class="dstat-pill" id="start-morale-readout">開局 2.5</span>
+          <span class="dstat-pill" id="troop-mix-readout">騎0 槍0 弓0 步0 攻0</span>
+        </div>
+        <div class="deck-stat-pills">
+          <button class="deck-clear-btn" id="btn-clear-deck" title="清空目前牌組">清空</button>
+        </div>
+      </div>
+      <div class="cost-bar-wrap" style="display:none"><div class="cost-bar-fill" id="cost-bar-fill" style="width:0%"></div></div>
+      <!-- 7 Upright 2:3 Slots: up to 6 Generals within 8.0 Cost + 1 Official Gunshi Card! -->
+      <div class="deck-slots-grid" id="deck-slots"></div>
     </div>
-    <div class="deck-cfg-grid">
-      <div class="cfg-field">
-        <label class="cfg-label" for="map-select">戰場地圖（原版貼圖）</label>
-        <select class="cfg-select" id="map-select">
-          <option value="hulao" selected>虎牢關・中原黃土 (M01)</option>
-          <option value="grassland">平原草原・河川 (M02)</option>
-          <option value="chibi">赤壁・崖城棧道 (M06/07)</option>
-        </select>
+
+    <!-- Lower Multi-Axis Browser (DED_BBG Logic: 192 Generals + 20 Gunshi, Filter, Sort, Search, Card/List) -->
+    <div class="deck-main">
+      <div class="roster-col">
+        <div class="filter-bar" style="margin-bottom:5px">
+          <div class="faction-tabs" id="faction-tabs">
+            <button class="ftab active" data-faction="all">全勢力</button>
+            <button class="ftab" data-faction="wei">魏</button>
+            <button class="ftab" data-faction="shu">蜀</button>
+            <button class="ftab" data-faction="wu">吳</button>
+            <button class="ftab" data-faction="qun">群雄</button>
+          </div>
+          <div class="type-tabs" id="type-tabs">
+            <button class="ttab active" data-type="all">全</button>
+            <button class="ttab" data-type="cav">騎</button>
+            <button class="ttab" data-type="spr">槍</button>
+            <button class="ttab" data-type="arc">弓</button>
+            <button class="ttab" data-type="inf">步</button>
+            <button class="ttab" data-type="sge">攻</button>
+          </div>
+        </div>
+
+        <div class="ded-tools-row">
+          <button class="ded-mini-btn active" id="btn-roster-generals">武將(192)</button>
+          <button class="ded-mini-btn" id="btn-roster-gunshi">軍師(20)</button>
+          <input class="ded-search" id="roster-search" type="search" placeholder="搜尋武將／計略名…">
+          <select class="ded-select" id="filter-cost" title="依 Cost 篩選">
+            <option value="all">Cost全</option>
+            <option value="1">1.0</option>
+            <option value="1.5">1.5</option>
+            <option value="2">2.0</option>
+            <option value="2.5">2.5</option>
+            <option value="3">3.0</option>
+          </select>
+          <select class="ded-select" id="filter-rare" title="依稀有度篩選">
+            <option value="all">稀有全</option>
+            <option value="LE">LE</option>
+            <option value="SR">SR</option>
+            <option value="R">R</option>
+            <option value="UC">UC</option>
+            <option value="C">C</option>
+          </select>
+          <select class="ded-select" id="sort-by" title="並順（排序）">
+            <option value="no">並順:編號</option>
+            <option value="pow">並順:武力</option>
+            <option value="intl">並順:知力</option>
+            <option value="cost">並順:Cost</option>
+            <option value="rare">並順:稀有</option>
+          </select>
+          <button class="ded-mini-btn" id="btn-sort-dir" title="切換昇順／降順">降順↓</button>
+          <button class="ded-mini-btn" id="btn-view-mode" title="切換卡圖／表格清單">清單</button>
+          <button class="ded-mini-btn" id="btn-owned-only" title="僅顯示已收集武將">僅已擁有</button>
+        </div>
+
+        <div class="roster-grid" id="roster-grid"></div>
+        <div class="roster-table-wrap" id="roster-table-wrap" style="display:none"></div>
+        <div class="roster-pager" id="roster-pager">
+          <span id="roster-count-lbl">顯示 0 / 192 名武將</span>
+          <div style="display:flex;gap:5px;align-items:center">
+            <button class="ded-mini-btn" id="btn-page-prev">◀ 上頁</button>
+            <span id="roster-page-lbl">1 / 1</span>
+            <button class="ded-mini-btn" id="btn-page-next">下頁 ▶</button>
+          </div>
+        </div>
       </div>
-      <div class="cfg-field">
-        <label class="cfg-label" for="gunshi-select">隨陣軍師（兵略＋陣略）</label>
-        <select class="cfg-select" id="gunshi-select">
-          <option value="guojia">魏・郭嘉（再起興軍／突擊鬥陣）</option>
-          <option value="simayi">魏・司馬懿（兵力增援／混元一氣）</option>
-          <option value="zhugeliang">蜀・諸葛亮（七星祈禱／精兵集陣）</option>
-          <option value="fazheng">蜀・法正（再起興軍／長槍閃陣）</option>
-          <option value="zhouyu">吳・周瑜（兵力增援／極滅業炎）</option>
-          <option value="luxun">吳・陸遜（再起興軍／兵軍連環）</option>
-          <option value="liru">群・李儒（兵力增援／兵軍連環）</option>
-          <option value="zhangjiao">群・張角（太平要術／知勇兼陣）</option>
-        </select>
-      </div>
-      <div class="cfg-field">
-        <label class="cfg-label" for="ai-deck-select">對手牌組</label>
-        <select class="cfg-select" id="ai-deck-select">
-          <option value="wei">魏・霸道騎陣</option>
-          <option value="shu">蜀・五虎強攻</option>
-          <option value="wu" selected>吳・赤壁弓陣</option>
-          <option value="qun">群雄・無雙攻城</option>
-        </select>
-      </div>
-      <div class="cfg-field">
-        <label class="cfg-label" for="ai-diff-select">AI 難度</label>
-        <select class="cfg-select" id="ai-diff-select">
-          <option value="easy">入門</option>
-          <option value="normal" selected>標準</option>
-          <option value="hard">頂上對決</option>
-        </select>
-      </div>
-      <div class="cfg-field full-span">
-        <label class="cfg-label" for="quality-select">3D 畫面效能模式</label>
-        <select class="cfg-select" id="quality-select">
-          <option value="balanced" selected>流暢模式（推薦・60fps 低發熱）</option>
-          <option value="high">高畫質（泛光柔光＋精細陰影）</option>
-        </select>
-      </div>
+    </div>
+
+    <div class="deck-launch-bar">
+      <button class="cfg-summary-btn" id="btn-go-campaign-from-deck" type="button">
+        <div class="cfg-sum-top"><span>返回天下統一戰役地圖</span><span>戰役 ▸</span></div>
+        <div class="cfg-sum-line" id="cfg-summary-line">目前陣容已即時儲存・可直接出陣攻略</div>
+      </button>
+      <button class="start-battle-btn" id="start-battle-btn">自由開戰</button>
     </div>
   </div>
 
-  <!-- 4. Slim Sticky Bottom Launch Bar -->
-  <div class="deck-launch-bar">
-    <button class="cfg-summary-btn" id="btn-open-cfg" type="button">
-      <div class="cfg-sum-top">
-        <span>⚙ 對戰與軍師設定</span>
-        <span id="cfg-caret">展開 ▴</span>
+  <!-- ================= TAB 3: 自由對戰（自訂地圖、對手牌組與效能設定） ================= -->
+  <div class="hub-panel" id="panel-free">
+    <div class="free-panel-body">
+      <div class="free-card-box">
+        <h3>⚙ 自由模擬對戰設定</h3>
+        <div class="deck-cfg-grid">
+          <div class="cfg-field">
+            <label class="cfg-label" for="map-select">戰場地圖（原版貼圖）</label>
+            <select class="cfg-select" id="map-select">
+              <option value="hulao" selected>虎牢關・中原黃土 (M01)</option>
+              <option value="grassland">平原草原・河川 (M02)</option>
+              <option value="chibi">赤壁・崖城棧道 (M06/07)</option>
+            </select>
+          </div>
+          <div class="cfg-field">
+            <label class="cfg-label" for="ai-deck-select">對手陣容</label>
+            <select class="cfg-select" id="ai-deck-select">
+              <option value="wei">魏・霸道騎陣（郭嘉）</option>
+              <option value="wei_sima">魏・司馬雙猛（司馬懿）</option>
+              <option value="shu">蜀・桃園強攻（諸葛亮）</option>
+              <option value="shu_five">蜀・五虎攻城（法正）</option>
+              <option value="wu" selected>吳・赤壁弓陣（周瑜）</option>
+              <option value="wu_tiger">吳・江東猛虎（陸遜）</option>
+              <option value="qun">群雄・天下無雙（李儒）</option>
+              <option value="qun_yellow">群雄・黃巾衝車（張角）</option>
+            </select>
+          </div>
+          <div class="cfg-field">
+            <label class="cfg-label" for="ai-diff-select">AI 難度</label>
+            <select class="cfg-select" id="ai-diff-select">
+              <option value="easy">入門</option>
+              <option value="normal" selected>標準</option>
+              <option value="hard">頂上對決</option>
+            </select>
+          </div>
+          <div class="cfg-field">
+            <label class="cfg-label" for="quality-select">3D 畫面效能模式</label>
+            <select class="cfg-select" id="quality-select">
+              <option value="balanced" selected>流暢模式（推薦・60fps 低發熱）</option>
+              <option value="high">高畫質（泛光柔光＋精細陰影）</option>
+            </select>
+          </div>
+        </div>
+        <button class="cb-launch-btn" id="btn-free-launch" style="width:100%;margin-top:4px">開始自由對戰</button>
       </div>
-      <div class="cfg-sum-line" id="cfg-summary-line">虎牢關 · 軍師:郭嘉 · 敵:吳赤壁(標準)</div>
-    </button>
-    <button class="start-battle-btn" id="start-battle-btn">開 戰</button>
+
+      <div class="free-card-box">
+        <h3>🗂 戰役存檔與圖鑑管理</h3>
+        <div style="font-size:12px;color:#c6d4ce;line-height:1.55">
+          ‧ 本作已完整收錄 NDS《三國志大戰‧天》全部 <strong>192 名可編入武將</strong> 與 <strong>20 名正統軍師</strong>。<br>
+          ‧ 單人「天下統一」模式可攻克全中華 <strong>24 座名城</strong>，戰勝即可獲得軍資金與 <strong>3 連開卡登用包</strong>。<br>
+          ‧ 若想直接自由測試任意陣容，可點擊右上角「全武將」按鈕一鍵自由解鎖全部武將與軍師。
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="cb-edit-btn" id="btn-free-unlock-toggle" style="flex:1">一鍵切換全武將自由模式</button>
+          <button class="deck-clear-btn" id="btn-reset-campaign" style="padding:8px 12px">重置戰役存檔</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2635,7 +3117,7 @@
       <!-- LOWER-RIGHT RAIL (EXACTLY 圖二: Gunshi Face | Blue Dragon Mode Orb | Range Preview Radar | Gold Ougi Orb | Red Phoenix Stratagem Orb!) -->
       <div class="col-right-rail">
         <div class="rr-gunshi-card" id="rr-gunshi-card">
-          <div class="rr-gunshi-face"><img id="rr-gunshi-img" src="./assets/img/gunshi/guojia_face.webp" alt="軍師"></div>
+          <div class="rr-gunshi-face"><img id="rr-gunshi-img" src="" alt="軍師"></div>
           <div class="rr-gunshi-name" id="rr-gunshi-name">郭嘉</div>
         </div>
 
@@ -2663,11 +3145,11 @@
   </div>
 </div>
 
-<!-- Official 8-Gunshi Picker Modal -->
+<!-- Official 20-Gunshi Picker Modal -->
 <div class="modal-backdrop" id="gunshi-modal">
   <div class="modal-card gunshi-modal-card">
     <div class="gunshi-modal-head">
-      <strong>選擇隨陣軍師（三國志大戰‧天）</strong>
+      <strong>選擇隨陣軍師（全 20 名・三國志大戰‧天）</strong>
       <button class="top-btn" id="gunshi-close-btn">完成</button>
     </div>
     <div class="gunshi-grid" id="gunshi-grid"></div>
@@ -2691,11 +3173,25 @@
     <div class="result-body">
       <div class="result-title" id="result-title">勝 利</div>
       <div id="result-reason" style="color:var(--text-muted);font-size:13px"></div>
+      <div id="result-reward-box" style="display:none;margin:8px 0;padding:8px 10px;border-radius:8px;background:rgba(20,56,44,0.6);border:1.5px solid #ffd566;color:#ffe999;font-size:12.5px;font-weight:900"></div>
       <div class="result-stats" id="result-stats"></div>
-      <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
-        <button class="start-battle-btn" id="btn-rematch" style="width:auto;padding:10px 24px;font-size:14px">再戰一局</button>
-        <button class="top-btn" id="btn-back-deck" style="padding:10px 20px;font-size:13px">返回編隊</button>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+        <button class="cb-launch-btn" id="btn-claim-pack" style="display:none;padding:9px 20px;font-size:13.5px;letter-spacing:1px">開啟登用卡包 ▸</button>
+        <button class="start-battle-btn" id="btn-rematch" style="width:auto;padding:10px 22px;font-size:14px">再戰一局</button>
+        <button class="top-btn" id="btn-back-deck" style="padding:10px 18px;font-size:13px">返回主畫面</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Authentic 3-Card Pack Opening Modal (戰後 / 酒館登用 CARD GET!) -->
+<div class="modal-backdrop" id="card-pack-modal">
+  <div class="modal-card pack-modal-card">
+    <div class="pack-title" id="pack-title">武 將 登 用 ！</div>
+    <div class="pack-sub" id="pack-sub">獲得 3 張三國志大戰‧天武將／軍師卡</div>
+    <div class="pack-cards-row" id="pack-cards-row"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="cb-launch-btn" id="btn-pack-close" style="padding:9px 28px;font-size:14px">收下武將卡</button>
     </div>
   </div>
 </div>
@@ -2720,219 +3216,46 @@ const UNIT_TYPES = {
   sge: { name: '攻城兵', icon: '攻', speed: 1.26, siege: 2.65, hpBonus: 44, color: '#c99724' }
 };
 
-// 8 Official NDS《三國志大戰‧天》Gunshi (軍師) with Authentic Dual Ougi (兵略 + 陣略)!
-const GUNSHI_LIST = [
-  {
-    id: 'guojia', name: '郭嘉', faction: 'wei',
-    heiryaku: { id: 'saiki', name: '再起興軍', desc: '立即復活撤退我軍並回復 35% 兵力', quote: '「重整陣腳，以勝勢反擊！」' },
-    jinryaku: { id: 'totsugeki', name: '突擊鬥陣', desc: '展開 18 秒陣法：陣內我軍武力+3、騎兵突擊威力大增', quote: '「鐵騎成陣，一舉貫穿！」', radius: 6.4, color: 0xff6a33, dur: 18 }
-  },
-  {
-    id: 'simayi', name: '司馬懿', faction: 'wei',
-    heiryaku: { id: 'zouen', name: '兵力增援', desc: '我全軍立即回復 45% 兵力', quote: '「援軍已至，穩操勝券。」' },
-    jinryaku: { id: 'kongen', name: '混元一氣', desc: '展開 18 秒陣法：陣內敵軍武力-3、移動速度大幅下降', quote: '「墜入吾之混元大陣吧！」', radius: 6.6, color: 0xb25cff, dur: 18 }
-  },
-  {
-    id: 'zhugeliang', name: '諸葛亮', faction: 'shu',
-    heiryaku: { id: 'shichisei', name: '七星祈禱', desc: '我全軍兵力超越上限回復至 130%', quote: '「七星續命，漢室可興！」' },
-    jinryaku: { id: 'seihei', name: '精兵集陣', desc: '展開 18 秒陣法：陣內我軍武力+4、持續緩慢回血', quote: '「八陣已成，精兵齊進！」', radius: 6.5, color: 0x4be388, dur: 18 }
-  },
-  {
-    id: 'fazheng', name: '法正', faction: 'shu',
-    heiryaku: { id: 'saiki', name: '再起興軍', desc: '立即復活撤退我軍並回復 35% 兵力', quote: '「以退為進，絕地反撲！」' },
-    jinryaku: { id: 'chosou', name: '長槍閃陣', desc: '展開 18 秒陣法：陣內我軍武力+3、全體槍兵全方位長槍迎擊', quote: '「長槍如林，寸步難越！」', radius: 6.4, color: 0x3be8b0, dur: 18 }
-  },
-  {
-    id: 'zhouyu', name: '周瑜', faction: 'wu',
-    heiryaku: { id: 'zouen', name: '兵力增援', desc: '我全軍立即回復 45% 兵力', quote: '「東吳水師，再振軍威！」' },
-    jinryaku: { id: 'gouen', name: '極滅業炎', desc: '展開 16 秒業炎陣：陣內敵軍持續燃燒受損並減速', quote: '「業火焚陣，灰飛煙滅！」', radius: 6.6, color: 0xff4418, dur: 16 }
-  },
-  {
-    id: 'luxun', name: '陸遜', faction: 'wu',
-    heiryaku: { id: 'saiki', name: '再起興軍', desc: '立即復活撤退我軍並回復 35% 兵力', quote: '「後發制人，全軍再起！」' },
-    jinryaku: { id: 'renkan', name: '兵軍連環', desc: '展開 18 秒連環陣：陣內敵軍移速劇降 55%', quote: '「連環鎖陣，無處可逃！」', radius: 6.8, color: 0x3ba8ff, dur: 18 }
-  },
-  {
-    id: 'liru', name: '李儒', faction: 'qun',
-    heiryaku: { id: 'zouen', name: '兵力增援', desc: '我全軍立即回復 45% 兵力', quote: '「喝下軍糧，繼續廝殺！」' },
-    jinryaku: { id: 'renkan', name: '兵軍連環', desc: '展開 18 秒連環陣：陣內敵軍移速劇降 55% 並武力-2', quote: '「毒計連環，束手就擒！」', radius: 6.8, color: 0x9966ff, dur: 18 }
-  },
-  {
-    id: 'zhangjiao', name: '張角', faction: 'qun',
-    heiryaku: { id: 'taihei', name: '太平要術', desc: '復活撤退我軍並全軍回復 35% 兵力', quote: '「蒼天已死，太平道降臨！」' },
-    jinryaku: { id: 'chiyuu', name: '知勇兼陣', desc: '展開 18 秒黃天陣：陣內我軍武力+3、移速+20%', quote: '「黃天之下，眾生無畏！」', radius: 6.6, color: 0xffcf40, dur: 18 }
-  }
-];
-GUNSHI_LIST.forEach(g => {
-  g.cardImg = `./assets/img/gunshi/${g.id}_card.webp`;
-  g.buImg   = `./assets/img/gunshi/${g.id}_bu.webp`;
-  g.faceImg = `./assets/img/gunshi/${g.id}_face.webp`;
-});
+// ALL 20 Official NDS《三國志大戰‧天》Gunshi + ALL 192 Official Playable Generals + 24-City Campaign DB!
+const _DB = window.TEN_DB || { generals: [], gunshi: [], presets: {}, presetGunshi: {}, starterGenerals: [], starterGunshi: [], provinces: [], chapters: [] };
+
+const GUNSHI_LIST = _DB.gunshi.map(g => Object.assign({}, g, {
+  cardImg: `./assets/img/gunshi/${g.id}_card.webp`,
+  buImg:   `./assets/img/gunshi/${g.id}_bu.webp`,
+  faceImg: `./assets/img/gunshi/${g.id}_face.webp`,
+  voiceUrl: g.voice ? `./assets/audio/voice/v_${g.voice}.mp3` : ''
+}));
 const GUNSHI_MAP = Object.fromEntries(GUNSHI_LIST.map(g => [g.id, g]));
 
-// 40 Official NDS《三國志大戰‧天》Generals (Exact CARDDATA.TBL Unit Types, Costs, 武/知, Traits & Stratagems!)
-const GENERALS = [
-  // ================= 魏 (10) =================
-  { id:'caocao', name:'曹操', faction:'wei', cost:2.5, type:'cav', pow:8, intl:10, traits:['伏兵','魅力'],
-    quote:'「霸道之前，眾將隨孤踏破天下！」',
-    strat:{ name:'霸者之求心', cost:6, kind:'rally', factionOnly:'wei', powDelta:5, dur:15, radius:7.2, desc:'範圍內魏軍武力+5，持續 15 秒。' } },
-  { id:'zhangliao', name:'張遼', faction:'wei', cost:2.5, type:'cav', pow:9, intl:7, traits:['勇猛'],
-    quote:'「見識一下，令江東小兒止啼之神速！」',
-    strat:{ name:'神速之大號令', cost:7, kind:'rally', factionOnly:null, typeOnly:'cav', powDelta:4, spdMul:1.45, dur:14, radius:7.4, desc:'範圍內騎兵武力+4、移速暴增。' } },
-  { id:'xiahoudun', name:'夏侯惇', faction:'wei', cost:3.0, type:'cav', pow:9, intl:7, traits:['復活','勇猛'],
-    quote:'「區區鼠輩，也敢直視吾之隻眼！」',
-    strat:{ name:'隻眼將之大喝', cost:4, kind:'debuff', powDelta:-5, spdMul:0.7, dur:11, radius:6.2, desc:'前方範圍敵軍武力-5、移速降低。' } },
-  { id:'guojia', name:'郭嘉', faction:'wei', cost:1.5, type:'cav', pow:4, intl:9, traits:['伏兵'],
-    quote:'「兵貴神速，剎那定勝負！」',
-    strat:{ name:'剎那之神速', cost:3, kind:'rally', factionOnly:null, powDelta:2, spdMul:1.5, dur:7, radius:6.4, desc:'短時間大幅提升範圍內我軍移速與武力+2。' } },
-  { id:'yuejin', name:'樂進', faction:'wei', cost:1.0, type:'cav', pow:4, intl:3, traits:[],
-    quote:'「先登奪旗，交給我樂文謙！」',
-    strat:{ name:'強化戰法', cost:4, kind:'self', powDelta:4, spdMul:1.12, dur:13, desc:'自身武力+4，穩定的單體強化。' } },
-  { id:'simayi', name:'司馬懿', faction:'wei', cost:2.0, type:'cav', pow:6, intl:10, traits:['伏兵','魅力'],
-    quote:'「機略自在，爾等盡在吾掌中！」',
-    strat:{ name:'機略自在', cost:6, kind:'rally', factionOnly:'wei', powDelta:4, spdMul:1.15, dur:15, radius:7.0, desc:'範圍內魏軍武力+4、移速微升。' } },
-  { id:'xuchu', name:'許褚', faction:'wei', cost:2.5, type:'arc', pow:10, intl:2, traits:['募兵'],
-    quote:'「虎痴之怪力，誰敢擋我！」',
-    strat:{ name:'虎痴之怪力', cost:3, kind:'self', powDelta:6, arcBoost:1.45, dur:10, desc:'自身武力+6，強弓壓制全場。' } },
-  { id:'dianwei', name:'典韋', faction:'wei', cost:2.5, type:'spr', pow:9, intl:2, traits:['勇猛','防柵'],
-    quote:'「惡來在此，休想傷主公一毫！」',
-    strat:{ name:'剎那之怪力', cost:3, kind:'self', powDelta:8, dur:6.5, desc:'短時間自身武力+8，爆發力驚人。' } },
-  { id:'xiahouyuan', name:'夏侯淵', faction:'wei', cost:2.0, type:'arc', pow:8, intl:3, traits:['勇猛','募兵'],
-    quote:'「百步穿楊，萬箭齊發！」',
-    strat:{ name:'亂射', cost:4, kind:'self', powDelta:3, arcBoost:1.55, multiShot:3, dur:12, desc:'自身武力+3，可同時向 3 支敵軍齊射！' } },
-  { id:'xunyou', name:'荀攸', faction:'wei', cost:1.5, type:'arc', pow:3, intl:8, traits:['防柵','募兵'],
-    quote:'「以大水淹沒敵軍之陣！」',
-    strat:{ name:'大水計', cost:7, kind:'water', baseDmg:50, radius:7.2, desc:'前方寬廣洪流重創敵軍（依知力差）。' } },
-
-  // ================= 蜀 (10) =================
-  { id:'liubei', name:'劉備', faction:'shu', cost:2.0, type:'spr', pow:6, intl:7, traits:['復活','魅力','募兵'],
-    quote:'「義之所在，生死與共，全軍進擊！」',
-    strat:{ name:'劉備之大德', cost:6, kind:'rally', factionOnly:'shu', powDelta:5, healPct:0.18, dur:15, radius:7.2, desc:'範圍內蜀軍武力+5並回復 18% 兵力。' } },
-  { id:'guanyu', name:'關羽', faction:'shu', cost:3.0, type:'cav', pow:10, intl:7, traits:['勇猛','魅力','募兵'],
-    quote:'「青龍偃月一出，忠義無雙！」',
-    strat:{ name:'忠義之大號令', cost:6, kind:'rally', factionOnly:'shu', powDelta:5, dur:15, radius:7.4, desc:'範圍內蜀軍武力+5，氣勢如虹。' } },
-  { id:'zhaoyun', name:'趙雲', faction:'shu', cost:2.5, type:'cav', pow:8, intl:7, traits:['復活','勇猛','魅力'],
-    quote:'「常山趙子龍，人馬一體七進七出！」',
-    strat:{ name:'人馬一體', cost:4, kind:'self', powDelta:4, spdMul:1.36, antiIntercept:true, dur:13, desc:'自身武力+4、加速且突擊免疫槍兵迎擊！' } },
-  { id:'zhugeliang', name:'諸葛亮', faction:'shu', cost:1.5, type:'spr', pow:3, intl:10, traits:['伏兵','魅力','募兵'],
-    quote:'「八卦陣成，萬變歸宗！」',
-    strat:{ name:'八卦之戰計', cost:6, kind:'rally', factionOnly:'shu', powDelta:5, spdMul:1.18, healPct:0.22, dur:15, radius:7.2, desc:'範圍內蜀軍武力+5、回血並提速。' } },
-  { id:'zhangfei', name:'張飛', faction:'shu', cost:2.5, type:'spr', pow:10, intl:2, traits:['勇猛'],
-    quote:'「燕人張翼德在此，誰敢與我決一死戰！」',
-    strat:{ name:'挑釁', cost:3, kind:'taunt', powDelta:-2, dur:8, radius:6.8, desc:'強制範圍內敵軍朝張飛移動並武力-2。' } },
-  { id:'machao', name:'馬超', faction:'shu', cost:2.5, type:'cav', pow:9, intl:5, traits:['勇猛'],
-    quote:'「錦馬超在此，白銀獅子突擊！」',
-    strat:{ name:'白銀之獅子', cost:6, kind:'self', powDelta:8, spdMul:1.48, antiIntercept:true, dur:12, desc:'自身武力+8、神速突擊且免疫迎擊。' } },
-  { id:'huangzhong', name:'黃忠', faction:'shu', cost:2.0, type:'arc', pow:7, intl:5, traits:['勇猛','防柵'],
-    quote:'「寶刀未老，零距離射穿敵陣！」',
-    strat:{ name:'零距離戰法', cost:4, kind:'self', powDelta:6, arcBoost:1.75, dur:12, desc:'自身武力+6，弓箭威力大幅強化。' } },
-  { id:'xushu', name:'徐庶', faction:'shu', cost:1.5, type:'cav', pow:4, intl:9, traits:['伏兵'],
-    quote:'「九霄神雷，轟碎敵陣！」',
-    strat:{ name:'落雷', cost:6, kind:'lightning', baseDmg:52, strikes:3, radius:7.4, desc:'前方圓形範圍落下 3 道高傷天雷（依知力差）。' } },
-  { id:'ganfuren', name:'甘皇后', faction:'shu', cost:1.0, type:'inf', female:true, pow:1, intl:4, traits:['魅力'],
-    quote:'「願以清歌妙舞，撫慰漢室將士。」',
-    strat:{ name:'回復之舞', cost:7, kind:'dance_heal', dur:999, desc:'原地起舞持續回復我方全軍兵力，直到撤退。' } },
-  { id:'huangyueying', name:'黃月英', faction:'shu', cost:1.0, type:'sge', female:true, pow:1, intl:8, traits:['魅力'],
-    quote:'「黃式機關啟動，一舉撞破敵城！」',
-    strat:{ name:'黃式加速裝置', cost:4, kind:'self', powDelta:3, spdMul:1.95, siegeMul:1.55, dur:13, desc:'攻城兵移速暴增且攻城破壞力大增！' } },
-
-  // ================= 吳 (10) =================
-  { id:'zhouyu', name:'周瑜', faction:'wu', cost:2.0, type:'arc', pow:6, intl:10, traits:['伏兵','魅力'],
-    quote:'「東風已至，化為赤壁灰燼吧！」',
-    strat:{ name:'赤壁之大火', cost:7, kind:'fire', baseDmg:56, radius:6.8, desc:'前方長距烈焰燒盡敵軍，依知力差造成毀滅火傷。' } },
-  { id:'sunce', name:'孫策', faction:'wu', cost:2.0, type:'cav', pow:7, intl:5, traits:['勇猛'],
-    quote:'「燃盡此身也在所不惜，小霸王出陣！」',
-    strat:{ name:'小霸王之蠻勇', cost:5, kind:'self', powDelta:8, spdMul:1.45, selfSacrifice:true, dur:11, desc:'自身武力+8、移速大增；結束後強制撤退。' } },
-  { id:'taishici', name:'太史慈', faction:'wu', cost:2.0, type:'arc', pow:8, intl:5, traits:['勇猛'],
-    quote:'「箭無虛發，貫穿敵陣！」',
-    strat:{ name:'亂射戰法', cost:4, kind:'self', powDelta:4, arcBoost:1.7, multiShot:2, dur:12, desc:'自身武力+4，強化射程並同時射擊雙目標。' } },
-  { id:'daqiao', name:'大喬', faction:'wu', cost:1.0, type:'inf', female:true, pow:1, intl:5, traits:['魅力'],
-    quote:'「星辰降臨，化作守衛江東之光！」',
-    strat:{ name:'大流星之儀式', cost:7, kind:'meteor', castleDmg:26, desc:'召喚巨型天外流星直擊敵城，造成 26% 城池傷害！' } },
-  { id:'zhoutai', name:'周泰', faction:'wu', cost:2.0, type:'spr', pow:7, intl:4, traits:['防柵'],
-    quote:'「只要我還站著，誰也別想越雷池一步！」',
-    strat:{ name:'漢之意地', cost:4, kind:'self', powDelta:7, dmgReduce:0.6, selfSacrifice:true, dur:12, desc:'自身武力+7並大幅減傷；結束後強制撤退。' } },
-  { id:'sunjian', name:'孫堅', faction:'wu', cost:2.5, type:'cav', pow:9, intl:5, traits:['魅力'],
-    quote:'「江東猛虎，燃燒生命踏碎敵陣！」',
-    strat:{ name:'天啟之幻', cost:7, kind:'rally', factionOnly:null, powDelta:7, spdMul:1.25, selfSacrifice:true, dur:11, radius:7.4, desc:'範圍內我軍武力+7、加速；結束後撤退。' } },
-  { id:'ganning', name:'甘寧', faction:'wu', cost:2.5, type:'spr', pow:9, intl:6, traits:['勇猛'],
-    quote:'「錦帆賊甘興霸，絕不倒下！」',
-    strat:{ name:'河賊之堅忍', cost:4, kind:'self', powDelta:5, healPct:0.35, omniSpear:true, dur:12, desc:'自身武力+5、回復兵力並展開大車輪槍陣。' } },
-  { id:'lumeng', name:'呂蒙', faction:'wu', cost:2.5, type:'arc', pow:8, intl:9, traits:['防柵'],
-    quote:'「以麻痺之箭雨封鎖敵軍退路！」',
-    strat:{ name:'麻痺矢之大號令', cost:6, kind:'rally', factionOnly:'wu', powDelta:4, arcBoost:1.45, slowArrow:true, dur:14, radius:7.2, desc:'範圍內吳軍武力+4，弓箭命中大幅減速敵軍。' } },
-  { id:'luxun', name:'陸遜', faction:'wu', cost:2.0, type:'arc', pow:7, intl:8, traits:[],
-    quote:'「孫武兵法，烈火連營！」',
-    strat:{ name:'孫武之大號令', cost:6, kind:'rally', factionOnly:'wu', powDelta:5, dur:15, radius:7.2, desc:'範圍內吳軍武力+5，攻守兼備。' } },
-  { id:'xiaoqiao', name:'小喬', faction:'wu', cost:1.5, type:'inf', female:true, pow:2, intl:5, traits:['防柵','魅力'],
-    quote:'「星星呀，幫我打飛壞人吧！」',
-    strat:{ name:'流星之儀式', cost:5, kind:'meteor', castleDmg:17, desc:'召喚流星轟擊敵城，直接造成 17% 城池傷害！' } },
-
-  // ================= 群雄 (10) =================
-  { id:'lubu', name:'呂布', faction:'qun', cost:3.0, type:'cav', pow:10, intl:1, traits:['勇猛'],
-    quote:'「雜魚們退散！這就是天下無雙之武！」',
-    strat:{ name:'天下無雙', cost:6, kind:'self', powDelta:9, spdMul:1.54, healPct:0.3, dur:12, desc:'自身武力+9、移速暴增並回復 30% 兵力。' } },
-  { id:'dongzhuo', name:'董卓', faction:'qun', cost:2.5, type:'cav', pow:8, intl:8, traits:['勇猛','魅力'],
-    quote:'「以恐懼與烈焰支配一切，殺光他們！」',
-    strat:{ name:'暴虐之霸道', cost:5, kind:'rally', factionOnly:null, powDelta:6, spdMul:1.32, selfCastleDmg:8, dur:13, radius:7.2, desc:'自城受 8% 傷害，換取範圍內我軍武力+6與神速。' } },
-  { id:'diaochan', name:'貂蟬', faction:'qun', cost:1.5, type:'arc', female:true, pow:2, intl:5, traits:['魅力'],
-    quote:'「在傾國之舞中，一同沉淪吧……」',
-    strat:{ name:'傾國之舞', cost:7, kind:'dance_curse', dur:999, desc:'原地起舞持續削減敵城耐力，直到撤退。' } },
-  { id:'zhangjiao', name:'張角', faction:'qun', cost:2.5, type:'arc', pow:5, intl:9, traits:['防柵','募兵'],
-    quote:'「蒼天已死，黃天當立！」',
-    strat:{ name:'黃巾之亂', cost:4, kind:'heal_aoe', healPct:0.55, powDelta:2, dur:10, radius:7.2, desc:'範圍內我軍回復 55% 兵力並武力+2。' } },
-  { id:'huaxiong', name:'華雄', faction:'qun', cost:2.5, type:'spr', pow:10, intl:2, traits:['勇猛'],
-    quote:'「惡鬼暴劍，連城門一起斬碎！」',
-    strat:{ name:'惡鬼之暴劍', cost:3, kind:'self', powDelta:7, siegeMul:1.75, dur:10, desc:'自身武力+7、攻城破壞力大幅提升。' } },
-  { id:'gaoshun', name:'高順', faction:'qun', cost:2.5, type:'cav', pow:9, intl:5, traits:['勇猛'],
-    quote:'「陷陣之志，有死無生！」',
-    strat:{ name:'陷陣營', cost:3, kind:'self', powDelta:5, dmgReduce:0.7, siegeMul:1.4, dur:11, desc:'自身武力+5、減傷並提升攻城力。' } },
-  { id:'luji', name:'呂姬', faction:'qun', cost:1.5, type:'spr', female:true, pow:5, intl:4, traits:['勇猛','魅力'],
-    quote:'「繼承父親之武，天下無雙・改！」',
-    strat:{ name:'天下無雙・改', cost:5, kind:'self', powDelta:7, spdMul:1.35, omniSpear:true, dur:11, desc:'自身武力+7、高速移動並展開全方位槍陣。' } },
-  { id:'zuoci', name:'左慈', faction:'qun', cost:1.5, type:'inf', pow:4, intl:9, traits:['伏兵','復活'],
-    quote:'「幻化萬象，借汝之力！」',
-    strat:{ name:'變化之術', cost:3, kind:'copy_pow', dur:14, desc:'複製場上最強敵將武力並額外+2，維持 14 秒！' } },
-  { id:'zhangliang', name:'張梁', faction:'qun', cost:1.0, type:'inf', pow:5, intl:1, traits:[],
-    quote:'「人公將軍張梁，黃巾湧進！」',
-    strat:{ name:'黃巾之群', cost:3, kind:'self', powDelta:3, healPct:0.45, dur:11, desc:'自身回復 45% 兵力並武力+3。' } },
-  { id:'yuanshu', name:'袁術', faction:'qun', cost:1.0, type:'sge', pow:2, intl:6, traits:['募兵'],
-    quote:'「哈哈哈！跟我玉璽一同玉石俱焚吧！」',
-    strat:{ name:'自爆', cost:3, kind:'self_destruct', baseDmg:64, radius:5.8, desc:'以自身撤退為代價，對周圍敵軍造成毀滅性爆炸傷害！' } }
-];
-
-// Map ALL 40 Generals to Authentic Ver.3 HD 3D Skill Movies!
-const SKILL_VIDEO_MAP = {
-  caocao: 'skill_caocao', zhangliao: 'skill_zhangliao', xiahoudun: 'skill_xiahoudun',
-  guojia: 'skill_guojia', yuejin: 'skill_charge', simayi: 'skill_caocao',
-  xuchu: 'skill_rage', dianwei: 'skill_rage', xiahouyuan: 'skill_charge', xunyou: 'skill_guojia',
-  liubei: 'skill_liubei', guanyu: 'skill_guanyu', zhaoyun: 'skill_charge',
-  zhugeliang: 'skill_zhugeliang', zhangfei: 'skill_zhangfei', machao: 'skill_zhangliao',
-  huangzhong: 'skill_charge', xushu: 'skill_zhugeliang', ganfuren: 'skill_daqiao', huangyueying: 'skill_charge',
-  zhouyu: 'skill_zhouyu', sunce: 'skill_rage', taishici: 'skill_charge',
-  daqiao: 'skill_daqiao', zhoutai: 'skill_rage', sunjian: 'skill_dongzhuo',
-  ganning: 'skill_rage', lumeng: 'skill_caocao', luxun: 'skill_zhouyu', xiaoqiao: 'skill_daqiao',
-  lubu: 'skill_lubu', dongzhuo: 'skill_dongzhuo', diaochan: 'skill_diaochan',
-  zhangjiao: 'skill_zhangjiao', huaxiong: 'skill_rage', gaoshun: 'skill_charge',
-  luji: 'skill_lubu', zuoci: 'skill_zhangjiao', zhangliang: 'skill_rage', yuanshu: 'skill_zhouyu'
-};
-GENERALS.forEach(g => {
-  g.img = `./assets/img/card/${g.id}.webp`;
-  g.fallbackImg = g.img;
-  g.cutoutImg = `./assets/img/bustup/${g.id}.webp`;
-  g.thumbImg = `./assets/img/thumb/${g.id}.webp`;
-  g.skillVideo = `./assets/video/${SKILL_VIDEO_MAP[g.id] || 'skill_charge'}.mp4`;
+const GENERALS = _DB.generals.map(g => {
+  const vv = g.v || [];
+  return Object.assign({}, g, {
+    img:        `./assets/img/card/${g.id}.webp`,
+    fallbackImg:`./assets/img/card/${g.id}.webp`,
+    cutoutImg:  `./assets/img/bustup/${g.id}.webp`,
+    thumbImg:   `./assets/img/thumb/${g.id}.webp`,
+    skillVideo: `./assets/video/${g.vid || 'skill_charge'}.mp4`,
+    voices: {
+      cast:    vv[0] ? `./assets/audio/voice/v_${vv[0]}.mp3` : '',
+      deploy:  vv[1] ? `./assets/audio/voice/v_${vv[1]}.mp3` : '',
+      siege:   vv[2] ? `./assets/audio/voice/v_${vv[2]}.mp3` : '',
+      retreat: vv[3] ? `./assets/audio/voice/v_${vv[3]}.mp3` : ''
+    }
+  });
 });
-
 const GENERAL_MAP = Object.fromEntries(GENERALS.map(g => [g.id, g]));
 
-const PRESET_DECKS = {
-  wei: ['caocao', 'dianwei', 'xunyou', 'guojia'],            // 8.0 Cost (騎2 槍1 弓1 — 霸道+大水計!)
-  shu: ['guanyu', 'zhaoyun', 'zhugeliang', 'huangyueying'],  // 8.0 Cost (騎2 槍1 攻1 — 忠義+攻城!)
-  wu:  ['zhouyu', 'taishici', 'zhoutai', 'xiaoqiao', 'daqiao'], // 8.0 Cost (弓2 槍1 步2 — 赤壁+雙流星!)
-  qun: ['lubu', 'huaxiong', 'zuoci', 'yuanshu']              // 8.0 Cost (騎1 槍1 步1 攻1 — 無雙+自爆!)
-};
-const PRESET_GUNSHI = { wei: 'guojia', shu: 'zhugeliang', wu: 'zhouyu', qun: 'liru' };
+const PRESET_DECKS = _DB.presets;
+const PRESET_GUNSHI = _DB.presetGunshi;
+const STARTER_GENERAL_IDS = _DB.starterGenerals;
+const STARTER_GUNSHI_IDS = _DB.starterGunshi;
+const CHINA_PROVINCES = _DB.provinces;
+const PROVINCE_MAP = Object.fromEntries(CHINA_PROVINCES.map(p => [p.id, p]));
+const CAMPAIGN_CHAPTERS = _DB.chapters;
+const ALL_CAMPAIGN_STAGES = CAMPAIGN_CHAPTERS.flatMap(ch => ch.stages.map(st => Object.assign({}, st, { chapterId: ch.id, chapterName: ch.name, year: ch.year })));
+const STAGE_BY_ID = Object.fromEntries(ALL_CAMPAIGN_STAGES.map(st => [st.id, st]));
+const STAGE_BY_PROV = Object.fromEntries(ALL_CAMPAIGN_STAGES.map(st => [st.prov, st]));
+const RARE_ORDER = { LE: 5, SR: 4, R: 3, UC: 2, C: 1 };
 
 // ============================================================
 // 1.5 PRE-BATTLE ASSET CACHE & FULL BATTLE PRELOADER (v3.2)
@@ -3068,7 +3391,7 @@ const BattleAssetPreloader = {
       if (!gid || !GUNSHI_MAP[gid]) return;
       push('img', `./assets/img/gunshi/${gid}_bu.webp`, '載入軍師奧義素材');
       push('img', `./assets/img/gunshi/${gid}_face.webp`, '載入軍師奧義素材');
-      push('audio', `./assets/audio/voice/gunshi_${gid}.mp3`, '載入軍師奧義素材');
+      if (GUNSHI_MAP[gid].voiceUrl) push('audio', GUNSHI_MAP[gid].voiceUrl, '載入軍師奧義素材');
     });
 
     // Authentic NDS《三國志大戰‧天》Map Textures (M01 虎牢關 / M02 草原 / M06+M07 赤壁)
@@ -3148,8 +3471,10 @@ const BattleAssetPreloader = {
       push('audio', `./assets/audio/narrator/${n}.mp3`, '載入武將語音與旁白');
     });
     for (const id of allIds) {
+      const g = GENERAL_MAP[id];
+      if (!g || !g.voices) continue;
       ['deploy', 'cast', 'siege', 'retreat'].forEach(k => {
-        push('audio', `./assets/audio/voice/${id}_${k}.mp3`, '載入武將語音與旁白');
+        if (g.voices[k]) push('audio', g.voices[k], '載入武將語音與旁白');
       });
     }
 
@@ -3302,7 +3627,9 @@ class SoundFX {
   }
   playVoice(genId, kind = 'cast') {
     if (this.muted || !genId) return;
-    const url = `${this.voiceBase}${genId}_${kind}.mp3`;
+    const g = GENERAL_MAP[genId];
+    const url = (g && g.voices && (g.voices[kind] || g.voices.cast)) || '';
+    if (!url) return;
     if (this._playBuffer(url, 0.88, 'voice')) return;
     try {
       this._stopVoice();
@@ -3314,7 +3641,9 @@ class SoundFX {
   }
   playGunshiVoice(gunshiId) {
     if (this.muted || !gunshiId) return;
-    const url = `${this.voiceBase}gunshi_${gunshiId}.mp3`;
+    const gs = GUNSHI_MAP[gunshiId];
+    const url = (gs && gs.voiceUrl) || '';
+    if (!url) return;
     if (this._playBuffer(url, 0.92, 'voice')) return;
     try {
       this._stopVoice();
@@ -3465,8 +3794,8 @@ class BattleSimulation {
     };
     // Official NDS《三國志大戰‧天》Gunshi System (兵略 / 陣略 + 奧義槽 0..100%)
     this.gunshi = {
-      player: { id: GUNSHI_MAP[playerGunshi] ? playerGunshi : 'guojia', mode: 'heiryaku', gauge: 25, used: false },
-      enemy:  { id: GUNSHI_MAP[enemyGunshi]  ? enemyGunshi  : 'zhouyu', mode: 'heiryaku', gauge: 25, used: false }
+      player: { id: GUNSHI_MAP[playerGunshi] ? playerGunshi : (PRESET_GUNSHI.wei || GUNSHI_LIST[0].id), mode: 'heiryaku', gauge: 25, used: false },
+      enemy:  { id: GUNSHI_MAP[enemyGunshi]  ? enemyGunshi  : (PRESET_GUNSHI.wu  || GUNSHI_LIST[0].id), mode: 'heiryaku', gauge: 25, used: false }
     };
     this.aow = this.gunshi; // Backward alias
     this.activeFormations = [];
@@ -3607,7 +3936,7 @@ class BattleSimulation {
         } else {
           if (fm.id === 'kongen') { pow -= 3; spd *= 0.55; }
           else if (fm.id === 'gouen') { spd *= 0.72; }
-          else if (fm.id === 'renkan') { spd *= 0.46; pow -= (fm.gunshiId === 'liru' ? 2 : 0); }
+          else if (fm.id === 'renkan') { spd *= 0.46; pow -= 2; }
         }
       }
     }
@@ -5867,7 +6196,7 @@ class BattleRenderer3D {
       const blade = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.08, 0.94), mats.metalMat);
       blade.position.set(0, 0.02, 0.48); weaponGrp.add(blade);
     } else if (prof.weapon === 'fan') {
-      const fanCol = u.general.id === 'zhouyu' ? 0xffe08a : 0xfbf8f0;
+      const fanCol = u.general.name === '周瑜' ? 0xffe08a : 0xfbf8f0;
       const fan = new THREE.Mesh(
         new THREE.CircleGeometry(0.33, 10, -0.7, 1.4),
         this.getStdMat(`fan_${fanCol}`, { color: fanCol, roughness: 0.45, side: THREE.DoubleSide })
@@ -7545,10 +7874,45 @@ class SpellCutscenePlayer {
 // 6. APPLICATION CONTROLLER (Left Active Skill + Right Enemy/Player Pad + Slash Defeat + 60fps Cutscene)
 // ============================================================
 const App = {
-  deck: [...PRESET_DECKS.wei],
-  gunshiId: 'guojia',
+  // 3 Saved Custom Deck Memory Slots (牌組1/牌組2/牌組3)
+  deckSlotIdx: 0,
+  deckSlots: [
+    { deck: [...(PRESET_DECKS.wei || [])], gunshiId: PRESET_GUNSHI.wei || (GUNSHI_LIST[0]?.id || '') },
+    { deck: [...(PRESET_DECKS.shu || [])], gunshiId: PRESET_GUNSHI.shu || (GUNSHI_LIST[0]?.id || '') },
+    { deck: [...(PRESET_DECKS.wu  || [])], gunshiId: PRESET_GUNSHI.wu  || (GUNSHI_LIST[0]?.id || '') }
+  ],
+  deck: [...(PRESET_DECKS.wei || [])],
+  gunshiId: PRESET_GUNSHI.wei || (GUNSHI_LIST[0]?.id || ''),
+
+  // Single-Player Hub & Campaign State (天下統一・全 24 城)
+  hubTab: 'campaign',
+  campaign: {
+    cleared: [],
+    ownedGenerals: [...STARTER_GENERAL_IDS],
+    ownedGunshi: [...STARTER_GUNSHI_IDS],
+    gold: 300,
+    wins: 0,
+    freeUnlockAll: false
+  },
+  selectedChapterId: CAMPAIGN_CHAPTERS[0]?.id || 'ch1',
+  selectedStageId: CAMPAIGN_CHAPTERS[0]?.stages[0]?.id || 's1_1',
+  activeCampaignStage: null,
+  _pendingPackReward: null,
+
+  // Authentic NDS Deck Editor Filters & Sorting (DED_BBG Logic!)
+  rosterMode: 'generals', // 'generals' (192) | 'gunshi' (20)
   filterFaction: 'all',
   filterType: 'all',
+  filterCost: 'all',
+  filterRare: 'all',
+  searchText: '',
+  sortBy: 'no',
+  sortDesc: false,
+  viewMode: 'card', // 'card' | 'list'
+  ownedOnly: false,
+  rosterPage: 1,
+  pageSize: 24,
+
   inspectingId: null,
   qualityTier: null,
   troopStyle: 'ten',
@@ -7624,38 +7988,21 @@ const App = {
   },
 
   init() {
-    try {
-      const saved = localStorage.getItem('sgt_deck_v4') || localStorage.getItem('sgt_deck_v1');
-      if (saved) {
-        const arr = JSON.parse(saved);
-        if (Array.isArray(arr) && arr.length && arr.length <= 5 && arr.every(id => GENERAL_MAP[id])) {
-          const sum = arr.reduce((s, id) => s + GENERAL_MAP[id].cost, 0);
-          if (sum <= 8.001) this.deck = arr;
-        }
-      }
-      const savedG = localStorage.getItem('sgt_gunshi_v4');
-      if (savedG && GUNSHI_MAP[savedG]) this.gunshiId = savedG;
-      const savedQ = localStorage.getItem('sgt_quality_v1');
-      if (savedQ === 'high' || savedQ === 'balanced') this.qualityTier = savedQ;
-      const savedT = localStorage.getItem('sgt_troop_v1');
-      if (savedT === 'ten' || savedT === '3d') this.troopStyle = savedT;
-      const savedCam = localStorage.getItem('sgt_cam_v1');
-      if (savedCam === '0') this.dynamicCam = false;
-    } catch (e) {}
-
+    this.loadSavedState();
     if (!this.qualityTier) this.qualityTier = 'balanced';
     const qSel = document.getElementById('quality-select');
     if (qSel) qSel.value = this.qualityTier;
-    const gSel = document.getElementById('gunshi-select');
-    if (gSel) gSel.value = this.gunshiId;
 
     this.bindDeckUI();
     this.bindBattleUI();
-    this.renderRoster();
+    this.syncUnlockButtons();
+    this.renderCampaignHub();
     this.renderDeckSidebar();
+    this.renderRoster();
     this.updateCfgSummary();
     this.checkOrientation();
     this.updateFullscreenButtons();
+
     const onViewportChange = () => {
       this.checkOrientation();
       this.updateFullscreenButtons();
@@ -7668,6 +8015,306 @@ const App = {
       this.updateFullscreenButtons();
       onViewportChange();
     });
+  },
+
+  loadSavedState() {
+    try {
+      const cRaw = localStorage.getItem('sgt_campaign_v5');
+      if (cRaw) {
+        const c = JSON.parse(cRaw);
+        if (c && typeof c === 'object') {
+          this.campaign.cleared = Array.isArray(c.cleared) ? c.cleared.filter(id => STAGE_BY_ID[id]) : [];
+          this.campaign.ownedGenerals = Array.isArray(c.ownedGenerals) && c.ownedGenerals.length
+            ? [...new Set([...STARTER_GENERAL_IDS, ...c.ownedGenerals.filter(id => GENERAL_MAP[id])])]
+            : [...STARTER_GENERAL_IDS];
+          this.campaign.ownedGunshi = Array.isArray(c.ownedGunshi) && c.ownedGunshi.length
+            ? [...new Set([...STARTER_GUNSHI_IDS, ...c.ownedGunshi.filter(id => GUNSHI_MAP[id])])]
+            : [...STARTER_GUNSHI_IDS];
+          this.campaign.gold = typeof c.gold === 'number' ? c.gold : 300;
+          this.campaign.wins = typeof c.wins === 'number' ? c.wins : 0;
+          this.campaign.freeUnlockAll = !!c.freeUnlockAll;
+        }
+      }
+      const dRaw = localStorage.getItem('sgt_decks_v5');
+      if (dRaw) {
+        const d = JSON.parse(dRaw);
+        if (d && Array.isArray(d.slots) && d.slots.length === 3) {
+          this.deckSlots = d.slots.map((sl, i) => {
+            const defKey = ['wei', 'shu', 'wu'][i];
+            const validDeck = Array.isArray(sl.deck) && sl.deck.length && sl.deck.every(id => GENERAL_MAP[id])
+              ? sl.deck : [...(PRESET_DECKS[defKey] || [])];
+            const validG = GUNSHI_MAP[sl.gunshiId] ? sl.gunshiId : (PRESET_GUNSHI[defKey] || GUNSHI_LIST[0].id);
+            return { deck: validDeck, gunshiId: validG };
+          });
+          this.deckSlotIdx = Math.max(0, Math.min(2, Number(d.idx) || 0));
+        }
+      }
+      this.deck = [...this.deckSlots[this.deckSlotIdx].deck];
+      this.gunshiId = this.deckSlots[this.deckSlotIdx].gunshiId;
+
+      const savedQ = localStorage.getItem('sgt_quality_v1');
+      if (savedQ === 'high' || savedQ === 'balanced') this.qualityTier = savedQ;
+      const savedT = localStorage.getItem('sgt_troop_v1');
+      if (savedT === 'ten' || savedT === '3d') this.troopStyle = savedT;
+      const savedCam = localStorage.getItem('sgt_cam_v1');
+      if (savedCam === '0') this.dynamicCam = false;
+    } catch (e) {}
+  },
+
+  saveCampaign() {
+    try { localStorage.setItem('sgt_campaign_v5', JSON.stringify(this.campaign)); } catch (e) {}
+  },
+
+  saveDeck() {
+    this.deckSlots[this.deckSlotIdx] = { deck: [...this.deck], gunshiId: this.gunshiId };
+    try { localStorage.setItem('sgt_decks_v5', JSON.stringify({ idx: this.deckSlotIdx, slots: this.deckSlots })); } catch (e) {}
+  },
+
+  isGeneralOwned(id) {
+    return this.campaign.freeUnlockAll || this.campaign.ownedGenerals.includes(id);
+  },
+
+  isGunshiOwned(id) {
+    return this.campaign.freeUnlockAll || this.campaign.ownedGunshi.includes(id);
+  },
+
+  getRankTitle() {
+    const n = this.campaign.cleared.length;
+    if (n >= 24) return '天下統一・皇帝';
+    if (n >= 20) return '霸王';
+    if (n >= 16) return '丞相';
+    if (n >= 12) return '大將軍';
+    if (n >= 9)  return '二品官';
+    if (n >= 6)  return '四品官';
+    if (n >= 4)  return '六品官';
+    if (n >= 2)  return '八品官';
+    return '十品官';
+  },
+
+  switchHubTab(tab) {
+    this.hubTab = tab;
+    document.querySelectorAll('.hub-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.hub === tab));
+    document.querySelectorAll('.hub-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+    if (tab === 'campaign') this.renderCampaignHub();
+    else if (tab === 'deck') { this.renderDeckSidebar(); this.renderRoster(); }
+  },
+
+  syncUnlockButtons() {
+    const on = !!this.campaign.freeUnlockAll;
+    const b1 = document.getElementById('btn-toggle-unlock-all');
+    if (b1) {
+      b1.textContent = on ? '全武將:開' : '全武將:關';
+      b1.classList.toggle('active', on);
+    }
+    const b2 = document.getElementById('btn-free-unlock-toggle');
+    if (b2) b2.textContent = on ? '目前已開啟全武將自由模式（點擊切換收集模式）' : '一鍵開啟全 192 武將自由模式';
+    const colEl = document.getElementById('hub-col-prog');
+    if (colEl) colEl.textContent = on ? `192/192` : `${this.campaign.ownedGenerals.length}/${GENERALS.length}`;
+    const campEl = document.getElementById('hub-camp-prog');
+    if (campEl) campEl.textContent = `${this.campaign.cleared.length}/${ALL_CAMPAIGN_STAGES.length}`;
+  },
+
+  // ---------------- SINGLE-PLAYER CAMPAIGN HUB (天下統一 24 城) ----------------
+  renderCampaignHub() {
+    this.syncUnlockButtons();
+    const rankEl = document.getElementById('camp-rank-badge');
+    const goldEl = document.getElementById('camp-gold-badge');
+    const cityEl = document.getElementById('camp-city-badge');
+    if (rankEl) rankEl.textContent = `官位：${this.getRankTitle()}`;
+    if (goldEl) goldEl.textContent = `軍資金：${this.campaign.gold}`;
+    if (cityEl) cityEl.textContent = `制霸：${this.campaign.cleared.length} / ${ALL_CAMPAIGN_STAGES.length} 城`;
+
+    const chap = CAMPAIGN_CHAPTERS.find(c => c.id === this.selectedChapterId) || CAMPAIGN_CHAPTERS[0];
+    if (!chap.stages.some(s => s.id === this.selectedStageId)) {
+      const firstUnclear = chap.stages.find(s => !this.campaign.cleared.includes(s.id));
+      this.selectedStageId = (firstUnclear || chap.stages[0]).id;
+    }
+
+    // 1. Chapter Pills
+    const chapBar = document.getElementById('camp-chapter-bar');
+    if (chapBar) {
+      chapBar.innerHTML = CAMPAIGN_CHAPTERS.map(c => {
+        const clrCnt = c.stages.filter(s => this.campaign.cleared.includes(s.id)).length;
+        const allClr = clrCnt === c.stages.length;
+        const active = c.id === chap.id;
+        return `<button class="chap-pill ${active ? 'active' : ''} ${allClr ? 'cleared' : ''}" data-chap="${c.id}">
+          ${c.year} ${c.name.split('・')[1] || c.name} (${clrCnt}/${c.stages.length})
+        </button>`;
+      }).join('');
+      chapBar.querySelectorAll('.chap-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.selectedChapterId = btn.dataset.chap;
+          const nc = CAMPAIGN_CHAPTERS.find(x => x.id === this.selectedChapterId);
+          const firstUnc = nc.stages.find(s => !this.campaign.cleared.includes(s.id));
+          this.selectedStageId = (firstUnc || nc.stages[0]).id;
+          this.renderCampaignHub();
+        });
+      });
+    }
+
+    // 2. Official NDS China Strategy Map with 24 Clickable Castles!
+    const mapBanner = document.getElementById('map-chap-banner');
+    if (mapBanner) mapBanner.textContent = `${chap.year}・${chap.name}（${chap.badge}）`;
+    const mapStage = document.getElementById('camp-map-stage');
+    if (mapStage) {
+      mapStage.querySelectorAll('.prov-node').forEach(el => el.remove());
+      const chapProvs = new Set(chap.stages.map(s => s.prov));
+      for (const prov of CHINA_PROVINCES) {
+        const st = STAGE_BY_PROV[prov.id];
+        if (!st) continue;
+        const isClr = this.campaign.cleared.includes(st.id);
+        const isSel = st.id === this.selectedStageId;
+        const inChap = chapProvs.has(prov.id);
+        const node = document.createElement('div');
+        node.className = `prov-node fac-${st.faction} ${prov.capital ? 'capital' : ''} ${isClr ? 'cleared' : ''} ${inChap ? 'in-chapter' : ''} ${isSel ? 'selected' : ''}`;
+        node.style.left = `${prov.x}%`;
+        node.style.top = `${prov.y}%`;
+        node.title = `${prov.name} — ${st.title}`;
+        const mark = isClr ? '★' : (prov.capital ? '都' : FACTIONS[st.faction].name.charAt(0));
+        node.innerHTML = `<div class="prov-dot">${mark}</div><div class="prov-lbl">${prov.name}</div>`;
+        node.addEventListener('click', () => {
+          this.selectedChapterId = st.chapterId;
+          this.selectedStageId = st.id;
+          sfx.ensure(); sfx.playSE('cursor');
+          this.renderCampaignHub();
+        });
+        mapStage.appendChild(node);
+      }
+    }
+
+    // 3. Stage Selector Strip (4 stages in current chapter)
+    const stStrip = document.getElementById('camp-stage-strip');
+    if (stStrip) {
+      stStrip.innerHTML = chap.stages.map(s => {
+        const prov = PROVINCE_MAP[s.prov];
+        const isClr = this.campaign.cleared.includes(s.id);
+        const isSel = s.id === this.selectedStageId;
+        return `
+          <button class="cstage-chip ${isSel ? 'selected' : ''} ${isClr ? 'cleared' : ''}" data-stage="${s.id}">
+            <div class="cs-top"><span>${prov ? prov.name : s.prov}</span><span>${isClr ? '★制霸' : '未制霸'}</span></div>
+            <div class="cs-title">${s.title}</div>
+            <div class="cs-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</div>
+          </button>`;
+      }).join('');
+      stStrip.querySelectorAll('.cstage-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.selectedStageId = btn.dataset.stage;
+          sfx.ensure(); sfx.playSE('cursor');
+          this.renderCampaignHub();
+        });
+      });
+    }
+
+    // 4. War Council Briefing Card
+    const st = STAGE_BY_ID[this.selectedStageId] || chap.stages[0];
+    const brief = document.getElementById('camp-brief-card');
+    if (brief && st) {
+      const prov = PROVINCE_MAP[st.prov];
+      const isClr = this.campaign.cleared.includes(st.id);
+      const mapLbl = st.map === 'hulao' ? '虎牢關(M01)' : st.map === 'grassland' ? '平原草原(M02)' : '赤壁棧道(M06/07)';
+      const diffLbl = st.diff === 'hard' ? '頂上' : st.diff === 'easy' ? '入門' : '標準';
+      const eGunshi = GUNSHI_MAP[st.gunshi] || GUNSHI_LIST[0];
+      const eCardsHtml = st.deck.map(id => {
+        const g = GENERAL_MAP[id];
+        if (!g) return '';
+        const ut = UNIT_TYPES[g.type];
+        return `<div class="cb-enemy-card" style="border-color:${FACTIONS[g.faction].color}">
+          <span class="ce-tag">${g.rare}・${ut.icon}</span>
+          <img src="${g.img}" alt="${g.name}" loading="lazy">
+          <div class="ce-lbl">${g.name} 武${g.pow}</div>
+        </div>`;
+      }).join('') + `<div class="cb-enemy-card gunshi">
+        <span class="ce-tag" style="color:#8ce8ff">軍師</span>
+        <img src="${eGunshi.cardImg}" alt="${eGunshi.name}" loading="lazy">
+        <div class="ce-lbl">${eGunshi.name}</div>
+      </div>`;
+
+      const myGunshi = GUNSHI_MAP[this.gunshiId] || GUNSHI_LIST[0];
+      brief.innerHTML = `
+        <div class="cb-head">
+          <div>
+            <div class="cb-title">【${prov ? prov.name : ''}】${st.title} ${isClr ? '<span style="color:#69f2a0;font-size:12px">★ 已制霸</span>' : ''}</div>
+            <div class="cb-sub">${st.sub}</div>
+            <div class="cb-tags">
+              <span class="cb-tag">地形：${mapLbl}</span>
+              <span class="cb-tag">難度：${diffLbl} (${'★'.repeat(st.stars)})</span>
+              <span class="cb-tag reward">戰利品：${isClr ? Math.round(st.gold * 0.4) : st.gold}金＋3連開卡包</span>
+              ${st.rule ? `<span class="cb-tag rule">戰報：${st.rule}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div style="font-size:10.5px;color:#9eb5ad;font-weight:800">敵軍出陣陣容（共 ${st.deck.length} 將 ＋ 軍師 ${eGunshi.name}）：</div>
+        <div class="cb-enemy-row">${eCardsHtml}</div>
+        <div style="font-size:10.5px;color:#bde3d4">我軍目前牌組：<strong>牌組${this.deckSlotIdx + 1}</strong>（${this.deck.length}將・Cost ${this.deckCost().toFixed(1)}・軍師:${myGunshi.name}）</div>
+        <div class="cb-actions">
+          <button class="cb-edit-btn" id="btn-camp-edit-deck">編輯出陣陣容</button>
+          <button class="cb-launch-btn" id="btn-camp-start">出 陣 攻 略</button>
+        </div>`;
+      document.getElementById('btn-camp-edit-deck').addEventListener('click', () => this.switchHubTab('deck'));
+      document.getElementById('btn-camp-start').addEventListener('click', () => this.startBattle({ campaignStage: st }));
+    }
+  },
+
+  // ---------------- AUTHENTIC 3-CARD PACK OPENING (戰後 / 酒館登用 CARD GET!) ----------------
+  drawCardPack(count = 3, title = '武 將 登 用 ！', subtitle = '獲得 3 張《三國志大戰‧天》武將／軍師卡', bonusRareBoost = 0) {
+    const pulls = [];
+    let dupRefund = 0;
+    const unownedG = GENERALS.filter(g => !this.campaign.ownedGenerals.includes(g.id));
+    const unownedS = GUNSHI_LIST.filter(g => !this.campaign.ownedGunshi.includes(g.id));
+
+    for (let i = 0; i < count; i++) {
+      // 15% chance for Gunshi card if unowned Gunshi exist
+      if (unownedS.length && Math.random() < 0.16) {
+        const gs = unownedS.splice(Math.floor(Math.random() * unownedS.length), 1)[0];
+        const isNew = !this.campaign.ownedGunshi.includes(gs.id);
+        if (isNew) this.campaign.ownedGunshi.push(gs.id);
+        else dupRefund += 40;
+        pulls.push({ isGunshi: true, item: gs, isNew });
+        continue;
+      }
+      // Rarity roll (LE 4%, SR 16%+boost, R 30%, UC 30%, C 20%)
+      const roll = Math.random();
+      const targetRare = roll < (0.04 + bonusRareBoost * 0.02) ? 'LE'
+        : roll < (0.20 + bonusRareBoost * 0.06) ? 'SR'
+        : roll < 0.52 ? 'R'
+        : roll < 0.80 ? 'UC' : 'C';
+      let pool = unownedG.filter(g => g.rare === targetRare);
+      if (!pool.length) pool = unownedG.length ? unownedG : GENERALS.filter(g => g.rare === targetRare);
+      if (!pool.length) pool = GENERALS;
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      const uIdx = unownedG.indexOf(picked);
+      if (uIdx >= 0) unownedG.splice(uIdx, 1);
+      const isNew = !this.campaign.ownedGenerals.includes(picked.id);
+      if (isNew) this.campaign.ownedGenerals.push(picked.id);
+      else dupRefund += 40;
+      pulls.push({ isGunshi: false, item: picked, isNew });
+    }
+
+    if (dupRefund > 0) this.campaign.gold += dupRefund;
+    this.saveCampaign();
+    this.syncUnlockButtons();
+
+    document.getElementById('pack-title').textContent = title;
+    document.getElementById('pack-sub').textContent = dupRefund > 0 ? `${subtitle}（重複卡轉化軍資金 +${dupRefund} 金）` : subtitle;
+    const row = document.getElementById('pack-cards-row');
+    row.innerHTML = pulls.map((p, idx) => {
+      const it = p.item;
+      const img = p.isGunshi ? it.cardImg : it.img;
+      const f = FACTIONS[it.faction];
+      const sub = p.isGunshi ? `${f.name}・軍師 ${it.rare}` : `${f.name}・${UNIT_TYPES[it.type].icon} ${it.rare} 武${it.pow}知${it.intl}`;
+      return `
+        <div class="pack-card r-${it.rare}" style="animation-delay:${idx * 0.14}s">
+          <span class="pack-new-pill ${p.isNew ? '' : 'dup'}">${p.isNew ? 'NEW!' : '+40金'}</span>
+          <img src="${img}" alt="${it.name}">
+          <div class="pack-card-meta">
+            <div>${it.name}</div>
+            <div style="font-size:9.5px;color:#ffd980;font-weight:700">${sub}</div>
+          </div>
+        </div>`;
+    }).join('');
+    sfx.ensure();
+    sfx.victory();
+    document.getElementById('card-pack-modal').classList.add('open');
   },
 
   toast(msg) {
@@ -7744,21 +8391,18 @@ const App = {
     this.sim.dispatch(cmd);
   },
 
-  saveDeck() {
-    try {
-      localStorage.setItem('sgt_deck_v4', JSON.stringify(this.deck));
-      localStorage.setItem('sgt_gunshi_v4', this.gunshiId);
-    } catch (e) {}
-  },
-  deckCost() { return this.deck.reduce((sum, id) => sum + GENERAL_MAP[id].cost, 0); },
+  deckCost() { return this.deck.reduce((sum, id) => sum + (GENERAL_MAP[id]?.cost || 0), 0); },
 
   setGunshi(gid) {
     if (!GUNSHI_MAP[gid]) return;
+    if (!this.isGunshiOwned(gid)) {
+      this.toast('此軍師尚未登用！可於戰役破關、酒館抽卡，或開啟「全武將」自由使用');
+      return;
+    }
     this.gunshiId = gid;
-    const gSel = document.getElementById('gunshi-select');
-    if (gSel) gSel.value = gid;
     this.saveDeck();
     this.renderDeckSidebar();
+    if (this.rosterMode === 'gunshi') this.renderRoster();
     this.updateCfgSummary();
   },
 
@@ -7773,13 +8417,14 @@ const App = {
     grid.innerHTML = GUNSHI_LIST.map(gs => {
       const f = FACTIONS[gs.faction];
       const isSel = gs.id === this.gunshiId;
+      const owned = this.isGunshiOwned(gs.id);
       return `
-        <div class="gunshi-item ${isSel ? 'selected' : ''}" data-gid="${gs.id}">
-          <img src="${gs.cardImg}" alt="${gs.name}">
+        <div class="gunshi-item ${isSel ? 'selected' : ''} ${owned ? '' : 'locked'}" data-gid="${gs.id}" style="${owned ? '' : 'opacity:0.5;filter:grayscale(0.85)'}">
+          <img src="${gs.cardImg}" alt="${gs.name}" loading="lazy">
           <div class="gunshi-item-info">
             <div class="gunshi-item-head">
-              <span class="gunshi-item-name">${gs.name}</span>
-              <span class="unit-pill" style="background:${f.color}">${f.name}・軍師</span>
+              <span class="gunshi-item-name">${gs.name} <span class="rare-badge rare-${gs.rare}">${gs.rare}</span></span>
+              <span class="unit-pill" style="background:${f.color}">${f.name}・軍師${owned ? '' : '🔒'}</span>
             </div>
             <div class="gunshi-skill-line"><b>【兵略】${gs.heiryaku.name}</b>：${gs.heiryaku.desc}</div>
             <div class="gunshi-skill-line jin"><b>【陣略】${gs.jinryaku.name}</b>：${gs.jinryaku.desc}</div>
@@ -7789,6 +8434,10 @@ const App = {
     grid.querySelectorAll('.gunshi-item').forEach(el => {
       el.addEventListener('click', () => {
         const gid = el.dataset.gid;
+        if (!this.isGunshiOwned(gid)) {
+          this.toast('此軍師尚未登用（可於戰役抽卡或開啟右上角「全武將」）');
+          return;
+        }
         this.setGunshi(gid);
         this.renderGunshiGrid();
         sfx.ensure();
@@ -7796,17 +8445,6 @@ const App = {
         this.toast(`已指派隨陣軍師：${GUNSHI_MAP[gid].name}`);
       });
     });
-  },
-
-  setCfgSheetOpen(open) {
-    const sheet = document.getElementById('cfg-sheet');
-    const backdrop = document.getElementById('cfg-sheet-backdrop');
-    const btn = document.getElementById('btn-open-cfg');
-    const caret = document.getElementById('cfg-caret');
-    if (sheet) sheet.classList.toggle('open', open);
-    if (backdrop) backdrop.classList.toggle('open', open);
-    if (btn) btn.classList.toggle('open', open);
-    if (caret) caret.textContent = open ? '收起 ▾' : '展開 ▴';
   },
 
   setPresetDrawerOpen(open) {
@@ -7822,15 +8460,8 @@ const App = {
   updateCfgSummary() {
     const line = document.getElementById('cfg-summary-line');
     if (!line) return;
-    const mapNames = { hulao: '虎牢關', grassland: '平原草原', chibi: '赤壁棧道' };
-    const aiNames = { wei: '魏霸道', shu: '蜀五虎', wu: '吳赤壁', qun: '群無雙' };
-    const diffNames = { easy: '入門', normal: '標準', hard: '頂上' };
-    const mapV = document.getElementById('map-select')?.value || 'hulao';
     const gs = GUNSHI_MAP[this.gunshiId] || GUNSHI_LIST[0];
-    const aiV = document.getElementById('ai-deck-select')?.value || 'wu';
-    const diffV = document.getElementById('ai-diff-select')?.value || 'normal';
-    const qV = document.getElementById('quality-select')?.value || this.qualityTier || 'balanced';
-    line.textContent = `${mapNames[mapV] || mapV} · 軍師:${gs.name} · 敵:${aiNames[aiV] || aiV}(${diffNames[diffV] || diffV}) · ${qV === 'high' ? '高畫質' : '流暢'}`;
+    line.textContent = `牌組${this.deckSlotIdx + 1}（${this.deck.length}將・Cost ${this.deckCost().toFixed(1)}）· 軍師:${gs.name}`;
   },
 
   bindDeckUI() {
@@ -7844,13 +8475,64 @@ const App = {
     });
     document.getElementById('btn-fullscreen-deck').addEventListener('click', () => this.enterFullscreenPortrait(true));
 
-    const openGunshiBtn = document.getElementById('btn-open-gunshi');
-    if (openGunshiBtn) openGunshiBtn.addEventListener('click', () => this.openGunshiModal());
+    // 3-Mode Hub Tabs
+    document.getElementById('hub-nav-bar').addEventListener('click', e => {
+      const btn = e.target.closest('.hub-tab-btn');
+      if (!btn) return;
+      this.switchHubTab(btn.dataset.hub);
+    });
+
+    // Global Free-Unlock Toggle (Collection Mode vs All 192 Free Sandbox!)
+    const toggleUnlock = () => {
+      this.campaign.freeUnlockAll = !this.campaign.freeUnlockAll;
+      this.saveCampaign();
+      this.syncUnlockButtons();
+      this.renderRoster();
+      this.toast(this.campaign.freeUnlockAll ? '已開啟全武將自由模式（192武將＋20軍師全解鎖！）' : '已切回單人戰役收集模式');
+    };
+    document.getElementById('btn-toggle-unlock-all').addEventListener('click', toggleUnlock);
+    document.getElementById('btn-free-unlock-toggle').addEventListener('click', toggleUnlock);
+
+    // Tavern 3-Card Draw (酒館登用)
+    document.getElementById('btn-tavern-draw').addEventListener('click', () => {
+      if (this.campaign.gold < 200) {
+        this.toast(`軍資金不足（需要 200 金，目前 ${this.campaign.gold} 金）`);
+        return;
+      }
+      this.campaign.gold -= 200;
+      this.drawCardPack(3, '酒 館 登 用 ！', '消耗 200 軍資金招募 3 名武將／軍師', 1);
+      this.renderCampaignHub();
+    });
+
+    // Card Pack Modal Close
+    document.getElementById('btn-pack-close').addEventListener('click', () => {
+      document.getElementById('card-pack-modal').classList.remove('open');
+      this.renderCampaignHub();
+      if (this.hubTab === 'deck') this.renderRoster();
+    });
+
+    // Reset Campaign Save
+    document.getElementById('btn-reset-campaign').addEventListener('click', () => {
+      this.campaign = {
+        cleared: [],
+        ownedGenerals: [...STARTER_GENERAL_IDS],
+        ownedGunshi: [...STARTER_GUNSHI_IDS],
+        gold: 300, wins: 0, freeUnlockAll: false
+      };
+      this.saveCampaign();
+      this.syncUnlockButtons();
+      this.renderCampaignHub();
+      this.renderRoster();
+      this.toast('已重置單人戰役進度與初期武將庫');
+    });
+
+    // Gunshi Modal
     const gunshiClose = document.getElementById('gunshi-close-btn');
     if (gunshiClose) gunshiClose.addEventListener('click', () => document.getElementById('gunshi-modal').classList.remove('open'));
     const gunshiModal = document.getElementById('gunshi-modal');
     if (gunshiModal) gunshiModal.addEventListener('click', e => { if (e.target.id === 'gunshi-modal') gunshiModal.classList.remove('open'); });
 
+    // Presets Drawer
     const togglePresetsBtn = document.getElementById('btn-toggle-presets');
     if (togglePresetsBtn) {
       togglePresetsBtn.addEventListener('click', () => {
@@ -7858,18 +8540,42 @@ const App = {
         this.setPresetDrawerOpen(!(drawer && drawer.classList.contains('open')));
       });
     }
-
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.dataset.preset;
+        if (!PRESET_DECKS[key]) return;
         this.deck = [...PRESET_DECKS[key]];
         if (PRESET_GUNSHI[key]) this.gunshiId = PRESET_GUNSHI[key];
-        const gSel = document.getElementById('gunshi-select');
-        if (gSel) gSel.value = this.gunshiId;
-        this.saveDeck(); this.renderRoster(); this.renderDeckSidebar(); this.updateCfgSummary();
+        // Also ensure preset cards are usable in free-unlock or automatically granted for quick testing if locked
+        this.deck.forEach(id => { if (!this.campaign.ownedGenerals.includes(id)) this.campaign.ownedGenerals.push(id); });
+        if (!this.campaign.ownedGunshi.includes(this.gunshiId)) this.campaign.ownedGunshi.push(this.gunshiId);
+        this.saveCampaign();
+        this.saveDeck();
+        this.syncUnlockButtons();
+        this.renderDeckSidebar();
+        this.renderRoster();
+        this.renderCampaignHub();
+        this.updateCfgSummary();
         this.setPresetDrawerOpen(false);
-        this.toast(`已套用推薦牌組：${btn.textContent}（軍師：${GUNSHI_MAP[this.gunshiId].name}）`);
+        this.toast(`已套用推薦陣容：${btn.textContent}（軍師：${GUNSHI_MAP[this.gunshiId].name}）`);
       });
+    });
+
+    // 3 Custom Deck Memory Slots (牌組1 / 牌組2 / 牌組3)
+    document.getElementById('deck-mem-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.dmem-btn');
+      if (!btn) return;
+      const idx = Number(btn.dataset.slot);
+      this.saveDeck();
+      this.deckSlotIdx = idx;
+      this.deck = [...this.deckSlots[idx].deck];
+      this.gunshiId = this.deckSlots[idx].gunshiId;
+      document.querySelectorAll('.dmem-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.slot) === idx));
+      this.saveDeck();
+      this.renderDeckSidebar();
+      this.renderRoster();
+      this.updateCfgSummary();
+      this.toast(`已切換至 牌組 ${idx + 1}`);
     });
 
     const clearBtn = document.getElementById('btn-clear-deck');
@@ -7877,52 +8583,93 @@ const App = {
       clearBtn.addEventListener('click', () => {
         if (!this.deck.length) return;
         this.deck = [];
-        this.saveDeck(); this.renderRoster(); this.renderDeckSidebar();
-        this.toast('已清空牌組');
+        this.saveDeck(); this.renderDeckSidebar(); this.renderRoster(); this.updateCfgSummary();
+        this.toast('已清空目前牌組');
       });
     }
 
+    // Authentic DED_BBG Filter, Sort, Search & View Controls
     document.getElementById('faction-tabs').addEventListener('click', e => {
       const btn = e.target.closest('.ftab'); if (!btn) return;
       document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       this.filterFaction = btn.dataset.faction;
+      this.rosterPage = 1;
+      this.renderRoster();
+    });
+    document.getElementById('type-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.ttab'); if (!btn) return;
+      document.querySelectorAll('.ttab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      this.filterType = btn.dataset.type;
+      this.rosterPage = 1;
       this.renderRoster();
     });
 
-    const typeTabs = document.getElementById('type-tabs');
-    if (typeTabs) {
-      typeTabs.addEventListener('click', e => {
-        const btn = e.target.closest('.ttab'); if (!btn) return;
-        typeTabs.querySelectorAll('.ttab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.filterType = btn.dataset.type;
-        this.renderRoster();
-      });
-    }
+    document.getElementById('btn-roster-generals').addEventListener('click', () => {
+      this.rosterMode = 'generals'; this.rosterPage = 1;
+      document.getElementById('btn-roster-generals').classList.add('active');
+      document.getElementById('btn-roster-gunshi').classList.remove('active');
+      this.renderRoster();
+    });
+    document.getElementById('btn-roster-gunshi').addEventListener('click', () => {
+      this.rosterMode = 'gunshi'; this.rosterPage = 1;
+      document.getElementById('btn-roster-gunshi').classList.add('active');
+      document.getElementById('btn-roster-generals').classList.remove('active');
+      this.renderRoster();
+    });
+    document.getElementById('roster-search').addEventListener('input', e => {
+      this.searchText = (e.target.value || '').trim();
+      this.rosterPage = 1;
+      this.renderRoster();
+    });
+    document.getElementById('filter-cost').addEventListener('change', e => {
+      this.filterCost = e.target.value; this.rosterPage = 1; this.renderRoster();
+    });
+    document.getElementById('filter-rare').addEventListener('change', e => {
+      this.filterRare = e.target.value; this.rosterPage = 1; this.renderRoster();
+    });
+    document.getElementById('sort-by').addEventListener('change', e => {
+      this.sortBy = e.target.value;
+      this.sortDesc = (this.sortBy !== 'no');
+      document.getElementById('btn-sort-dir').textContent = this.sortDesc ? '降順↓' : '昇順↑';
+      this.rosterPage = 1;
+      this.renderRoster();
+    });
+    document.getElementById('btn-sort-dir').addEventListener('click', () => {
+      this.sortDesc = !this.sortDesc;
+      document.getElementById('btn-sort-dir').textContent = this.sortDesc ? '降順↓' : '昇順↑';
+      this.renderRoster();
+    });
+    document.getElementById('btn-view-mode').addEventListener('click', () => {
+      this.viewMode = this.viewMode === 'card' ? 'list' : 'card';
+      const b = document.getElementById('btn-view-mode');
+      b.textContent = this.viewMode === 'card' ? '清單' : '卡圖';
+      b.classList.toggle('active', this.viewMode === 'list');
+      this.renderRoster();
+    });
+    document.getElementById('btn-owned-only').addEventListener('click', () => {
+      this.ownedOnly = !this.ownedOnly;
+      document.getElementById('btn-owned-only').classList.toggle('active', this.ownedOnly);
+      this.rosterPage = 1;
+      this.renderRoster();
+    });
+    document.getElementById('btn-page-prev').addEventListener('click', () => {
+      if (this.rosterPage > 1) { this.rosterPage--; this.renderRoster(); }
+    });
+    document.getElementById('btn-page-next').addEventListener('click', () => {
+      this.rosterPage++; this.renderRoster();
+    });
 
-    const openCfgBtn = document.getElementById('btn-open-cfg');
-    if (openCfgBtn) {
-      openCfgBtn.addEventListener('click', () => {
-        const sheet = document.getElementById('cfg-sheet');
-        this.setCfgSheetOpen(!(sheet && sheet.classList.contains('open')));
-      });
-    }
-    const cfgDoneBtn = document.getElementById('btn-cfg-done');
-    if (cfgDoneBtn) cfgDoneBtn.addEventListener('click', () => this.setCfgSheetOpen(false));
-    const cfgBackdrop = document.getElementById('cfg-sheet-backdrop');
-    if (cfgBackdrop) cfgBackdrop.addEventListener('click', () => this.setCfgSheetOpen(false));
+    document.getElementById('btn-go-campaign-from-deck').addEventListener('click', () => this.switchHubTab('campaign'));
 
-    ['map-select', 'gunshi-select', 'ai-deck-select', 'ai-diff-select', 'quality-select'].forEach(id => {
+    ['map-select', 'ai-deck-select', 'ai-diff-select', 'quality-select'].forEach(id => {
       const sel = document.getElementById(id);
       if (!sel) return;
       sel.addEventListener('change', () => {
         if (id === 'quality-select') {
           this.qualityTier = sel.value;
           try { localStorage.setItem('sgt_quality_v1', this.qualityTier); } catch (e) {}
-        } else if (id === 'gunshi-select') {
-          this.setGunshi(sel.value);
-          return;
         }
         this.updateCfgSummary();
       });
@@ -7934,28 +8681,42 @@ const App = {
       if (this.inspectingId) this.toggleCard(this.inspectingId);
       document.getElementById('inspect-modal').classList.remove('open');
     });
-    document.getElementById('start-battle-btn').addEventListener('click', () => this.startBattle());
+    document.getElementById('start-battle-btn').addEventListener('click', () => this.startBattle({ campaignStage: null }));
+    document.getElementById('btn-free-launch').addEventListener('click', () => this.startBattle({ campaignStage: null }));
   },
 
   toggleCard(id) {
     const idx = this.deck.indexOf(id);
-    if (idx >= 0) this.deck.splice(idx, 1);
-    else {
+    if (idx >= 0) {
+      this.deck.splice(idx, 1);
+    } else {
       const g = GENERAL_MAP[id];
-      if (this.deck.length >= 5) { this.toast('牌組最多編入 5 名武將'); return; }
+      if (!g) return;
+      if (!this.isGeneralOwned(id)) {
+        this.toast(`尚未獲得【${g.rare} ${g.name}】！可於單人戰役／酒館登用，或開啟右上角「全武將」`);
+        return;
+      }
+      // Authentic SEGA Same-Name Exclusion Rule!
+      const dup = this.deck.find(eid => GENERAL_MAP[eid]?.name === g.name);
+      if (dup) {
+        this.toast(`同名武將【${g.name}】不可同時編入同一牌組！`);
+        return;
+      }
+      if (this.deck.length >= 6) { this.toast('單一牌組最多編入 6 名武將'); return; }
       if (this.deckCost() + g.cost > 8.001) { this.toast(`Cost 超過上限 8.0（目前 ${this.deckCost().toFixed(1)}）`); return; }
       this.deck.push(id);
     }
-    this.saveDeck(); this.renderRoster(); this.renderDeckSidebar();
+    this.saveDeck(); this.renderDeckSidebar(); this.renderRoster(); this.updateCfgSummary();
   },
 
   openInspect(id) {
     this.inspectingId = id;
     const g = GENERAL_MAP[id], f = FACTIONS[g.faction], ut = UNIT_TYPES[g.type];
+    const owned = this.isGeneralOwned(id);
     document.getElementById('inspect-body').innerHTML = `
       <img src="${g.img}" alt="${g.name}">
       <div class="inspect-info">
-        <div class="inspect-title">${g.name} <span style="font-size:13px;color:${f.color}">【${f.name}】</span></div>
+        <div class="inspect-title">${g.name} <span class="rare-badge rare-${g.rare}">${g.rare}</span> <span style="font-size:12px;color:${f.color}">【${g.no}・${f.name}】</span></div>
         <div class="inspect-meta">
           兵種：<strong>${ut.name}</strong>　｜　Cost：<strong>${g.cost.toFixed(1)}</strong><br>
           武力：<strong>${g.pow}</strong>　｜　知力：<strong>${g.intl}</strong><br>
@@ -7967,37 +8728,152 @@ const App = {
           <div>${g.strat.desc}</div>
         </div>
       </div>`;
-    document.getElementById('inspect-toggle-btn').textContent = this.deck.includes(id) ? '移出牌組' : '加入牌組';
+    const tbtn = document.getElementById('inspect-toggle-btn');
+    tbtn.textContent = this.deck.includes(id) ? '移出牌組' : (owned ? '加入牌組' : '尚未獲得');
+    tbtn.disabled = !owned && !this.deck.includes(id);
     document.getElementById('inspect-modal').classList.add('open');
   },
 
   renderRoster() {
     const grid = document.getElementById('roster-grid');
-    const list = GENERALS.filter(g =>
+    const tblWrap = document.getElementById('roster-table-wrap');
+    const pager = document.getElementById('roster-pager');
+
+    // Mode B: Official 20 Gunshi Browser directly inside Deck Editor!
+    if (this.rosterMode === 'gunshi') {
+      tblWrap.style.display = 'none';
+      grid.style.display = 'grid';
+      if (pager) pager.style.display = 'none';
+      const q = this.searchText.toLowerCase();
+      const list = GUNSHI_LIST.filter(gs =>
+        (this.filterFaction === 'all' || gs.faction === this.filterFaction) &&
+        (this.filterRare === 'all' || gs.rare === this.filterRare) &&
+        (!this.ownedOnly || this.isGunshiOwned(gs.id)) &&
+        (!q || gs.name.toLowerCase().includes(q) || gs.heiryaku.name.includes(q) || gs.jinryaku.name.includes(q))
+      );
+      grid.innerHTML = list.map(gs => {
+        const f = FACTIONS[gs.faction];
+        const isSel = gs.id === this.gunshiId;
+        const owned = this.isGunshiOwned(gs.id);
+        return `
+          <div class="gcard ${isSel ? 'selected' : ''} ${owned ? '' : 'locked'}" data-gid="${gs.id}" style="border-color:${isSel ? '#66d4ff' : f.color}">
+            <img src="${gs.cardImg}" alt="${gs.name}" loading="lazy">
+            <div class="gcard-top">
+              <span class="rare-badge rare-${gs.rare}">${gs.rare}</span>
+              <span class="unit-pill" style="background:${f.color}">${f.name}・軍師</span>
+            </div>
+            <span class="selected-check" style="background:#1c78c8">隨陣中</span>
+            <div class="lock-banner">未登用</div>
+            <div class="gcard-bottom">
+              <div class="gcard-name-row"><span class="gcard-name">${gs.name}</span></div>
+              <div class="gcard-strat">兵:${gs.heiryaku.name}</div>
+              <div class="gcard-strat" style="color:#88e0ff">陣:${gs.jinryaku.name}</div>
+            </div>
+          </div>`;
+      }).join('');
+      grid.querySelectorAll('.gcard[data-gid]').forEach(el => {
+        el.addEventListener('click', () => {
+          this.setGunshi(el.dataset.gid);
+          sfx.ensure(); sfx.playSE('cursor');
+        });
+      });
+      return;
+    }
+
+    // Mode A: Full 192 Official NDS Generals Browser with Multi-Axis Filter, Sort & Pagination!
+    const q = this.searchText.toLowerCase();
+    let list = GENERALS.filter(g =>
       (this.filterFaction === 'all' || g.faction === this.filterFaction) &&
-      (this.filterType === 'all' || g.type === this.filterType)
+      (this.filterType === 'all' || g.type === this.filterType) &&
+      (this.filterCost === 'all' || Math.abs(g.cost - Number(this.filterCost)) < 0.05) &&
+      (this.filterRare === 'all' || g.rare === this.filterRare) &&
+      (!this.ownedOnly || this.isGeneralOwned(g.id)) &&
+      (!q || g.name.toLowerCase().includes(q) || g.strat.name.toLowerCase().includes(q) || g.no.toLowerCase().includes(q))
     );
+
+    const dir = this.sortDesc ? -1 : 1;
+    list.sort((a, b) => {
+      if (this.sortBy === 'pow') return (a.pow - b.pow) * dir || (b.intl - a.intl);
+      if (this.sortBy === 'intl') return (a.intl - b.intl) * dir || (b.pow - a.pow);
+      if (this.sortBy === 'cost') return (a.cost - b.cost) * dir || (b.pow - a.pow);
+      if (this.sortBy === 'rare') return ((RARE_ORDER[a.rare] || 0) - (RARE_ORDER[b.rare] || 0)) * dir || (b.pow - a.pow);
+      return (a.cid - b.cid) * dir;
+    });
+
+    const totalPages = Math.max(1, Math.ceil(list.length / this.pageSize));
+    if (this.rosterPage > totalPages) this.rosterPage = totalPages;
+    const start = (this.rosterPage - 1) * this.pageSize;
+    const pageItems = list.slice(start, start + this.pageSize);
+
+    if (pager) {
+      pager.style.display = 'flex';
+      document.getElementById('roster-count-lbl').textContent = `篩選結果 ${list.length} / ${GENERALS.length} 名武將`;
+      document.getElementById('roster-page-lbl').textContent = `${this.rosterPage} / ${totalPages}`;
+      document.getElementById('btn-page-prev').disabled = this.rosterPage <= 1;
+      document.getElementById('btn-page-next').disabled = this.rosterPage >= totalPages;
+    }
+
     const remCost = 8.001 - this.deckCost();
-    const isFull = this.deck.length >= 5;
-    grid.innerHTML = list.map(g => {
+    const isFull = this.deck.length >= 6;
+    const usedNames = new Set(this.deck.map(id => GENERAL_MAP[id]?.name));
+
+    if (this.viewMode === 'list') {
+      // Authentic NDS DED_TBG Table View!
+      grid.style.display = 'none';
+      tblWrap.style.display = 'block';
+      tblWrap.innerHTML = `
+        <table class="roster-table">
+          <thead><tr><th>國</th><th>稀</th><th>武將名</th><th>兵</th><th>Cost</th><th>武</th><th>知</th><th>特技</th><th>計略</th></tr></thead>
+          <tbody>
+            ${pageItems.map(g => {
+              const f = FACTIONS[g.faction], ut = UNIT_TYPES[g.type];
+              const isSel = this.deck.includes(g.id);
+              const owned = this.isGeneralOwned(g.id);
+              return `<tr class="${isSel ? 'selected' : ''} ${owned ? '' : 'locked'}" data-id="${g.id}">
+                <td><span style="color:${f.color};font-weight:900">${f.name.charAt(0)}</span></td>
+                <td><span class="rare-badge rare-${g.rare}">${g.rare}</span></td>
+                <td class="td-name">${g.name}${isSel ? ' ✓' : ''}</td>
+                <td><span class="dslot-type" style="background:${ut.color}">${ut.icon}</span></td>
+                <td>${g.cost.toFixed(1)}</td>
+                <td style="color:#ff9e85;font-weight:900">${g.pow}</td>
+                <td style="color:#7ae8ae;font-weight:900">${g.intl}</td>
+                <td style="font-size:9.5px;color:#ffd980">${g.traits.map(t => t[0]).join('')}</td>
+                <td class="td-strat">${g.strat.name}(${g.strat.cost})</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+      tblWrap.querySelectorAll('tr[data-id]').forEach(tr => {
+        tr.addEventListener('click', () => this.toggleCard(tr.dataset.id));
+      });
+      return;
+    }
+
+    tblWrap.style.display = 'none';
+    grid.style.display = 'grid';
+    grid.innerHTML = pageItems.map(g => {
       const f = FACTIONS[g.faction], ut = UNIT_TYPES[g.type];
       const isSel = this.deck.includes(g.id);
-      const overCls = (!isSel && (isFull || g.cost > remCost)) ? 'over-cost' : '';
+      const owned = this.isGeneralOwned(g.id);
+      const sameNameBlocked = !isSel && usedNames.has(g.name);
+      const overCls = (!isSel && owned && (isFull || g.cost > remCost || sameNameBlocked)) ? 'over-cost' : '';
       return `
-        <div class="gcard ${isSel ? 'selected' : ''} ${overCls}" data-id="${g.id}" style="border-color:${isSel ? 'var(--gold-bright)' : f.color}">
+        <div class="gcard ${isSel ? 'selected' : ''} ${owned ? '' : 'locked'} ${overCls}" data-id="${g.id}" style="border-color:${isSel ? 'var(--gold-bright)' : f.color}">
           <img src="${g.img}" alt="${g.name}" loading="lazy">
           <div class="gcard-top">
             <span class="cost-pill">${g.cost.toFixed(1)}</span>
-            <span class="unit-pill" style="background:${f.color}">${f.name}・${ut.icon}</span>
+            <span class="rare-badge rare-${g.rare}">${g.rare}</span>
+            <span class="unit-pill" style="background:${f.color}">${ut.icon}</span>
           </div>
           <span class="selected-check">出陣中</span>
+          <div class="lock-banner">未登用</div>
           <button class="gcard-info-btn" data-inspect="${g.id}" title="檢視詳情">詳</button>
           <div class="gcard-bottom">
             <div class="gcard-name-row">
               <span class="gcard-name">${g.name}</span>
               <span class="gcard-stats">武${g.pow} 知${g.intl}</span>
             </div>
-            <div class="gcard-strat">${g.strat.name} (士氣${g.strat.cost})</div>
+            <div class="gcard-strat">${g.strat.name} (士${g.strat.cost})</div>
             <div class="gcard-traits">${g.traits.map(t => `<span class="trait-tag">${t}</span>`).join('')}</div>
           </div>
         </div>`;
@@ -8014,34 +8890,42 @@ const App = {
   renderDeckSidebar() {
     const cost = this.deckCost();
     const costEl = document.getElementById('cost-readout');
-    if (costEl) costEl.innerHTML = `${cost.toFixed(1)} / 8.0 <small>Cost</small>`;
-    document.getElementById('cost-bar-fill').style.width = `${Math.min(100, (cost / 8) * 100)}%`;
+    if (costEl) costEl.textContent = `${cost.toFixed(1)}/8.0`;
 
-    const fSet = new Set(this.deck.map(id => GENERAL_MAP[id].faction));
+    // Authentic NDS 8 Glowing Gold Cost Beads (合計コスト!)
+    const beadsEl = document.getElementById('cost-beads');
+    if (beadsEl) {
+      let bHtml = '';
+      for (let i = 0; i < 8; i++) {
+        const rem = cost - i;
+        const cls = rem >= 0.99 ? 'full' : (rem >= 0.49 ? 'half' : '');
+        bHtml += `<span class="cost-bead ${cls}"></span>`;
+      }
+      beadsEl.innerHTML = bHtml;
+    }
+
+    const fSet = new Set(this.deck.map(id => GENERAL_MAP[id]?.faction).filter(Boolean));
     const cap = fSet.size <= 1 ? 14 : fSet.size === 2 ? 12 : 10;
-    const startM = 2.5 + this.deck.filter(id => GENERAL_MAP[id].traits.includes('魅力')).length * 0.5;
+    const startM = 2.5 + this.deck.filter(id => GENERAL_MAP[id]?.traits.includes('魅力')).length * 0.5;
     const cnt = { cav: 0, spr: 0, arc: 0, inf: 0, sge: 0 };
     for (const id of this.deck) {
-      const t = GENERAL_MAP[id].type;
+      const t = GENERAL_MAP[id]?.type;
       if (cnt[t] !== undefined) cnt[t]++;
     }
     const mCapEl = document.getElementById('morale-cap-readout');
     const sMorEl = document.getElementById('start-morale-readout');
     const mixEl = document.getElementById('troop-mix-readout');
-    if (mCapEl) {
-      mCapEl.textContent = `士氣 ${cap}`;
-      mCapEl.title = `${Math.max(1, fSet.size)}勢力混編，士氣上限 ${cap}`;
-    }
+    if (mCapEl) mCapEl.textContent = `士氣 ${cap}`;
     if (sMorEl) sMorEl.textContent = `開局 ${startM.toFixed(1)}`;
     if (mixEl) mixEl.textContent = `騎${cnt.cav} 槍${cnt.spr} 弓${cnt.arc} 步${cnt.inf} 攻${cnt.sge}`;
 
-    // 5 Upright 2:3 General Card Slots + 6th Official Gunshi Card Slot!
+    // 6 Upright 2:3 General Card Slots + 7th Official Gunshi Card Slot!
     const slots = document.getElementById('deck-slots');
     const remCost = Math.max(0, 8 - cost);
     const html = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       const id = this.deck[i];
-      if (id) {
+      if (id && GENERAL_MAP[id]) {
         const g = GENERAL_MAP[id], f = FACTIONS[g.faction], ut = UNIT_TYPES[g.type];
         html.push(`
           <div class="dslot" data-inspect="${id}" style="border-color:${f.color}" title="點擊查看 ${g.name} 詳情">
@@ -8091,30 +8975,45 @@ const App = {
     });
     const gsSlot = document.getElementById('dslot-gunshi');
     if (gsSlot) gsSlot.addEventListener('click', () => this.openGunshiModal());
-    document.getElementById('start-battle-btn').disabled = (this.deck.length === 0);
+    const startBtn = document.getElementById('start-battle-btn');
+    if (startBtn) startBtn.disabled = (this.deck.length === 0);
   },
 
-  // ---------------- BATTLE LIFECYCLE (FULL PRE-BATTLE PRELOADING!) ----------------
-  async startBattle() {
-    if (!this.deck.length || this.isPortraitBlocked() || this._loadingBattle) return;
+  // ---------------- BATTLE LIFECYCLE (SUPPORTS CAMPAIGN STAGES & FREE BATTLE!) ----------------
+  async startBattle(opts = {}) {
+    if (!this.deck.length) { this.toast('請先於「陣容編輯」編入至少 1 名武將！'); this.switchHubTab('deck'); return; }
+    if (this.isPortraitBlocked() || this._loadingBattle) return;
     this._loadingBattle = true;
     sfx.ensure(true);
-    this.setCfgSheetOpen(false);
     this.setPresetDrawerOpen(false);
     document.getElementById('gunshi-modal').classList.remove('open');
+    document.getElementById('card-pack-modal').classList.remove('open');
 
     if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
       this.enterFullscreenPortrait(false);
     }
 
-    const mapTheme = document.getElementById('map-select').value || 'hulao';
-    const pGunshi = this.gunshiId || 'guojia';
-    const aiDeckKey = document.getElementById('ai-deck-select').value || 'wu';
-    const aiDiff = document.getElementById('ai-diff-select').value || 'normal';
+    const stage = opts.campaignStage !== undefined ? opts.campaignStage : this.activeCampaignStage;
+    this.activeCampaignStage = stage || null;
+
+    let mapTheme, enemyIds, enemyGunshi, aiDiff, enemyTitle;
+    if (stage) {
+      mapTheme = stage.map || 'hulao';
+      enemyIds = stage.deck;
+      enemyGunshi = stage.gunshi || GUNSHI_LIST[0].id;
+      aiDiff = stage.diff || 'normal';
+      enemyTitle = stage.title;
+    } else {
+      mapTheme = document.getElementById('map-select')?.value || 'hulao';
+      const aiDeckKey = document.getElementById('ai-deck-select')?.value || 'wu';
+      aiDiff = document.getElementById('ai-diff-select')?.value || 'normal';
+      enemyIds = PRESET_DECKS[aiDeckKey] || PRESET_DECKS.wu;
+      enemyGunshi = PRESET_GUNSHI[aiDeckKey] || GUNSHI_LIST[0].id;
+      enemyTitle = '模擬對手';
+    }
+    const pGunshi = this.gunshiId || PRESET_GUNSHI.wei || GUNSHI_LIST[0].id;
     const qSel = document.getElementById('quality-select');
     if (qSel && qSel.value) this.qualityTier = qSel.value;
-    const enemyIds = PRESET_DECKS[aiDeckKey] || PRESET_DECKS.wu;
-    const enemyGunshi = PRESET_GUNSHI[aiDeckKey] || 'zhouyu';
 
     const overlay = document.getElementById('battle-loading-overlay');
     const barFill = document.getElementById('bl-bar-fill');
@@ -8131,6 +9030,8 @@ const App = {
     };
 
     try {
+      const blTitle = document.getElementById('bl-title');
+      if (blTitle) blTitle.textContent = stage ? `【${stage.title}】全軍整備出陣` : '正在整備出陣軍資';
       if (pStrip) {
         pStrip.innerHTML = this.deck.map(id => {
           const g = GENERAL_MAP[id];
@@ -8153,9 +9054,9 @@ const App = {
         mapTheme,
         pGunshi,
         enemyGunshi,
-        onProgress: (done, total, stage) => {
+        onProgress: (done, total, stLbl) => {
           const pct = 3 + (done / Math.max(1, total)) * 87;
-          setLoadUI(pct, `${stage} (${done}/${total})`);
+          setLoadUI(pct, `${stLbl} (${done}/${total})`);
         }
       });
 
@@ -8183,13 +9084,11 @@ const App = {
       document.getElementById('btn-pause').textContent = '暫停';
       document.getElementById('btn-speed').textContent = '1.0x';
 
-      // Build Morale Orbs (圖一 Bottom Strip)
       const gemBox = document.getElementById('morale-gems');
       gemBox.innerHTML = Array.from({ length: this.sim.moraleCap.player }, (_, i) =>
         `<div class="m-gem" id="mgem-${i}"><div class="m-gem-fill" id="mgemf-${i}"></div></div>`
       ).join('');
 
-      // Populate Right-Rail Gunshi Portrait & Mode Orb (圖二!)
       const gDef = GUNSHI_MAP[pGunshi] || GUNSHI_LIST[0];
       const gImgEl = document.getElementById('rr-gunshi-img');
       if (gImgEl) gImgEl.src = gDef.faceImg;
@@ -8197,7 +9096,6 @@ const App = {
       if (gNameEl) gNameEl.textContent = gDef.name;
       this.syncGunshiModeUI();
 
-      // Build 3D Battlefield with Authentic NDS Map Textures & Dynamic Camera
       setLoadUI(93, '建構 3D 戰場與原版地圖貼圖…');
       await new Promise(r => requestAnimationFrame(r));
 
@@ -8216,11 +9114,9 @@ const App = {
       this.ren.precompile();
       this.cutscenePlayer = new SpellCutscenePlayer(document.getElementById('cutscene-canvas'));
 
-      // Populate Opening Hero Parade
-      const aiNameMap = { wei: '魏・霸道', shu: '蜀・五虎', wu: '吳・赤壁', qun: '群・無雙' };
       document.getElementById('ic-player-title').textContent = '我軍出陣';
       document.getElementById('ic-player-sub').textContent = `軍師：${gDef.name} ｜ 士氣 ${this.sim.moraleCap.player}`;
-      document.getElementById('ic-enemy-title').textContent = aiNameMap[aiDeckKey] || '敵軍陣容';
+      document.getElementById('ic-enemy-title').textContent = enemyTitle;
       document.getElementById('ic-enemy-sub').textContent = `軍師：${(GUNSHI_MAP[enemyGunshi] || GUNSHI_LIST[0]).name}`;
       const mkMini = ids => ids.map(id => {
         const g = GENERAL_MAP[id];
@@ -8234,7 +9130,6 @@ const App = {
       this.applyBustImg(document.getElementById('intro-hero-img'), leadGen);
       document.getElementById('intro-hero-quote').textContent = `${leadGen.name}：${leadGen.quote}`;
 
-      // Reset all cutscene timers & overlays
       this.stopAllCutsceneVideos();
       this.introTimer = 4.05;
       this.introPhase = 0;
@@ -8268,7 +9163,6 @@ const App = {
       this.applyControlModeUI();
       this.refreshPadDimensions();
 
-      // Render 1 warm frame behind loading veil
       this.ren.cinemaMode = { kind: 'intro_swoop', age: 0, dur: 2.95 };
       this.ren.render(0, 0.016, this.selectedUid, null);
       this.updateHUD();
@@ -8276,7 +9170,6 @@ const App = {
       await new Promise(r => setTimeout(r, 110));
 
       if (overlay) overlay.classList.remove('active');
-      // Stage 0 of Opening: Twin Bronze Dragon Doors Closed -> Opens with NDS Fanfare!
       document.getElementById('intro-overlay').className = 'show phase-doors';
       sfx.openFanfare();
 
@@ -8379,7 +9272,20 @@ const App = {
     });
     document.getElementById('btn-exit').addEventListener('click', () => this.exitToDeck());
     document.getElementById('btn-back-deck').addEventListener('click', () => this.exitToDeck());
-    document.getElementById('btn-rematch').addEventListener('click', () => this.startBattle());
+    document.getElementById('btn-rematch').addEventListener('click', () => this.startBattle({ campaignStage: this.activeCampaignStage }));
+    const claimPackBtn = document.getElementById('btn-claim-pack');
+    if (claimPackBtn) {
+      claimPackBtn.addEventListener('click', () => {
+        const reward = this._pendingPackReward;
+        this._pendingPackReward = null;
+        this.exitToDeck();
+        if (reward) {
+          this.drawCardPack(3, reward.title, reward.sub, reward.boost || 0);
+        } else {
+          this.drawCardPack(3, '戰後武將登用！', '獲得 3 張《三國志大戰‧天》武將／軍師卡', 0);
+        }
+      });
+    }
 
     const ougiModeBtn = document.getElementById('btn-ougi-mode');
     if (ougiModeBtn) {
@@ -8431,7 +9337,7 @@ const App = {
     window.addEventListener('keydown', e => {
       if (!this.sim || this.isPortraitBlocked() || document.getElementById('battle-view').style.display !== 'flex') return;
       const pUnits = this.sim.units.filter(u => u.side === 'player');
-      if (e.key >= '1' && e.key <= '5') {
+      if (e.key >= '1' && e.key <= '6') {
         const u = pUnits[Number(e.key) - 1];
         if (u && u.alive) this.selectedUid = u.uid;
       } else if (e.key.toLowerCase() === 'q' && !this.isCutsceneBlocking()) {
@@ -9793,6 +10699,53 @@ const App = {
       <div class="rstat">槍兵迎擊次數<strong>${sim.stats.intercepts}</strong></div>
       <div class="rstat">計略發動次數<strong>${sim.stats.stratagems}</strong></div>
       <div class="rstat">擊破敵將數<strong>${sim.stats.kills}</strong></div>`;
+
+    const rewBox = document.getElementById('result-reward-box');
+    const claimBtn = document.getElementById('btn-claim-pack');
+    this._pendingPackReward = null;
+
+    if (sim.winner === 'player' && this.activeCampaignStage) {
+      const st = this.activeCampaignStage;
+      const prov = PROVINCE_MAP[st.prov];
+      const isFirstClear = !this.campaign.cleared.includes(st.id);
+      if (isFirstClear) this.campaign.cleared.push(st.id);
+      const goldEarned = isFirstClear ? st.gold : Math.round(st.gold * 0.4);
+      this.campaign.gold += goldEarned;
+      this.campaign.wins = (this.campaign.wins || 0) + 1;
+      this.saveCampaign();
+      const rankTitle = this.getRankTitle();
+      if (rewBox) {
+        rewBox.style.display = 'block';
+        rewBox.innerHTML = `
+          <div style="font-size:13px;font-weight:900;color:#ffe599;margin-bottom:4px">
+            ★ ${prov ? prov.name : ''}【${st.title}】${isFirstClear ? '首度制霸！' : '再次克敵！'}
+          </div>
+          <div style="font-size:12px;color:#dff2ea;line-height:1.6">
+            軍資金 <strong style="color:#ffd26a">+${goldEarned} 金</strong>（現有 ${this.campaign.gold} 金）｜
+            官位：<strong style="color:#69f2a0">${rankTitle}</strong>（${this.campaign.cleared.length}/${ALL_CAMPAIGN_STAGES.length} 城）<br>
+            <span style="color:#ffcf6e">🎁 戰後獎勵：獲得 3 連武將／軍師登用卡包！</span>
+          </div>`;
+      }
+      if (claimBtn) claimBtn.style.display = 'inline-block';
+      this._pendingPackReward = {
+        title: isFirstClear ? '攻城拔寨・戰後登用！' : '大獲全勝・戰後登用！',
+        sub: `${prov ? prov.name : ''}【${st.title}】制霸獎勵：獲得 3 張武將／軍師卡`,
+        boost: st.stars >= 4 ? 1 : 0
+      };
+    } else if (sim.winner === 'player') {
+      this.campaign.gold += 50;
+      this.campaign.wins = (this.campaign.wins || 0) + 1;
+      this.saveCampaign();
+      if (rewBox) {
+        rewBox.style.display = 'block';
+        rewBox.innerHTML = `<div style="font-size:12px;color:#dff2ea">模擬演習勝場獎勵：軍資金 <strong style="color:#ffd26a">+50 金</strong>（現有 ${this.campaign.gold} 金）</div>`;
+      }
+      if (claimBtn) claimBtn.style.display = 'none';
+    } else {
+      if (rewBox) rewBox.style.display = 'none';
+      if (claimBtn) claimBtn.style.display = 'none';
+    }
+
     document.getElementById('result-modal').classList.add('open');
   },
 
@@ -9831,6 +10784,10 @@ const App = {
     if (this.cutscenePlayer) this.cutscenePlayer.stop();
     const qSel = document.getElementById('quality-select');
     if (qSel && this.qualityTier) qSel.value = this.qualityTier;
+    this.syncUnlockButtons();
+    this.renderCampaignHub();
+    this.renderDeckSidebar();
+    this.renderRoster();
     this.updateCfgSummary();
     document.getElementById('deck-view').style.display = 'flex';
   },
